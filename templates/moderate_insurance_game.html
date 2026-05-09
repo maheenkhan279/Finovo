@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Insurance Planning Challenge - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #fd7e14 0%, #e67e22 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .insurance-dashboard {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .insurance-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .insurance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        border-color: #fd7e14;
+    }
+    
+    .insurance-card.selected {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    }
+    
+    .coverage-options {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .coverage-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+        margin: 15px 0;
+    }
+    
+    .coverage-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fd7e14;
+        cursor: pointer;
+    }
+    
+    .coverage-slider::-moz-range-thumb {
+        -moz-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fd7e14;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .coverage-slider::-ms-thumb {
+        -ms-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fd7e14;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .results-panel {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 30px;
+    }
+    
+    .score-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #fd7e14;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .btn-action {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 10px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .premium-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #dc3545;
+        text-align: center;
+        margin: 15px 0;
+    }
+    
+    .coverage-display {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🛡️ Checking authentication for insurance planning game...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Insurance Planning Challenge</h1>
+        <p>Strategic insurance management! Choose coverage wisely and optimize your protection.</p>
+    </div>
+</section>
+
+<section class="game-section">
+    <div class="container">
+        <div class="game-container">
+            <div class="game-header">
+                <h2>🛡️ Insurance Planning Simulator</h2>
+                <p>Select the right insurance coverage for different scenarios and manage your budget!</p>
+            </div>
+            
+            <div class="insurance-dashboard">
+                <div class="insurance-card" data-insurance="health">
+                    <h3>🏥 Health Insurance</h3>
+                    <div class="insurance-details">
+                        <p><strong>Base Premium:</strong> $200/month</p>
+                        <p><strong>Coverage:</strong> Medical, Dental, Vision</p>
+                        <p><strong>Deductible:</strong> $1,000</p>
+                    </div>
+                    <button class="btn-action" onclick="selectInsurance('health')">Select This Plan</button>
+                </div>
+                
+                <div class="insurance-card" data-insurance="auto">
+                    <h3>🚗 Auto Insurance</h3>
+                    <div class="insurance-details">
+                        <p><strong>Base Premium:</strong> $150/month</p>
+                        <p><strong>Coverage:</strong> Liability, Collision, Comprehensive</p>
+                        <p><strong>Deductible:</strong> $500</p>
+                    </div>
+                    <button class="btn-action" onclick="selectInsurance('auto')">Select This Plan</button>
+                </div>
+                
+                <div class="insurance-card" data-insurance="home">
+                    <h3>🏠 Home Insurance</h3>
+                    <div class="insurance-details">
+                        <p><strong>Base Premium:</strong> $100/month</p>
+                        <p><strong>Coverage:</strong> Dwelling, Personal Property, Liability</p>
+                        <p><strong>Deductible:</strong> $1,000</p>
+                    </div>
+                    <button class="btn-action" onclick="selectInsurance('home')">Select This Plan</button>
+                </div>
+                
+                <div class="insurance-card" data-insurance="life">
+                    <h3>💼 Life Insurance</h3>
+                    <div class="insurance-details">
+                        <p><strong>Base Premium:</strong> $50/month</p>
+                        <p><strong>Coverage:</strong> Term Life, $250,000 benefit</p>
+                        <p><strong>Term:</strong> 20 years</p>
+                    </div>
+                    <button class="btn-action" onclick="selectInsurance('life')">Select This Plan</button>
+                </div>
+            </div>
+            
+            <div class="coverage-options">
+                <h3>💰 Coverage Optimization</h3>
+                <div class="form-group">
+                    <label><strong>Coverage Level:</strong> <span id="coverageLevel">Standard</span></label>
+                    <input type="range" class="coverage-slider" id="coverageSlider" min="0" max="100" value="50" oninput="updateCoverage(this.value)">
+                </div>
+                
+                <div class="form-group">
+                    <label><strong>Deductible Amount:</strong> $<span id="deductibleAmount">1000</span></label>
+                    <input type="range" class="coverage-slider" id="deductibleSlider" min="500" max="5000" value="1000" step="100" oninput="updateDeductible(this.value)">
+                </div>
+                
+                <div class="premium-display">
+                    Total Monthly Premium: $<span id="totalPremium">0</span>
+                </div>
+                
+                <button class="btn-action" onclick="calculateOptimalCoverage()">Calculate Optimal Coverage</button>
+                <button class="btn-action" onclick="purchaseCoverage()">Purchase Coverage</button>
+            </div>
+            
+            <div class="results-panel" id="resultsPanel" style="display: none;">
+                <h3>📊 Coverage Analysis</h3>
+                <div class="score-display">Score: <span id="scoreValue">0</span></div>
+                <div id="analysisResults"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+let selectedInsurance = null;
+let score = 0;
+let coverageLevel = 50;
+let deductibleAmount = 1000;
+
+const insuranceData = {
+    health: {
+        basePremium: 200,
+        coverage: 'Medical, Dental, Vision',
+        deductible: 1000
+    },
+    auto: {
+        basePremium: 150,
+        coverage: 'Liability, Collision, Comprehensive',
+        deductible: 500
+    },
+    home: {
+        basePremium: 100,
+        coverage: 'Dwelling, Personal Property, Liability',
+        deductible: 1000
+    },
+    life: {
+        basePremium: 50,
+        coverage: 'Term Life, $250,000 benefit',
+        deductible: 0
+    }
+};
+
+function selectInsurance(insuranceType) {
+    selectedInsurance = insuranceType;
+    
+    // Update UI
+    document.querySelectorAll('.insurance-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelector(`[data-insurance="${insuranceType}"]`).classList.add('selected');
+    
+    console.log(`✅ Selected ${insuranceType} insurance`);
+    updatePremium();
+}
+
+function updateCoverage(value) {
+    coverageLevel = parseInt(value);
+    const levelText = coverageLevel < 33 ? 'Basic' : coverageLevel < 66 ? 'Standard' : 'Premium';
+    document.getElementById('coverageLevel').textContent = levelText;
+    updatePremium();
+}
+
+function updateDeductible(value) {
+    deductibleAmount = parseInt(value);
+    document.getElementById('deductibleAmount').textContent = deductibleAmount;
+    updatePremium();
+}
+
+function updatePremium() {
+    if (!selectedInsurance) return;
+    
+    const insurance = insuranceData[selectedInsurance];
+    const coverageMultiplier = 0.7 + (coverageLevel / 100) * 0.6; // 0.7 to 1.3
+    const deductibleDiscount = Math.max(0.8, 1 - (deductibleAmount - 500) / 10000); // Higher deductible = lower premium
+    
+    const totalPremium = Math.round(insurance.basePremium * coverageMultiplier * deductibleDiscount);
+    document.getElementById('totalPremium').textContent = totalPremium;
+}
+
+function calculateOptimalCoverage() {
+    if (!selectedInsurance) {
+        alert('Please select an insurance type first!');
+        return;
+    }
+    
+    // Simulate finding optimal coverage
+    let points = 0;
+    
+    // Points for reasonable coverage level
+    if (coverageLevel >= 40 && coverageLevel <= 70) points += 20;
+    
+    // Points for reasonable deductible
+    if (deductibleAmount >= 1000 && deductibleAmount <= 2000) points += 15;
+    
+    // Points for selecting insurance
+    points += 10;
+    
+    score += points;
+    
+    // Show results
+    const resultsPanel = document.getElementById('resultsPanel');
+    const analysisResults = document.getElementById('analysisResults');
+    
+    resultsPanel.style.display = 'block';
+    document.getElementById('scoreValue').textContent = score;
+    
+    analysisResults.innerHTML = `
+        <div style="margin: 20px 0;">
+            <p><strong>🎯 Coverage Level:</strong> ${coverageLevel}%</p>
+            <p><strong>💳 Deductible:</strong> $${deductibleAmount}</p>
+            <p><strong>📊 Optimization Score:</strong> ${points}/45</p>
+            <p><strong>🏆 Points Earned:</strong> ${points}</p>
+        </div>
+    `;
+    
+    console.log(`🛡️ Calculated optimal coverage: ${points} points`);
+}
+
+function purchaseCoverage() {
+    if (!selectedInsurance) {
+        alert('Please select an insurance type first!');
+        return;
+    }
+    
+    const premium = parseInt(document.getElementById('totalPremium').textContent);
+    
+    // Add score for making purchase
+    score += 25;
+    
+    alert(`🎉 Congratulations! You've purchased ${selectedInsurance} insurance for $${premium}/month! Total Score: ${score}`);
+    
+    // Reset for next round
+    selectedInsurance = null;
+    document.querySelectorAll('.insurance-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    document.getElementById('coverageSlider').value = 50;
+    document.getElementById('deductibleSlider').value = 1000;
+    updateCoverage(50);
+    updateDeductible(1000);
+    
+    console.log(`💳 Purchased ${selectedInsurance} insurance for $${premium}/month`);
+}
+
+function initGame() {
+    console.log('🛡️ Insurance Planning game initialized');
+    score = 0;
+    selectedInsurance = null;
+    coverageLevel = 50;
+    deductibleAmount = 1000;
+    updateCoverage(50);
+    updateDeductible(1000);
+}
+</script>
+{% endblock %}

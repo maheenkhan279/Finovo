@@ -1,0 +1,1458 @@
+{% extends "base.html" %}
+
+{% block title %}Needs vs Wants - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .game-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 30px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .game-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .draggable-items {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .draggable-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: grab;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .draggable-item:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        border-color: #28a745;
+        animation: itemPulse 0.6s ease-in-out;
+    }
+    
+    .draggable-item.dragging {
+        opacity: 0.6;
+        cursor: grabbing;
+        transform: rotate(5deg) scale(1.05);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+    }
+    
+    .draggable-item.correct {
+        animation: correctAnswer 0.8s ease;
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    }
+    
+    .draggable-item.incorrect {
+        animation: incorrectAnswer 0.8s ease;
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    }
+    
+    @keyframes itemPulse {
+        0% { transform: translateY(-2px) scale(1); }
+        50% { transform: translateY(-3px) scale(1.03); }
+        100% { transform: translateY(-2px) scale(1.02); }
+    }
+    
+    @keyframes correctAnswer {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(40, 167, 69, 0.6); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes incorrectAnswer {
+        0% { transform: scale(1); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-3px); }
+        100% { transform: scale(1); }
+    }
+    
+    .drop-zone {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        min-height: 400px;
+        border: 3px dashed #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .drop-zone.needs {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .drop-zone.wants {
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .drop-zone.drag-over {
+        transform: scale(1.03);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-width: 4px;
+        animation: dropZonePulse 0.8s ease-in-out infinite;
+    }
+    
+    .drop-zone.correct-drop {
+        animation: correctDrop 0.6s ease;
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    }
+    
+    .drop-zone.incorrect-drop {
+        animation: incorrectDrop 0.6s ease;
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    }
+    
+    @keyframes dropZonePulse {
+        0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        50% { box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
+    }
+    
+    @keyframes correctDrop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); background: linear-gradient(135deg, #b8e6b7 0%, #a5d6a7 100%); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes incorrectDrop {
+        0% { transform: scale(1); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-3px); }
+        100% { transform: scale(1); }
+    }
+    
+    .drop-zone-header {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+    }
+    
+    .drop-zone.needs .drop-zone-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .drop-zone.wants .drop-zone-header {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    }
+    
+    .dropped-item {
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: dropIn 0.3s ease;
+        transition: all 0.3s ease;
+    }
+    
+    .dropped-item.correct {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    }
+    
+    .dropped-item.incorrect {
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    }
+    
+    @keyframes dropIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .timer-bar {
+        width: 100%;
+        height: 30px;
+        background: #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .timer-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        transition: width 1s linear;
+        border-radius: 15px;
+    }
+    
+    .timer-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    
+    .score-popup {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border: 2px solid #28a745;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .game-area {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .items-container, .drops-container {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 15px;
+        min-height: 400px;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+    
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .draggable-item {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        cursor: grab;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    
+    .draggable-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .draggable-item.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+    
+    .draggable-item.correct {
+        border-color: #28a745;
+        background: #d4edda;
+        animation: correctPulse 0.5s ease;
+    }
+    
+    .draggable-item.incorrect {
+        border-color: #dc3545;
+        background: #f8d7da;
+        animation: incorrectShake 0.5s ease;
+    }
+    
+    @keyframes correctPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes incorrectShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .item-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .item-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .item-price {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .drop-zone {
+        background: white;
+        border: 3px dashed #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 150px;
+        text-align: center;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .drop-zone.drag-over {
+        border-color: #28a745;
+        background: #f0fff4;
+        transform: scale(1.02);
+    }
+    
+    .drop-zone.needs {
+        border-color: #007bff;
+    }
+    
+    .drop-zone.wants {
+        border-color: #ffc107;
+    }
+    
+    .dropped-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .dropped-item {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .timer {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #dc3545;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .combo-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ffc107;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .combo-indicator.show {
+        opacity: 1;
+        animation: comboAnimation 1s ease;
+    }
+    
+    @keyframes comboAnimation {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+    
+    .explanation-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #28a745;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        max-width: 400px;
+        display: none;
+    }
+    
+    .explanation-popup.show {
+        display: block;
+        animation: popIn 0.3s ease;
+    }
+    
+    @keyframes popIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+    
+    .streak-meter {
+        width: 100%;
+        height: 30px;
+        background: #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .streak-fill {
+        background: linear-gradient(90deg, #ffc107, #ff6b6b);
+        height: 100%;
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔒 Checking authentication for needs vs wants game...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+<script src="{{ url_for('static', filename='js/gameDatabase.js') }}"></script>
+<script>
+// Game data
+const gameData = {
+    items: [
+        {
+            id: 'rent',
+            name: 'Monthly Rent',
+            description: 'Payment for your apartment or house',
+            price: 1200,
+            category: 'needs',
+            icon: '🏠',
+            essential: true
+        },
+        {
+            id: 'groceries',
+            name: 'Groceries',
+            description: 'Food and household necessities',
+            price: 400,
+            category: 'needs',
+            icon: '🥬',
+            essential: true
+        },
+        {
+            id: 'utilities',
+            name: 'Utilities',
+            description: 'Electricity, water, internet, phone',
+            price: 200,
+            category: 'needs',
+            icon: '💡',
+            essential: true
+        },
+        {
+            id: 'transport',
+            name: 'Transportation',
+            description: 'Gas, public transport, car maintenance',
+            price: 300,
+            category: 'needs',
+            icon: '🚗',
+            essential: true
+        },
+        {
+            id: 'healthcare',
+            name: 'Healthcare',
+            description: 'Insurance premiums, medications, doctor visits',
+            price: 250,
+            category: 'needs',
+            icon: '🏥',
+            essential: true
+        },
+        {
+            id: 'new_phone',
+            name: 'New Smartphone',
+            description: 'Latest model smartphone with all features',
+            price: 800,
+            category: 'wants',
+            icon: '📱',
+            essential: false
+        },
+        {
+            id: 'designer_clothes',
+            name: 'Designer Clothes',
+            description: 'Brand name clothing and accessories',
+            price: 500,
+            category: 'wants',
+            icon: '👔',
+            essential: false
+        },
+        {
+            id: 'gaming_console',
+            name: 'Gaming Console',
+            description: 'Latest gaming console with games',
+            price: 600,
+            category: 'wants',
+            icon: '🎮',
+            essential: false
+        },
+        {
+            id: 'luxury_dinner',
+            name: 'Luxury Dinner',
+            description: 'Fine dining experience at expensive restaurant',
+            price: 150,
+            category: 'wants',
+            icon: '🍽️',
+            essential: false
+        },
+        {
+            id: 'vacation',
+            name: 'Vacation Trip',
+            description: 'Week-long vacation to tropical destination',
+            price: 2000,
+            category: 'wants',
+            icon: '✈️',
+            essential: false
+        },
+        {
+            id: 'streaming_services',
+            name: 'Streaming Services',
+            description: 'Multiple streaming platform subscriptions',
+            price: 50,
+            category: 'wants',
+            icon: '📺',
+            essential: false
+        },
+        {
+            id: 'gym_membership',
+            name: 'Gym Membership',
+            description: 'Monthly gym membership and fitness classes',
+            price: 80,
+            category: 'wants',
+            icon: '💪',
+            essential: false
+        },
+        {
+            id: 'coffee_shop',
+            name: 'Daily Coffee Shop',
+            description: 'Daily premium coffee purchases',
+            price: 120,
+            category: 'wants',
+            icon: '☕',
+            essential: false
+        },
+        {
+            id: 'concert_tickets',
+            name: 'Concert Tickets',
+            description: 'Tickets to see your favorite band live',
+            price: 200,
+            category: 'wants',
+            icon: '🎵',
+            essential: false
+        },
+        {
+            id: 'smart_watch',
+            name: 'Smart Watch',
+            description: 'Latest smartwatch with health tracking',
+            price: 400,
+            category: 'wants',
+            icon: '⌚',
+            essential: false
+        },
+        {
+            id: 'art_supplies',
+            name: 'Art Supplies',
+            description: 'Professional art materials and supplies',
+            price: 150,
+            category: 'wants',
+            icon: '🎨',
+            essential: false
+        }
+    ],
+    scenarios: [
+        {
+            id: 'budget_cut',
+            name: 'Budget Cut',
+            description: 'Your monthly budget has been reduced by 20%',
+            probability: 0.2,
+            impact: { budget: -0.2 }
+        },
+        {
+            id: 'salary_increase',
+            name: 'Salary Increase',
+            description: 'You got a 15% salary increase!',
+            probability: 0.3,
+            impact: { budget: 0.15 }
+        },
+        {
+            id: 'unexpected_expense',
+            name: 'Unexpected Expense',
+            description: 'Car repair costs $800',
+            probability: 0.25,
+            impact: { budget: -800 }
+        },
+        {
+            id: 'bonus',
+            name: 'Work Bonus',
+            description: 'You received a $1000 bonus!',
+            probability: 0.2,
+            impact: { budget: 1000 }
+        },
+        {
+            id: 'price_increase',
+            name: 'Price Increase',
+            description: 'Inflation increased all costs by 10%',
+            probability: 0.15,
+            impact: { prices: 0.1 }
+        }
+    ]
+};
+
+// Game state
+let currentRound = 0;
+let totalRounds = 5;
+let budget = 3000;
+let score = 0;
+let gameActive = false;
+let selections = {};
+let currentScenario = null;
+    roundResults = [];
+    achievements = [];
+
+// Initialize game
+function initGame() {
+    console.log('🎮 Initializing Needs vs Wants game...');
+    
+    // Initialize game variables
+    score = 0;
+    currentRound = 1;
+    totalRounds = 5;
+    budget = 3000;
+    selections = {};
+    roundResults = [];
+    currentScenario = null;
+    comboCount = 0;
+    lastCorrectTime = 0;
+    
+    // Setup UI
+    document.getElementById('roundIndicator').textContent = `Round ${currentRound} of ${totalRounds}`;
+    document.getElementById('budgetAmount').textContent = `$${budget.toLocaleString()}`;
+    
+    // Setup drop zones
+    setupDropZones();
+    
+    // Start first round
+    startRound();
+}
+
+function setupDropZones() {
+    const dropZones = document.querySelectorAll('.drop-zone');
+    
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('drop', handleDrop);
+        zone.addEventListener('dragleave', handleDragLeave);
+    });
+}
+
+function startRound() {
+    // Clear drop zones
+    document.getElementById('needsDrops').innerHTML = '';
+    document.getElementById('wantsDrops').innerHTML = '';
+    
+    // Start timer
+    startTimer();
+    
+    // Generate scenario
+    generateScenario();
+    
+    // Render items
+    renderItems();
+    
+    // Reset selections
+    selections = {};
+}
+
+function renderRound() {
+    if (currentRound >= totalRounds) {
+        finishGame();
+        return;
+    }
+    
+    currentRound++;
+    document.getElementById('roundIndicator').textContent = `Round ${currentRound} of ${totalRounds}`;
+    
+    // Generate scenario
+    generateScenario();
+    
+    // Render items
+    renderItems();
+    
+    // Reset selections
+    selections = {};
+    
+    // Update UI
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('nextRoundBtn').style.display = 'none';
+}
+
+function generateScenario() {
+    // Select random scenario
+    const scenarios = gameData.scenarios.filter(s => Math.random() < s.probability);
+    currentScenario = scenarios.length > 0 ? scenarios[Math.floor(Math.random() * scenarios.length)] : null;
+    
+    // Apply scenario impact
+    if (currentScenario) {
+        if (currentScenario.impact.budget) {
+            budget = Math.max(1000, budget + currentScenario.impact.budget);
+        }
+        if (currentScenario.impact.prices) {
+            gameData.items.forEach(item => {
+                item.price *= (1 + currentScenario.impact.prices);
+            });
+        }
+    }
+    
+    // Update budget display
+    document.getElementById('budgetAmount').textContent = `$${budget.toLocaleString()}`;
+    
+    // Show scenario notification
+    if (currentScenario) {
+        showScenarioNotification();
+    }
+}
+
+function showScenarioNotification() {
+    const scenarioElement = document.getElementById('scenarioNotification');
+    scenarioElement.innerHTML = `
+        <div class="scenario-notification">
+            <h4>${currentScenario.name}</h4>
+            <p>${currentScenario.description}</p>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        scenarioElement.innerHTML = '';
+    }, 3000);
+}
+
+function renderItems() {
+    const itemsContainer = document.getElementById('itemsContainer');
+    itemsContainer.innerHTML = '';
+    
+    // Shuffle items
+    const shuffledItems = [...gameData.items].sort(() => Math.random() - 0.5);
+    
+    // Render first 8 items as draggable cards
+    shuffledItems.slice(0, 8).forEach(item => {
+        const itemCard = document.createElement('div');
+        itemCard.className = 'draggable-item';
+        itemCard.draggable = true;
+        itemCard.dataset.itemId = item.id;
+        itemCard.dataset.category = item.category;
+        
+        itemCard.innerHTML = `
+            <div class="item-icon">${item.icon}</div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">$${item.price.toFixed(0)}</div>
+            <div class="item-description">${item.description}</div>
+        `;
+        
+        // Add drag event listeners
+        itemCard.addEventListener('dragstart', handleDragStart);
+        itemCard.addEventListener('dragend', handleDragEnd);
+        
+        itemsContainer.appendChild(itemCard);
+    });
+}
+
+// Drag and drop functionality
+let draggedElement = null;
+let timerInterval = null;
+let timeLeft = 60;
+let comboCount = 0;
+let lastCorrectTime = 0;
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.innerHTML);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.classList.add('drag-over');
+    return false;
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    e.preventDefault();
+    
+    const dropZone = e.currentTarget;
+    dropZone.classList.remove('drag-over');
+    
+    if (draggedElement) {
+        const itemId = draggedElement.dataset.itemId;
+        const itemCategory = draggedElement.dataset.category;
+        const dropCategory = dropZone.dataset.category;
+        
+        // Create dropped item
+        const droppedItem = document.createElement('div');
+        droppedItem.className = 'dropped-item';
+        droppedItem.innerHTML = draggedElement.innerHTML;
+        
+        // Check if correct
+        const isCorrect = itemCategory === dropCategory;
+        droppedItem.classList.add(isCorrect ? 'correct' : 'incorrect');
+        
+        // Add to drop zone
+        const droppedContainer = dropZone.querySelector('.dropped-items');
+        droppedContainer.appendChild(droppedItem);
+        
+        // Update selections
+        selections[itemId] = dropCategory;
+        
+        // Remove from items container
+        draggedElement.remove();
+        
+        // Update score and feedback
+        updateItemFeedback(isCorrect, itemId);
+        
+        // Check if all items are dropped
+        checkGameComplete();
+    }
+    
+    return false;
+}
+
+function updateItemFeedback(isCorrect, itemId) {
+    if (isCorrect) {
+        // Update combo
+        const currentTime = Date.now();
+        if (currentTime - lastCorrectTime < 3000) {
+            comboCount++;
+            if (comboCount >= 3) {
+                showComboIndicator();
+                score += 50; // Bonus points for combo
+            }
+        } else {
+            comboCount = 1;
+        }
+        lastCorrectTime = currentTime;
+        
+        score += 10;
+        showScorePopup('+10', 'correct');
+    } else {
+        comboCount = 0;
+        score = Math.max(0, score - 5);
+        showScorePopup('-5', 'incorrect');
+    }
+    
+    updateStats();
+}
+
+function showComboIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'combo-indicator show';
+    indicator.textContent = `COMBO x${comboCount}!`;
+    document.body.appendChild(indicator);
+    
+    setTimeout(() => {
+        indicator.remove();
+    }, 1000);
+}
+
+function showScorePopup(text, type) {
+    const popup = document.createElement('div');
+    popup.className = 'score-popup';
+    popup.innerHTML = `
+        <div class="score-text ${type}">${text}</div>
+    `;
+    document.body.appendChild(popup);
+    
+    setTimeout(() => {
+        popup.remove();
+    }, 1500);
+}
+
+function startTimer() {
+    timeLeft = 60;
+    updateTimerDisplay();
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            endRound();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const timerFill = document.getElementById('timerFill');
+    const timerText = document.getElementById('timerText');
+    
+    const percentage = (timeLeft / 60) * 100;
+    timerFill.style.width = percentage + '%';
+    timerText.textContent = timeLeft + 's';
+    
+    if (timeLeft <= 10) {
+        timerFill.style.background = 'linear-gradient(90deg, #dc3545 0%, #fd7e14 100%)';
+    }
+}
+
+function checkGameComplete() {
+    const itemsContainer = document.getElementById('itemsContainer');
+    const totalItems = 8; // We show 8 items per round
+    const droppedItems = document.querySelectorAll('.dropped-item').length;
+    
+    // Update progress
+    const progress = (droppedItems / totalItems) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('progressBar').textContent = `Progress: ${droppedItems}/${totalItems}`;
+    
+    if (droppedItems === totalItems) {
+        clearInterval(timerInterval);
+        setTimeout(() => {
+            showRoundResults();
+        }, 1000);
+    }
+}
+
+function showRoundResults() {
+    let correctCount = 0;
+    const droppedItems = document.querySelectorAll('.dropped-item');
+    
+    droppedItems.forEach(item => {
+        if (item.classList.contains('correct')) {
+            correctCount++;
+        }
+    });
+    
+    const accuracy = (correctCount / droppedItems.length) * 100;
+    const timeBonus = timeLeft > 0 ? timeLeft * 2 : 0;
+    const roundScore = Math.round(accuracy + timeBonus);
+    
+    score += roundScore;
+    
+    // Show results modal
+    const resultsHtml = `
+        <div class="feedback-message feedback-success">
+            <h3>Round Complete!</h3>
+            <p>Accuracy: ${accuracy.toFixed(1)}%</p>
+            <p>Time Bonus: ${timeBonus} points</p>
+            <p>Round Score: ${roundScore} points</p>
+            <p>Total Score: ${score} points</p>
+        </div>
+    `;
+    
+    const resultsContainer = document.createElement('div');
+    resultsContainer.innerHTML = resultsHtml;
+    document.querySelector('.game-container').appendChild(resultsContainer);
+    
+    setTimeout(() => {
+        resultsContainer.remove();
+        nextRound();
+    }, 3000);
+}
+
+function checkAnswers() {
+    let correctCount = 0;
+    let totalItems = Object.keys(selections).length;
+    
+    // Check each selection
+    Object.entries(selections).forEach(([itemId, selectedCategory]) => {
+        const item = gameData.items.find(i => i.id === itemId);
+        if (item.category === selectedCategory) {
+            correctCount++;
+        }
+    });
+    
+    // Calculate round score
+    const roundScore = (correctCount / totalItems) * 100;
+    score += roundScore;
+    
+    // Store result
+    roundResults.push({
+        round: currentRound,
+        correctCount: correctCount,
+        totalItems: totalItems,
+        roundScore: roundScore,
+        selections: { ...selections },
+        scenario: currentScenario
+    });
+    
+    // Show results
+    showRoundResults(correctCount, totalItems, roundScore);
+    
+    // Update UI
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('nextRoundBtn').style.display = 'inline-block';
+}
+
+function showRoundResults(correctCount, totalItems, roundScore) {
+    const resultsContainer = document.getElementById('resultsContainer');
+    resultsContainer.innerHTML = `
+        <h3>Round ${currentRound} Results</h3>
+        <div class="results-summary">
+            <div class="result-stat">
+                <span class="stat-label">Correct Answers:</span>
+                <span class="stat-value ${correctCount === totalItems ? 'perfect' : ''}">${correctCount}/${totalItems}</span>
+            </div>
+            <div class="result-stat">
+                <span class="stat-label">Round Score:</span>
+                <span class="stat-value">${roundScore.toFixed(1)}%</span>
+            </div>
+            <div class="result-stat">
+                <span class="stat-label">Total Score:</span>
+                <span class="stat-value">${score.toFixed(1)}</span>
+            </div>
+        </div>
+        
+        <div class="answer-review">
+            <h4>Answer Review</h4>
+            ${Object.entries(selections).map(([itemId, selectedCategory]) => {
+                const item = gameData.items.find(i => i.id === itemId);
+                const isCorrect = item.category === selectedCategory;
+                return `
+                    <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <div class="answer-header">
+                            <span class="item-icon">${item.icon}</span>
+                            <span class="item-name">${item.name}</span>
+                            <span class="answer-status">${isCorrect ? '✓' : '✗'}</span>
+                        </div>
+                        <div class="answer-details">
+                            <div class="your-answer">Your answer: <span class="${selectedCategory}">${selectedCategory}</span></div>
+                            <div class="correct-answer">Correct answer: <span class="${item.category}">${item.category}</span></div>
+                            <div class="explanation">
+                                ${item.essential ? 
+                                    'This is essential for basic living and survival.' :
+                                    'This is nice to have but not essential for survival.'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    
+    // Check achievements
+    checkAchievements();
+}
+
+function checkAchievements() {
+    const currentResult = roundResults[roundResults.length - 1];
+    
+    if (currentResult.correctCount === currentResult.totalItems && !achievements.includes('perfect_round')) {
+        achievements.push('perfect_round');
+        showAchievement('Perfect Round', 'Got all answers correct in a round!');
+    }
+    
+    if (score >= 400 && !achievements.includes('high_scorer')) {
+        achievements.push('high_scorer');
+        showAchievement('High Scorer', 'Achieved 400+ total points!');
+    }
+    
+    const perfectRounds = roundResults.filter(r => r.correctCount === r.totalItems).length;
+    if (perfectRounds >= 3 && !achievements.includes('consistency_master')) {
+        achievements.push('consistency_master');
+        showAchievement('Consistency Master', 'Got perfect scores in 3+ rounds!');
+    }
+}
+
+function showAchievement(title, text) {
+    showFeedback(`🏆 ${title}: ${text}`, 'success');
+}
+
+function nextRound() {
+    document.getElementById('resultsContainer').innerHTML = '';
+    document.getElementById('nextRoundBtn').style.display = 'none';
+    renderRound();
+}
+
+function finishGame() {
+    gameActive = false;
+    
+    // Calculate final score
+    const averageScore = score / totalRounds;
+    const totalCorrect = roundResults.reduce((sum, r) => sum + r.correctCount, 0);
+    const totalQuestions = roundResults.reduce((sum, r) => sum + r.totalItems, 0);
+    const accuracy = (totalCorrect / totalQuestions) * 100;
+
+    void averageScore; void accuracy;
+
+    showFinalResults();
+}
+
+function showFinalResults() {
+    const resultsContainer = document.getElementById('resultsContainer');
+    const totalCorrect = roundResults.reduce((sum, r) => sum + r.correctCount, 0);
+    const totalQuestions = roundResults.reduce((sum, r) => sum + r.totalItems, 0);
+    const accuracy = (totalCorrect / totalQuestions) * 100;
+    
+    resultsContainer.innerHTML = `
+        <h3>🎉 Game Complete!</h3>
+        <div class="final-results">
+            <div class="result-summary">
+                <h4>Final Performance</h4>
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <span class="stat-label">Final Score:</span>
+                        <span class="stat-value">${Math.round(score)}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Average Score:</span>
+                        <span class="stat-value">${(score / totalRounds).toFixed(1)}%</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Accuracy:</span>
+                        <span class="stat-value">${accuracy.toFixed(1)}%</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Correct Answers:</span>
+                        <span class="stat-value">${totalCorrect}/${totalQuestions}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="achievements-summary">
+                <h4>Achievements Earned</h4>
+                <div class="achievements-list">
+                    ${achievements.length > 0 ? 
+                        achievements.map(a => `<div class="achievement-badge">🏆 ${a.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>`).join('') :
+                        '<div class="no-achievements">No achievements earned this time</div>'
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Update UI
+    document.getElementById('nextRoundBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'inline-block';
+}
+
+function restartGame() {
+    // Reset everything
+    currentRound = 0;
+    budget = 3000;
+    score = 0;
+    gameActive = false;
+    selections = {};
+    currentScenario = null;
+    roundResults = [];
+    achievements = [];
+    
+    // Reset item prices
+    gameData.items.forEach(item => {
+        const originalItem = gameData.items.find(i => i.id === item.id);
+        if (originalItem) {
+            item.price = originalItem.price;
+        }
+    });
+    
+    // Update UI
+    document.getElementById('resultsContainer').innerHTML = '';
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('startBtn').style.display = 'inline-block';
+    document.getElementById('gameArea').style.display = 'none';
+    
+    showFeedback('Game reset! Click Start Game to play again.', 'info');
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+    }, 4000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>🎯 Needs vs Wants Challenge</h1>
+        <p>Drag items to classify them as Needs or Wants. Test your financial decision-making skills!</p>
+    </div>
+    
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill">
+            <span class="timer-text" id="timerText">60s</span>
+        </div>
+    </div>
+    
+    <div class="game-area">
+        <div class="draggable-items">
+            <h3>Drag Items to Classify</h3>
+            <div id="itemsContainer" class="draggable-items-list"></div>
+        </div>
+        <div class="drop-zone needs" data-category="needs">
+            <div class="drop-zone-header">🏠 NEEDS</div>
+            <div class="dropped-items" id="needsDrops"></div>
+        </div>
+        <div class="drop-zone wants" data-category="wants">
+            <div class="drop-zone-header">🎮 WANTS</div>
+            <div class="dropped-items" id="wantsDrops"></div>
+        </div>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressBar" style="width: 0%">
+            Progress: 0/12
+        </div>
+    </div>
+    
+    <div class="streak-meter">
+        <div class="streak-fill" id="streakFill" style="width: 0%">
+            Streak: 0
+        </div>
+    </div>
+    
+    <div class="timer" id="gameTimer">⏱️ Time: 0:00</div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="game-area">
+        <div class="items-container">
+            <div class="section-title">📦 Items to Classify</div>
+            <div class="items-grid" id="itemsGrid">
+                <!-- Items will be dynamically generated -->
+            </div>
+        </div>
+        
+        <div class="drops-container">
+            <div class="section-title">🎯 Drop Zones</div>
+            
+            <div class="drop-zone needs" id="needsDropZone" data-category="needs">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">🏠</div>
+                <div style="font-weight: bold; color: #007bff;">NEEDS</div>
+                <div style="color: #666; font-size: 0.9rem;">Essential for living</div>
+                <div class="dropped-items" id="needsItems"></div>
+            </div>
+            
+            <div class="drop-zone wants" id="wantsDropZone" data-category="wants">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">🎮</div>
+                <div style="font-weight: bold; color: #ffc107;">WANTS</div>
+                <div style="color: #666; font-size: 0.9rem;">Nice to have</div>
+                <div class="dropped-items" id="wantsItems"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="startBtn" onclick="startGame()">Start Game</button>
+        <button class="btn-game" id="checkBtn" onclick="checkAnswers()" style="display: none;">Check Answers</button>
+        <button class="btn-game" id="nextBtn" onclick="nextRound()" style="display: none;">Next Round</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+
+<div class="combo-indicator" id="comboIndicator">COMBO!</div>
+<div class="explanation-popup" id="explanationPopup">
+    <h4 id="explanationTitle"></h4>
+    <p id="explanationText"></p>
+    <button onclick="closeExplanation()" style="margin-top: 10px; padding: 5px 15px;">Got it!</button>
+</div>
+{% endblock %}

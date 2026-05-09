@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Needs vs Wants – Simulation | Finovo{% endblock %}
+{% block extra_css %}
+<style>
+.sim-wrap { max-width: 920px; margin: 2rem auto; padding: 0 1rem; }
+.sim-card {
+  background: var(--bg-primary, #fff);
+  border-radius: var(--radius-xl, 12px);
+  box-shadow: var(--shadow-lg, 0 4px 24px rgba(0,0,0,.08));
+  padding: var(--spacing-2xl, 2rem);
+  border: 1px solid var(--gray-200, #e5e7eb);
+}
+.sim-stats { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+.stat-pill {
+  flex: 1; min-width: 120px; text-align: center; padding: .75rem 1rem;
+  background: var(--bg-secondary, #f3f4f6); border-radius: 999px; font-weight: 600;
+}
+.drop-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+@media (max-width: 640px) { .drop-row { grid-template-columns: 1fr; } }
+.drop-zone {
+  min-height: 180px; border: 3px dashed var(--gray-300, #d1d5db); border-radius: 12px;
+  padding: 1rem; background: var(--bg-secondary, #f9fafb); transition: .2s;
+}
+.drop-zone.dragover { border-color: var(--primary-blue, #2563eb); background: #eff6ff; }
+.drop-zone h4 { margin: 0 0 .5rem; font-size: .95rem; color: var(--text-secondary, #6b7280); }
+.bank {
+  display: flex; flex-wrap: wrap; gap: .5rem; min-height: 72px; padding: .75rem;
+  background: #fffbeb; border-radius: 12px; border: 1px solid #fcd34d; margin-bottom: 1rem;
+}
+.item-chip {
+  display: inline-block; padding: .45rem .85rem; border-radius: 999px; cursor: grab;
+  background: #fff; border: 1px solid var(--gray-300, #d1d5db); font-size: .9rem; user-select: none;
+}
+.item-chip:active { cursor: grabbing; }
+.sim-feedback { min-height: 1.5rem; margin: .75rem 0; font-weight: 600; transition: opacity .3s; }
+.sim-feedback--ok { color: var(--success-color, #16a34a); }
+.sim-feedback--bad { color: var(--error-color, #dc2626); }
+.sim-feedback--info { color: var(--primary-blue, #2563eb); }
+.bar-wrap { height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-top: .5rem; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--success-color,#22c55e), var(--primary-blue,#3b82f6)); width: 0%; transition: width .35s ease; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="sim-wrap">
+  <div class="sim-card">
+    <h1 style="color:var(--primary-blue,#1e3a5f);margin-top:0;">Needs vs Wants</h1>
+    <p style="color:var(--text-secondary,#6b7280);">Drag each item into <strong>Needs</strong> or <strong>Wants</strong>. Build a streak for bonus points.</p>
+    <div class="sim-stats">
+      <div class="stat-pill">Correct: <span id="sim-score">0</span></div>
+      <div class="stat-pill">Streak: <span id="sim-streak">0</span></div>
+      <div class="stat-pill">Round <span id="sim-round">1</span> / <span id="sim-total">{{ items|length }}</span></div>
+    </div>
+    <div class="bar-wrap"><div class="bar-fill" id="sim-bar"></div></div>
+    <p id="sim-feedback" class="sim-feedback sim-feedback--info"></p>
+    <div class="bank" id="item-bank"><span style="color:#92400e;">Drag items from here into a box →</span></div>
+    <div class="drop-row">
+      <div class="drop-zone" data-bucket="need" ondragover="FinovoNeedsWants.allowDrop(event)" ondrop="FinovoNeedsWants.drop(event)" ondragleave="FinovoNeedsWants.dragLeave(event)">
+        <h4>Needs (essentials)</h4>
+        <div class="bucket-inner" id="zone-need"></div>
+      </div>
+      <div class="drop-zone" data-bucket="want" ondragover="FinovoNeedsWants.allowDrop(event)" ondrop="FinovoNeedsWants.drop(event)" ondragleave="FinovoNeedsWants.dragLeave(event)">
+        <h4>Wants (optional)</h4>
+        <div class="bucket-inner" id="zone-want"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem;">
+      <button type="button" class="btn btn-primary" id="sim-check" disabled>Check answer</button>
+      <a href="{{ url_for('games') }}" class="btn btn-outline">Back to Games</a>
+    </div>
+  </div>
+</div>
+<script>
+const SIM_ITEMS = {{ items|tojson }};
+const FINISH_URL = "{{ url_for('beginner_bp.simulation_finish') }}";
+const SCORE_URL = "{{ url_for('beginner_bp.quiz_score') }}";
+
+const FinovoNeedsWants = (function () {
+  let idx = 0, correct = 0, wrong = 0, score = 0, streak = 0, placed = null;
+
+  function renderChip(item) {
+    const el = document.createElement("span");
+    el.className = "item-chip";
+    el.draggable = true;
+    el.dataset.id = String(item.id);
+    el.textContent = item.label;
+    el.addEventListener("dragstart", function (e) {
+      e.dataTransfer.setData("text/plain", el.dataset.id);
+    });
+    return el;
+  }
+
+  function nextItem() {
+    document.getElementById("zone-need").innerHTML = "";
+    document.getElementById("zone-want").innerHTML = "";
+    document.getElementById("item-bank").innerHTML = "";
+    placed = null;
+    document.getElementById("sim-check").disabled = true;
+    if (idx >= SIM_ITEMS.length) {
+      fetch(FINISH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          correct: correct,
+          wrong: wrong,
+          total: SIM_ITEMS.length
+        }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.redirect) window.location.href = d.redirect;
+          else window.location.href = SCORE_URL;
+        })
+        .catch(function () {
+          window.location.href = SCORE_URL;
+        });
+      return;
+    }
+    const it = SIM_ITEMS[idx];
+    document.getElementById("sim-round").textContent = String(idx + 1);
+    document.getElementById("item-bank").appendChild(renderChip(it));
+    if (window.FinovoSim) {
+      FinovoSim.flashMessage(document.getElementById("sim-feedback"), "Drag the card into Needs or Wants.", "info");
+      FinovoSim.setProgressBar(document.getElementById("sim-bar"), (idx / SIM_ITEMS.length) * 100);
+    }
+  }
+
+  function allowDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add("dragover");
+  }
+  function dragLeave(e) {
+    e.currentTarget.classList.remove("dragover");
+  }
+  function drop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove("dragover");
+    const id = e.dataTransfer.getData("text/plain");
+    const bucket = e.currentTarget.getAttribute("data-bucket");
+    const bank = document.getElementById("item-bank");
+    const chip = bank.querySelector('[data-id="' + id + '"]');
+    if (!chip) return;
+    const inner = e.currentTarget.querySelector(".bucket-inner");
+    inner.appendChild(chip);
+    placed = { id: id, bucket: bucket };
+    document.getElementById("sim-check").disabled = false;
+  }
+
+  function check() {
+    if (!placed) return;
+    const it = SIM_ITEMS[idx];
+    const ok = placed.bucket === it.correct;
+    if (ok) {
+      correct += 1;
+      streak += 1;
+      score += 10 + Math.min(5, Math.floor(streak / 2));
+      if (window.FinovoSim) FinovoSim.flashMessage(document.getElementById("sim-feedback"), "Correct! " + (it.tip || ""), "ok");
+    } else {
+      wrong += 1;
+      streak = 0;
+      if (window.FinovoSim) FinovoSim.flashMessage(document.getElementById("sim-feedback"), "Not quite — " + (it.tip || "Review essentials vs extras."), "bad");
+    }
+    document.getElementById("sim-score").textContent = String(correct);
+    document.getElementById("sim-streak").textContent = String(streak);
+    idx += 1;
+    setTimeout(nextItem, ok ? 650 : 1200);
+  }
+
+  document.getElementById("sim-check").addEventListener("click", check);
+  document.getElementById("sim-total").textContent = String(SIM_ITEMS.length);
+
+  document.addEventListener("DOMContentLoaded", function () {
+    nextItem();
+  });
+
+  return { allowDrop: allowDrop, drop: drop, dragLeave: dragLeave };
+})();
+</script>
+{% endblock %}

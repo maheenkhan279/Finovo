@@ -1,0 +1,1046 @@
+{% extends "base.html" %}
+
+{% block title %}Credit Score Challenge - Interactive Decision Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .credit-score-display {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .score-meter {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto 20px;
+        height: 40px;
+        background: linear-gradient(90deg, 
+            #dc3545 0%, 
+            #dc3545 20%, 
+            #ffc107 20%, 
+            #ffc107 40%, 
+            #28a745 40%, 
+            #28a745 60%, 
+            #17a2b8 60%, 
+            #17a2b8 80%, 
+            #6f42c1 80%, 
+            #6f42c1 100%
+        );
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .score-indicator {
+        position: absolute;
+        top: -10px;
+        width: 60px;
+        height: 60px;
+        background: white;
+        border: 3px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        transition: left 0.5s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .score-labels {
+        display: flex;
+        justify-content: space-between;
+        max-width: 400px;
+        margin: 0 auto;
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .score-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .score-detail {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .score-detail-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4a90e2;
+    }
+    
+    .score-detail-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .actions-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .actions-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .action-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .action-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        border-color: #4a90e2;
+    }
+    
+    .action-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .action-card.disabled:hover {
+        transform: none;
+        border-color: #dee2e6;
+    }
+    
+    .action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .action-name {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .action-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .action-impact {
+        font-size: 0.8rem;
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 15px;
+        display: inline-block;
+    }
+    
+    .impact-positive {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .impact-negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .impact-neutral {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .history-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .history-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .history-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .history-action {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .history-score {
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+    
+    .history-score.up {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .history-score.down {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .round-indicator {
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #4a90e2;
+        margin-bottom: 20px;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .feedback-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .risk-indicator {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .risk-level {
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-block;
+    }
+    
+    .risk-low {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .risk-medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .risk-high {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .goals-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .goal-progress {
+        margin-bottom: 20px;
+    }
+    
+    .goal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .goal-name {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .goal-status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .goal-status.completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .goal-status.in-progress {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4a90e2, #357abd);
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔒 Checking authentication for credit score challenge...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+<script src="{{ url_for('static', filename='js/gameDatabase.js') }}"></script>
+<script>
+// Game data
+const gameData = {
+    actions: [
+        {
+            id: 'pay_bill',
+            name: 'Pay Bill',
+            icon: '💳',
+            description: 'Pay your credit card bill on time',
+            impact: 10,
+            impactType: 'positive',
+            cooldown: 0,
+            available: true
+        },
+        {
+            id: 'miss_payment',
+            name: 'Miss Payment',
+            icon: '❌',
+            description: 'Miss a credit card payment',
+            impact: -25,
+            impactType: 'negative',
+            cooldown: 0,
+            available: true
+        },
+        {
+            id: 'apply_credit',
+            name: 'Apply for Credit Card',
+            icon: '💳',
+            description: 'Apply for a new credit card',
+            impact: -5,
+            impactType: 'negative',
+            cooldown: 3,
+            available: true
+        },
+        {
+            id: 'take_loan',
+            name: 'Take Personal Loan',
+            icon: '💰',
+            description: 'Take out a personal loan',
+            impact: -10,
+            impactType: 'negative',
+            cooldown: 5,
+            available: true
+        },
+        {
+            id: 'pay_off_debt',
+            name: 'Pay Off Debt',
+            icon: '✅',
+            description: 'Pay off a loan completely',
+            impact: 15,
+            impactType: 'positive',
+            cooldown: 0,
+            available: false
+        },
+        {
+            id: 'increase_limit',
+            name: 'Increase Credit Limit',
+            icon: '📈',
+            description: 'Request credit limit increase',
+            impact: -3,
+            impactType: 'negative',
+            cooldown: 4,
+            available: true
+        },
+        {
+            id: 'dispute_error',
+            name: 'Dispute Error',
+            icon: '⚖️',
+            description: 'Dispute an error on your report',
+            impact: 20,
+            impactType: 'positive',
+            cooldown: 6,
+            available: false
+        },
+        {
+            id: 'open_account',
+            name: 'Open New Account',
+            icon: '🏦',
+            description: 'Open a new bank account',
+            impact: -2,
+            impactType: 'negative',
+            cooldown: 2,
+            available: true
+        }
+    ],
+    randomEvents: [
+        {
+            title: "Credit Bureau Error",
+            description: "An error was found on your credit report",
+            impact: 15,
+            type: "positive"
+        },
+        {
+            title: "Identity Theft Alert",
+            description: "Potential fraudulent activity detected",
+            impact: -20,
+            type: "negative"
+        },
+        {
+            title: "Good Payment History",
+            description: "Your consistent payments are recognized",
+            impact: 8,
+            type: "positive"
+        },
+        {
+            title: "High Credit Utilization",
+            description: "Your credit cards are nearly maxed out",
+            impact: -12,
+            type: "negative"
+        },
+        {
+            title: "Account Age Increase",
+            description: "Your oldest account gets older",
+            impact: 5,
+            type: "positive"
+        }
+    ]
+};
+
+// Game state
+let currentRound = 0;
+let currentScore = 650;
+let highestScore = 650;
+let scoreHistory = [650];
+let actionHistory = [];
+let gameActive = false;
+let achievements = [];
+let actionCooldowns = {};
+let maintain700Streak = 0;
+let hasDebt = false;
+
+// Initialize game
+function initGame() {
+    renderActions();
+    updateScoreDisplay();
+    updateGoals();
+}
+
+function renderActions() {
+    const actionCards = document.getElementById('actionCards');
+    actionCards.innerHTML = '';
+    
+    gameData.actions.forEach(action => {
+        const isOnCooldown = actionCooldowns[action.id] > 0;
+        const isAvailable = action.available && !isOnCooldown;
+        
+        const actionCard = document.createElement('div');
+        actionCard.className = `action-card ${!isAvailable ? 'disabled' : ''}`;
+        actionCard.onclick = () => isAvailable && performAction(action.id);
+        
+        const cooldownText = isOnCooldown ? ` (Cooldown: ${actionCooldowns[action.id]} rounds)` : '';
+        
+        actionCard.innerHTML = `
+            <div class="action-icon">${action.icon}</div>
+            <div class="action-name">${action.name}${cooldownText}</div>
+            <div class="action-description">${action.description}</div>
+            <div class="action-impact impact-${action.impactType}">
+                ${action.impact > 0 ? '+' : ''}${action.impact} points
+            </div>
+        `;
+        
+        actionCards.appendChild(actionCard);
+    });
+}
+
+function performAction(actionId) {
+    if (!gameActive) return;
+    
+    const action = gameData.actions.find(a => a.id === actionId);
+    if (!action || !action.available) return;
+    
+    // Special case for pay_off_debt
+    if (actionId === 'pay_off_debt' && !hasDebt) {
+        showFeedback('You have no debt to pay off!', 'warning');
+        return;
+    }
+    
+    // Apply action
+    const previousScore = currentScore;
+    currentScore = Math.max(300, Math.min(850, currentScore + action.impact));
+    
+    // Update score history
+    scoreHistory.push(currentScore);
+    if (currentScore > highestScore) {
+        highestScore = currentScore;
+    }
+    
+    // Add to history
+    const historyItem = {
+        round: currentRound + 1,
+        action: action.name,
+        previousScore: previousScore,
+        newScore: currentScore,
+        change: currentScore - previousScore
+    };
+    
+    actionHistory.unshift(historyItem);
+    
+    // Handle special actions
+    if (actionId === 'take_loan') {
+        hasDebt = true;
+        gameData.actions.find(a => a.id === 'pay_off_debt').available = true;
+    } else if (actionId === 'pay_off_debt') {
+        hasDebt = false;
+        gameData.actions.find(a => a.id === 'pay_off_debt').available = false;
+    }
+    
+    // Set cooldown
+    if (action.cooldown > 0) {
+        actionCooldowns[actionId] = action.cooldown;
+    }
+    
+    // Update displays
+    updateScoreDisplay();
+    updateHistory();
+    updateGoals();
+    renderActions();
+    
+    // Check achievements
+    checkAchievements();
+    
+    // Show feedback
+    const feedbackType = action.impactType === 'positive' ? 'success' : 'warning';
+    showFeedback(`${action.name}: ${action.impact > 0 ? '+' : ''}${action.impact} points`, feedbackType);
+    
+    // Disable action cards after performing action
+    document.querySelectorAll('.action-card').forEach(card => {
+        if (!card.classList.contains('disabled')) {
+            card.classList.add('disabled');
+        }
+    });
+}
+
+function updateScoreDisplay() {
+    const scorePercent = ((currentScore - 300) / 550) * 100;
+    const indicatorPosition = Math.max(0, Math.min(100, scorePercent));
+    
+    document.getElementById('scoreIndicator').textContent = currentScore;
+    document.getElementById('scoreIndicator').style.left = `${indicatorPosition}%`;
+    document.getElementById('currentScore').textContent = currentScore;
+    
+    const scoreChange = scoreHistory.length > 1 ? currentScore - scoreHistory[scoreHistory.length - 2] : 0;
+    document.getElementById('scoreChange').textContent = `${scoreChange > 0 ? '+' : ''}${scoreChange}`;
+    document.getElementById('scoreChange').style.color = scoreChange >= 0 ? '#28a745' : '#dc3545';
+    
+    document.getElementById('highestScore').textContent = highestScore;
+    
+    const averageScore = Math.round(scoreHistory.reduce((sum, score) => sum + score, 0) / scoreHistory.length);
+    document.getElementById('averageScore').textContent = averageScore;
+    
+    // Update risk indicator
+    updateRiskIndicator();
+}
+
+function updateRiskIndicator() {
+    const riskIndicator = document.getElementById('riskIndicator');
+    let riskLevel, riskClass;
+    
+    if (currentScore < 580) {
+        riskLevel = 'High Risk';
+        riskClass = 'risk-high';
+    } else if (currentScore < 670) {
+        riskLevel = 'Medium Risk';
+        riskClass = 'risk-medium';
+    } else if (currentScore < 740) {
+        riskLevel = 'Low Risk';
+        riskClass = 'risk-low';
+    } else {
+        riskLevel = 'Very Low Risk';
+        riskClass = 'risk-low';
+    }
+    
+    riskIndicator.innerHTML = `<div class="risk-level ${riskClass}">${riskLevel}</div>`;
+}
+
+function updateGoals() {
+    // Goal 1: Reach 750
+    const goal750Progress = Math.max(0, Math.min(100, ((currentScore - 650) / 100) * 100));
+    document.getElementById('goal750Progress').style.width = `${goal750Progress}%`;
+    document.getElementById('goal750Progress').textContent = `${Math.round(goal750Progress)}%`;
+    
+    if (currentScore >= 750) {
+        document.getElementById('goal750Status').textContent = 'Completed';
+        document.getElementById('goal750Status').className = 'goal-status completed';
+    }
+    
+    // Goal 2: Maintain 700+ for 5 rounds
+    if (currentScore >= 700) {
+        maintain700Streak++;
+    } else {
+        maintain700Streak = 0;
+    }
+    
+    const maintainProgress = Math.min(100, (maintain700Streak / 5) * 100);
+    document.getElementById('maintainProgress').style.width = `${maintainProgress}%`;
+    document.getElementById('maintainProgress').textContent = `${maintain700Streak}/5`;
+    
+    if (maintain700Streak >= 5) {
+        document.getElementById('maintainStatus').textContent = 'Completed';
+        document.getElementById('maintainStatus').className = 'goal-status completed';
+    }
+}
+
+function updateHistory() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    
+    actionHistory.slice(0, 10).forEach(item => {
+        const historyDiv = document.createElement('div');
+        historyDiv.className = 'history-item';
+        
+        const changeClass = item.change >= 0 ? 'up' : 'down';
+        const changeText = item.change >= 0 ? `+${item.change}` : item.change;
+        
+        historyDiv.innerHTML = `
+            <div>
+                <div class="history-action">Round ${item.round}: ${item.action}</div>
+                <div style="font-size: 0.8rem; color: #666;">${item.previousScore} → ${item.newScore}</div>
+            </div>
+            <div class="history-score ${changeClass}">${changeText}</div>
+        `;
+        
+        historyList.appendChild(historyDiv);
+    });
+}
+
+function checkAchievements() {
+    if (currentScore >= 750 && !achievements.includes('excellent_credit')) {
+        achievements.push('excellent_credit');
+        showAchievement('Excellent Credit', 'Reached 750+ credit score!');
+    }
+    
+    if (currentScore >= 800 && !achievements.includes('exceptional_credit')) {
+        achievements.push('exceptional_credit');
+        showAchievement('Exceptional Credit', 'Reached 800+ credit score!');
+    }
+    
+    if (maintain700Streak >= 5 && !achievements.includes('stable_credit')) {
+        achievements.push('stable_credit');
+        showAchievement('Stable Credit', 'Maintained 700+ for 5 rounds!');
+    }
+    
+    if (actionHistory.length >= 10 && !achievements.includes('active_manager')) {
+        achievements.push('active_manager');
+        showAchievement('Active Manager', 'Took 10+ actions!');
+    }
+}
+
+function showAchievement(title, text) {
+    showFeedback(`🏆 ${title}: ${text}`, 'success');
+}
+
+function startGame() {
+    currentRound = 0;
+    currentScore = 650;
+    highestScore = 650;
+    scoreHistory = [650];
+    actionHistory = [];
+    gameActive = true;
+    achievements = [];
+    actionCooldowns = {};
+    maintain700Streak = 0;
+    hasDebt = false;
+    
+    // Reset action availability
+    gameData.actions.forEach(action => {
+        action.available = action.id !== 'pay_off_debt';
+    });
+    
+    // Update UI
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('nextRoundBtn').style.display = 'inline-block';
+    
+    renderActions();
+    updateScoreDisplay();
+    updateGoals();
+    updateHistory();
+    
+    showFeedback('Challenge started! Make smart credit decisions to reach your goals.', 'info');
+}
+
+function nextRound() {
+    if (currentRound >= 19) {
+        finishGame();
+        return;
+    }
+    
+    currentRound++;
+    document.getElementById('roundIndicator').textContent = `Round ${currentRound + 1} of 20`;
+    
+    // Update cooldowns
+    Object.keys(actionCooldowns).forEach(actionId => {
+        if (actionCooldowns[actionId] > 0) {
+            actionCooldowns[actionId]--;
+        }
+    });
+    
+    // Random event chance
+    if (Math.random() < 0.3) {
+        generateRandomEvent();
+    }
+    
+    // Update displays
+    renderActions();
+    
+    // Re-enable action cards
+    document.querySelectorAll('.action-card').forEach(card => {
+        card.classList.remove('disabled');
+    });
+    
+    showFeedback(`Round ${currentRound + 1} started! Choose your action carefully.', 'info');
+}
+
+function generateRandomEvent() {
+    const event = gameData.randomEvents[Math.floor(Math.random() * gameData.randomEvents.length)];
+    
+    const previousScore = currentScore;
+    currentScore = Math.max(300, Math.min(850, currentScore + event.impact));
+    
+    scoreHistory.push(currentScore);
+    if (currentScore > highestScore) {
+        highestScore = currentScore;
+    }
+    
+    // Add to history
+    const historyItem = {
+        round: currentRound + 1,
+        action: `Random Event: ${event.title}`,
+        previousScore: previousScore,
+        newScore: currentScore,
+        change: currentScore - previousScore
+    };
+    
+    actionHistory.unshift(historyItem);
+    
+    updateScoreDisplay();
+    updateHistory();
+    updateGoals();
+    
+    const feedbackType = event.type === 'positive' ? 'success' : 'danger';
+    showFeedback(`Random Event: ${event.title} (${event.impact > 0 ? '+' : ''}${event.impact} points)`, feedbackType);
+}
+
+function finishGame() {
+    gameActive = false;
+
+    const averageScore = Math.round(scoreHistory.reduce((sum, score) => sum + score, 0) / scoreHistory.length);
+    void averageScore;
+
+    document.getElementById('nextRoundBtn').style.display = 'none';
+    document.getElementById('finishBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'inline-block';
+    
+    let feedback = `Game Complete! 🎉<br>`;
+    feedback += `Final Score: ${currentScore}<br>`;
+    feedback += `Highest Score: ${highestScore}<br>`;
+    feedback += `Average Score: ${averageScore}<br>`;
+    feedback += `Actions Taken: ${actionHistory.length}<br>`;
+    feedback += `Achievements: ${achievements.length}`;
+    
+    showFeedback(feedback, 'success');
+}
+
+function restartGame() {
+    // Reset everything
+    currentRound = 0;
+    currentScore = 650;
+    highestScore = 650;
+    scoreHistory = [650];
+    actionHistory = [];
+    gameActive = false;
+    achievements = [];
+    actionCooldowns = {};
+    maintain700Streak = 0;
+    hasDebt = false;
+    
+    // Reset action availability
+    gameData.actions.forEach(action => {
+        action.available = action.id !== 'pay_off_debt';
+    });
+    
+    // Update UI
+    document.getElementById('roundIndicator').textContent = 'Round 1 of 20';
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('startBtn').style.display = 'inline-block';
+    
+    // Reset goals
+    document.getElementById('goal750Status').textContent = 'In Progress';
+    document.getElementById('goal750Status').className = 'goal-status in-progress';
+    document.getElementById('maintainStatus').textContent = 'In Progress';
+    document.getElementById('maintainStatus').className = 'goal-status in-progress';
+    
+    renderActions();
+    updateScoreDisplay();
+    updateGoals();
+    updateHistory();
+    
+    showFeedback('Game reset! Click Start Challenge to play again.', 'info');
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+    }, 4000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>📊 Credit Score Challenge</h1>
+        <p>Manage your virtual credit profile. Make smart decisions to build and maintain excellent credit!</p>
+    </div>
+    
+    <div class="round-indicator" id="roundIndicator">Round 1 of 20</div>
+    
+    <div class="credit-score-display">
+        <h3>Your Credit Score</h3>
+        <div class="score-meter">
+            <div class="score-indicator" id="scoreIndicator">650</div>
+        </div>
+        <div class="score-labels">
+            <span>300</span>
+            <span>500</span>
+            <span>600</span>
+            <span>700</span>
+            <span>800</span>
+            <span>850</span>
+        </div>
+        <div class="score-details">
+            <div class="score-detail">
+                <div class="score-detail-value" id="currentScore">650</div>
+                <div class="score-detail-label">Current Score</div>
+            </div>
+            <div class="score-detail">
+                <div class="score-detail-value" id="scoreChange">0</div>
+                <div class="score-detail-label">Change</div>
+            </div>
+            <div class="score-detail">
+                <div class="score-detail-value" id="highestScore">650</div>
+                <div class="score-detail-label">Highest</div>
+            </div>
+            <div class="score-detail">
+                <div class="score-detail-value" id="averageScore">650</div>
+                <div class="score-detail-label">Average</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="risk-indicator" id="riskIndicator">
+        <div class="risk-level risk-medium">Medium Risk</div>
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="goals-section">
+        <div class="goals-header">
+            <h3>Your Goals</h3>
+        </div>
+        <div class="goal-progress">
+            <div class="goal-header">
+                <div class="goal-name">Reach 750 Credit Score</div>
+                <div class="goal-status in-progress" id="goal750Status">In Progress</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="goal750Progress" style="width: 0%">0%</div>
+            </div>
+        </div>
+        <div class="goal-progress">
+            <div class="goal-header">
+                <div class="goal-name">Maintain 700+ for 5 rounds</div>
+                <div class="goal-status in-progress" id="maintainStatus">In Progress</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="maintainProgress" style="width: 0%">0%</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="actions-section">
+        <div class="actions-header">
+            <h3>Available Actions</h3>
+        </div>
+        <div class="action-cards" id="actionCards">
+            <!-- Action cards will be dynamically generated -->
+        </div>
+    </div>
+    
+    <div class="history-section">
+        <div class="history-header">
+            <h3>Action History</h3>
+        </div>
+        <div class="history-list" id="historyList">
+            <!-- History items will be dynamically added -->
+        </div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="startBtn" onclick="startGame()">Start Challenge</button>
+        <button class="btn-game" id="nextRoundBtn" onclick="nextRound()" style="display: none;">Next Round</button>
+        <button class="btn-game" id="finishBtn" onclick="finishGame()" style="display: none;">Finish Game</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+{% endblock %}
+

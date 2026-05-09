@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth Loading</title>
+</head>
+<body>
+    <h1>Debug Auth Loading</h1>
+    <div id="debug-info"></div>
+    
+    <!-- Step 1: Load Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        console.log('Step 1: Supabase CDN loaded');
+        document.getElementById('debug-info').innerHTML += '<p>✅ Supabase CDN loaded</p>';
+    </script>
+    
+    <!-- Step 2: Load our auth script -->
+    <script src="{{ url_for('static', filename='js/supabase.js') }}"></script>
+    <script>
+        console.log('Step 2: supabase.js script tag executed');
+        document.getElementById('debug-info').innerHTML += '<p>✅ supabase.js script tag executed</p>';
+        
+        // Check if window.auth is available
+        setTimeout(function() {
+            console.log('Step 3: Checking window.auth...');
+            if (typeof window.auth !== 'undefined') {
+                console.log('✅ window.auth is available:', window.auth);
+                document.getElementById('debug-info').innerHTML += '<p>✅ window.auth is available</p>';
+            } else {
+                console.log('❌ window.auth is NOT available');
+                document.getElementById('debug-info').innerHTML += '<p>❌ window.auth is NOT available</p>';
+            }
+        }, 1000);
+    </script>
+    
+    <!-- Step 3: Test manual auth creation -->
+    <script>
+        console.log('Step 4: Testing manual auth creation...');
+        
+        // Check if SupabaseAuth class is available
+        if (typeof window.SupabaseAuth !== 'undefined') {
+            console.log('✅ SupabaseAuth class is available');
+            document.getElementById('debug-info').innerHTML += '<p>✅ SupabaseAuth class is available</p>';
+            
+            // Try to create auth manually
+            try {
+                const manualAuth = new window.SupabaseAuth();
+                console.log('✅ Manual auth creation successful');
+                document.getElementById('debug-info').innerHTML += '<p>✅ Manual auth creation successful</p>';
+            } catch (error) {
+                console.log('❌ Manual auth creation failed:', error);
+                document.getElementById('debug-info').innerHTML += '<p>❌ Manual auth creation failed: ' + error.message + '</p>';
+            }
+        } else {
+            console.log('❌ SupabaseAuth class is NOT available');
+            document.getElementById('debug-info').innerHTML += '<p>❌ SupabaseAuth class is NOT available</p>';
+        }
+    </script>
+</body>
+</html>

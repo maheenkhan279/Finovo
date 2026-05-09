@@ -1,0 +1,300 @@
+/* ===================================================================
+   FINOVO — Toast stack + FAQ polish (loaded after theme.css)
+   =================================================================== */
+
+#fv-toast-root {
+    position: fixed;
+    z-index: 10800;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: max(16px, env(safe-area-inset-left));
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 10px;
+    pointer-events: none;
+}
+
+@media (min-width: 576px) {
+    #fv-toast-root {
+        left: auto;
+        max-width: 420px;
+    }
+}
+
+.fv-toast {
+    pointer-events: auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-radius: var(--fv-r-lg, 16px);
+    font-size: 0.94rem;
+    line-height: 1.45;
+    color: var(--fv-text-on-dark, #e8eef5);
+    background: rgba(11, 30, 48, 0.92);
+    border: 1px solid rgba(34, 211, 238, 0.22);
+    box-shadow:
+        0 18px 40px rgba(6, 16, 33, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transform: translateY(12px) scale(0.98);
+    opacity: 0;
+    transition:
+        transform 0.38s var(--fv-ease, cubic-bezier(0.4, 0, 0.2, 1)),
+        opacity 0.38s var(--fv-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.fv-toast.fv-toast--in {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.fv-toast.fv-toast--out {
+    transform: translateY(8px) scale(0.96);
+    opacity: 0;
+}
+
+.fv-toast__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.fv-toast__body {
+    min-width: 0;
+}
+
+.fv-toast__title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    margin: 0 0 2px;
+    color: #fff;
+}
+
+.fv-toast__msg {
+    margin: 0;
+    color: rgba(232, 238, 245, 0.88);
+    font-size: 0.9rem;
+}
+
+.fv-toast__close {
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.fv-toast__close:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+/* Variants */
+.fv-toast--success {
+    border-color: rgba(45, 212, 191, 0.45);
+    box-shadow:
+        0 18px 40px rgba(6, 16, 33, 0.45),
+        0 0 28px rgba(22, 160, 133, 0.18);
+}
+
+.fv-toast--success .fv-toast__icon {
+    background: linear-gradient(135deg, rgba(22, 160, 133, 0.35), rgba(45, 212, 191, 0.2));
+    color: #5eead4;
+}
+
+.fv-toast--error {
+    border-color: rgba(251, 113, 133, 0.45);
+}
+
+.fv-toast--error .fv-toast__icon {
+    background: rgba(251, 113, 133, 0.18);
+    color: #fda4af;
+}
+
+.fv-toast--info {
+    border-color: rgba(96, 165, 250, 0.45);
+}
+
+.fv-toast--info .fv-toast__icon {
+    background: rgba(96, 165, 250, 0.2);
+    color: #93c5fd;
+}
+
+.fv-toast--warning {
+    border-color: rgba(251, 191, 36, 0.45);
+}
+
+.fv-toast--warning .fv-toast__icon {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fcd34d;
+}
+
+/* ---------- Inline auth / form banners ---------- */
+.fv-inline-msg {
+    border-radius: var(--fv-r-md, 12px);
+    padding: 12px 14px;
+    margin-bottom: 1rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    animation: fv-inline-pop 0.35s var(--fv-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+@keyframes fv-inline-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fv-inline-msg--info {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: rgba(96, 165, 250, 0.28);
+    color: var(--fv-navy-700, #0f2537);
+}
+
+.fv-inline-msg--success {
+    background: rgba(22, 160, 133, 0.1);
+    border-color: rgba(22, 160, 133, 0.3);
+    color: #0f5132;
+}
+
+.fv-inline-msg--error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #7f1d1d;
+}
+
+.fv-field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.82rem;
+    color: var(--fv-rose-500, #ef4444);
+}
+
+.form-input.fv-input-invalid,
+.form-textarea.fv-input-invalid {
+    border-color: rgba(239, 68, 68, 0.55) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* ---------- FAQ — premium fintech band ---------- */
+.faq-section.fv-faq {
+    position: relative;
+    padding: clamp(3rem, 6vw, 5rem) var(--spacing-xl, 1.25rem);
+    background:
+        radial-gradient(900px 400px at 10% 0%, rgba(34, 211, 238, 0.12), transparent 55%),
+        radial-gradient(700px 360px at 100% 100%, rgba(22, 160, 133, 0.1), transparent 50%),
+        linear-gradient(165deg, #061021 0%, #0b1e30 45%, #0f2537 100%);
+    color: var(--fv-text-on-dark, #e8eef5);
+    overflow: hidden;
+}
+
+.faq-section.fv-faq::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.faq-section.fv-faq .container {
+    position: relative;
+    z-index: 1;
+}
+
+.faq-section.fv-faq h2 {
+    color: #fff !important;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+    text-shadow: 0 2px 24px rgba(34, 211, 238, 0.15);
+}
+
+.faq-section.fv-faq .faq-container {
+    max-width: 760px;
+}
+
+.faq-section.fv-faq .faq-item {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    margin-bottom: 12px;
+    border-radius: var(--fv-r-lg, 16px);
+    overflow: hidden;
+    transition:
+        border-color 0.28s ease,
+        box-shadow 0.28s ease,
+        transform 0.28s ease;
+}
+
+.faq-section.fv-faq .faq-item:hover {
+    border-color: rgba(34, 211, 238, 0.35);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(34, 211, 238, 0.12);
+    transform: translateY(-1px);
+}
+
+.faq-section.fv-faq .faq-item.active {
+    border-color: rgba(45, 212, 191, 0.45);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35), 0 0 32px rgba(22, 160, 133, 0.12);
+}
+
+.faq-section.fv-faq .faq-question {
+    background: transparent;
+    padding: 1.1rem 1.25rem;
+}
+
+.faq-section.fv-faq .faq-question:focus {
+    outline: 2px solid rgba(45, 212, 191, 0.55);
+    outline-offset: 2px;
+}
+
+.faq-section.fv-faq .faq-question:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.faq-section.fv-faq .faq-item.active .faq-question {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.faq-section.fv-faq .faq-question h3 {
+    color: #f1f5f9;
+    font-size: 1.02rem;
+}
+
+.faq-section.fv-faq .faq-question i {
+    color: #5eead4;
+}
+
+.faq-section.fv-faq .faq-item.active .faq-question i {
+    transform: rotate(180deg);
+}
+
+.faq-section.fv-faq .faq-answer p {
+    color: rgba(226, 232, 240, 0.88);
+}

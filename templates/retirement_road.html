@@ -1,0 +1,1276 @@
+{% extends "base.html" %}
+
+{% block title %}Retirement Road - Long-Term Planning Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .planning-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .planning-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .goal-setting {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .goal-setting {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .input-group {
+        margin-bottom: 20px;
+    }
+    
+    .input-label {
+        display: block;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .input-field:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .slider-group {
+        margin-bottom: 25px;
+    }
+    
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .slider-name {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .slider-value {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+    
+    .savings-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+    }
+    
+    .savings-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .savings-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .investment-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .investment-option {
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .investment-option:hover {
+        border-color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .investment-option.selected {
+        border-color: #667eea;
+        background: #e8f5e8;
+    }
+    
+    .investment-name {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .investment-return {
+        color: #667eea;
+        font-size: 0.9rem;
+    }
+    
+    .timeline-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .timeline-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .age-indicator {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-controls {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .btn-timeline {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-timeline:hover:not(:disabled) {
+        background: #5a6fd8;
+    }
+    
+    .btn-timeline:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .progress-chart {
+        height: 300px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .events-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .events-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .events-log {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .event-item {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #667eea;
+        background: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+        animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .event-age {
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 5px;
+    }
+    
+    .event-description {
+        color: #666;
+    }
+    
+    .event-impact {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .impact-positive {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .impact-negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .milestones-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .milestones-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .milestones-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .milestone {
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .milestone.unlocked {
+        background: #e8f5e8;
+        border: 2px solid #28a745;
+    }
+    
+    .milestone.locked {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        opacity: 0.6;
+    }
+    
+    .milestone-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .milestone-name {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .milestone-description {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .feedback-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .success-probability {
+        text-align: center;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    .probability-high {
+        background: #d4edda;
+        color: #155724;
+        border: 2px solid #28a745;
+    }
+    
+    .probability-medium {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffc107;
+    }
+    
+    .probability-low {
+        background: #f8d7da;
+        color: #721c24;
+        border: 2px solid #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔒 Checking authentication for retirement road...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+<script src="{{ url_for('static', filename='js/gameDatabase.js') }}"></script>
+<script>
+// Game data
+const gameData = {
+    ageRanges: {
+        start: 25,
+        end: 65,
+        current: 25
+    },
+    lifeEvents: [
+        {
+            id: 'career_change',
+            name: 'Career Change',
+            description: 'Switch to a new career with different salary',
+            probability: 0.3,
+            impact: {
+                income: 0.2,
+                expenses: 0.1
+            }
+        },
+        {
+            id: 'marriage',
+            name: 'Marriage',
+            description: 'Get married and combine finances',
+            probability: 0.7,
+            impact: {
+                income: 0.1,
+                expenses: 0.15
+            }
+        },
+        {
+            id: 'children',
+            name: 'Having Children',
+            description: 'Add children to your family',
+            probability: 0.6,
+            impact: {
+                income: -0.05,
+                expenses: 0.25
+            }
+        },
+        {
+            id: 'home_purchase',
+            name: 'Home Purchase',
+            description: 'Buy a home and build equity',
+            probability: 0.8,
+            impact: {
+                income: 0,
+                expenses: 0.2
+            }
+        },
+        {
+            id: 'inheritance',
+            name: 'Inheritance',
+            description: 'Receive inheritance from family',
+            probability: 0.2,
+            impact: {
+                income: 0,
+                expenses: -0.3
+            }
+        },
+        {
+            id: 'health_issue',
+            name: 'Health Issue',
+            description: 'Unexpected medical expenses',
+            probability: 0.4,
+            impact: {
+                income: -0.1,
+                expenses: 0.15
+            }
+        },
+        {
+            id: 'market_crash',
+            name: 'Market Crash',
+            description: 'Significant market downturn affects investments',
+            probability: 0.3,
+            impact: {
+                income: 0,
+                expenses: 0
+            }
+        },
+        {
+            id: 'promotion',
+            name: 'Career Promotion',
+            description: 'Get promoted with higher salary',
+            probability: 0.5,
+            impact: {
+                income: 0.15,
+                expenses: 0.05
+            }
+        }
+    ],
+    investmentOptions: [
+        {
+            id: 'conservative',
+            name: 'Conservative',
+            description: 'Low risk, stable returns',
+            expectedReturn: 0.04,
+            volatility: 0.08,
+            allocation: 0.3
+        },
+        {
+            id: 'balanced',
+            name: 'Balanced',
+            description: 'Moderate risk and return',
+            expectedReturn: 0.07,
+            volatility: 0.15,
+            allocation: 0.4
+        },
+        {
+            id: 'aggressive',
+            name: 'Aggressive',
+            description: 'High risk, high potential returns',
+            expectedReturn: 0.10,
+            volatility: 0.25,
+            allocation: 0.3
+        }
+    ],
+    retirementGoals: [
+        {
+            id: 'basic',
+            name: 'Basic Retirement',
+            description: 'Cover essential living expenses',
+            targetMultiplier: 10,
+            monthlyExpenses: 3000
+        },
+        {
+            id: 'comfortable',
+            name: 'Comfortable Retirement',
+            description: 'Comfortable lifestyle with some luxuries',
+            targetMultiplier: 15,
+            monthlyExpenses: 5000
+        },
+        {
+            id: 'luxury',
+            name: 'Luxury Retirement',
+            description: 'High-end lifestyle with travel and hobbies',
+            targetMultiplier: 25,
+            monthlyExpenses: 8000
+        }
+    ]
+};
+
+// Game state
+let currentAge = 25;
+let currentYear = 0;
+let totalYears = 40;
+let annualIncome = 50000;
+let annualExpenses = 40000;
+let savings = 10000;
+let retirementSavings = 0;
+let selectedGoal = null;
+let investmentAllocation = {};
+let lifeEvents = [];
+let score = 0;
+let gameActive = false;
+    retirementAge = 65;
+    portfolioValue = 0;
+    achievements = [];
+
+// Initialize game
+function initGame() {
+    gameData.investmentOptions.forEach(option => {
+        investmentAllocation[option.id] = option.allocation;
+    });
+
+    renderGoalSelection();
+}
+
+function renderGoalSelection() {
+    const goalSection = document.getElementById('goalSection');
+    goalSection.innerHTML = `
+        <div class="goal-selection">
+            <h3>Choose Your Retirement Goal</h3>
+            <div class="goal-options">
+                ${gameData.retirementGoals.map(goal => `
+                    <div class="goal-card" onclick="selectGoal('${goal.id}')">
+                        <div class="goal-header">
+                            <div class="goal-name">${goal.name}</div>
+                            <div class="goal-target">Target: ${goal.targetMultiplier}x annual expenses</div>
+                        </div>
+                        <div class="goal-description">${goal.description}</div>
+                        <div class="goal-details">
+                            <div class="goal-detail">
+                                <span class="detail-label">Monthly Expenses:</span>
+                                <span class="detail-value">$${goal.monthlyExpenses.toLocaleString()}</span>
+                            </div>
+                            <div class="goal-detail">
+                                <span class="detail-label">Target Savings:</span>
+                                <span class="detail-value">$${(goal.monthlyExpenses * 12 * goal.targetMultiplier).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function selectGoal(goalId) {
+    selectedGoal = gameData.retirementGoals.find(g => g.id === goalId);
+    annualExpenses = selectedGoal.monthlyExpenses * 12;
+    
+    // Update UI
+    document.getElementById('goalSection').style.display = 'none';
+    document.getElementById('planningSection').style.display = 'block';
+    
+    renderPlanningStep();
+}
+
+function renderPlanningStep() {
+    const planningContent = document.getElementById('planningContent');
+    planningContent.innerHTML = `
+        <div class="planning-step">
+            <h3>Investment Strategy</h3>
+            <div class="investment-allocation">
+                <div class="allocation-grid">
+                    ${gameData.investmentOptions.map(option => `
+                        <div class="investment-card">
+                            <div class="investment-header">
+                                <div class="investment-name">${option.name}</div>
+                                <div class="investment-return">${(option.expectedReturn * 100).toFixed(1)}% expected return</div>
+                            </div>
+                            <div class="investment-description">${option.description}</div>
+                            <div class="investment-stats">
+                                <div class="stat">
+                                    <span class="stat-label">Volatility:</span>
+                                    <span class="stat-value">${(option.volatility * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            <div class="allocation-control">
+                                <label>Allocation %:</label>
+                                <input type="range" 
+                                       id="allocation-${option.id}" 
+                                       min="0" 
+                                       max="100" 
+                                       value="${investmentAllocation[option.id] * 100}" 
+                                       oninput="updateInvestmentAllocation('${option.id}', this.value)">
+                                <input type="number" 
+                                       id="allocation-value-${option.id}" 
+                                       min="0" 
+                                       max="100" 
+                                       value="${investmentAllocation[option.id] * 100}" 
+                                       oninput="updateInvestmentAllocation('${option.id}', this.value)">
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="allocation-summary">
+                    <div class="summary-item">
+                        <span>Total Allocated:</span>
+                        <span id="totalAllocated">100%</span>
+                    </div>
+                    <div class="validation-message" id="allocationValidation"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    updateInvestmentDisplay();
+}
+
+function updateInvestmentAllocation(optionId, value) {
+    const numValue = Math.max(0, Math.min(100, parseFloat(value) || 0));
+    investmentAllocation[optionId] = numValue / 100;
+    
+    // Update both inputs
+    document.getElementById(`allocation-${optionId}`).value = numValue;
+    document.getElementById(`allocation-value-${optionId}`).value = numValue;
+    
+    updateInvestmentDisplay();
+}
+
+function updateInvestmentDisplay() {
+    let totalAllocated = 0;
+    
+    Object.values(investmentAllocation).forEach(value => {
+        totalAllocated += value * 100;
+    });
+    
+    document.getElementById('totalAllocated').textContent = `${totalAllocated.toFixed(1)}%`;
+    
+    // Update validation message
+    const validationMessage = document.getElementById('allocationValidation');
+    if (Math.abs(totalAllocated - 100) < 0.1) {
+        validationMessage.textContent = '✅ Allocation complete!';
+        validationMessage.className = 'validation-message success';
+        document.getElementById('startBtn').disabled = false;
+    } else if (totalAllocated > 100) {
+        validationMessage.textContent = '❌ Over-allocated by ' + (totalAllocated - 100).toFixed(1) + '%';
+        validationMessage.className = 'validation-message error';
+        document.getElementById('startBtn').disabled = true;
+    } else {
+        validationMessage.textContent = '⚠️ ' + (100 - totalAllocated).toFixed(1) + '% remaining to allocate';
+        validationMessage.className = 'validation-message warning';
+        document.getElementById('startBtn').disabled = true;
+    }
+}
+
+function startGame() {
+    currentAge = 25;
+    currentYear = 0;
+    savings = 10000;
+    retirementSavings = 0;
+    lifeEvents = [];
+    score = 0;
+    gameActive = true;
+    portfolioValue = 0;
+    achievements = [];
+    
+    // Update UI
+    document.getElementById('planningSection').style.display = 'none';
+    document.getElementById('timelineSection').style.display = 'block';
+    document.getElementById('eventsSection').style.display = 'block';
+    document.getElementById('milestonesSection').style.display = 'block';
+    
+    renderTimeline();
+    updateDashboard();
+    
+    showFeedback('Game started! Plan your retirement over 40 years.', 'info');
+}
+
+function renderTimeline() {
+    const timelineElement = document.getElementById('timeline');
+    timelineElement.innerHTML = `
+        <div class="timeline-header">
+            <h3>Life Timeline</h3>
+            <div class="age-indicator">Age: ${currentAge} / ${retirementAge}</div>
+        </div>
+        <div class="timeline-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${((currentAge - 25) / (retirementAge - 25)) * 100}%"></div>
+            </div>
+        </div>
+        <div class="year-controls">
+            <button class="btn-year" onclick="previousYear()" ${currentYear === 0 ? 'disabled' : ''}>Previous Year</button>
+            <button class="btn-year" onclick="nextYear()" ${currentAge >= retirementAge ? 'disabled' : ''}>Next Year</button>
+        </div>
+    `;
+}
+
+function updateDashboard() {
+    // Calculate portfolio value
+    portfolioValue = calculatePortfolioValue();
+    
+    // Update dashboard
+    document.getElementById('currentAge').textContent = currentAge;
+    document.getElementById('annualIncome').textContent = `$${annualIncome.toLocaleString()}`;
+    document.getElementById('annualExpenses').textContent = `$${annualExpenses.toLocaleString()}`;
+    document.getElementById('savings').textContent = `$${savings.toLocaleString()}`;
+    document.getElementById('retirementSavings').textContent = `$${retirementSavings.toLocaleString()}`;
+    document.getElementById('portfolioValue').textContent = `$${portfolioValue.toLocaleString()}`;
+    document.getElementById('totalNetWorth').textContent = `$${(savings + portfolioValue).toLocaleString()}`;
+    document.getElementById('retirementProgress').textContent = `${calculateRetirementProgress().toFixed(1)}%`;
+    
+    // Update events display
+    renderLifeEvents();
+    
+    // Update milestones
+    updateMilestones();
+}
+
+function calculatePortfolioValue() {
+    let value = retirementSavings;
+    
+    // Apply investment returns with volatility
+    Object.entries(investmentAllocation).forEach(([optionId, allocation]) => {
+        const option = gameData.investmentOptions.find(o => o.id === optionId);
+        const allocationValue = retirementSavings * allocation;
+        
+        // Apply expected return with some randomness
+        const randomReturn = option.expectedReturn + (Math.random() - 0.5) * option.volatility;
+        value += allocationValue * randomReturn;
+    });
+    
+    return Math.max(0, value);
+}
+
+function calculateRetirementProgress() {
+    const targetSavings = annualExpenses * selectedGoal.targetMultiplier;
+    return Math.min(100, (portfolioValue / targetSavings) * 100);
+}
+
+function renderLifeEvents() {
+    const eventsElement = document.getElementById('lifeEvents');
+    eventsElement.innerHTML = `
+        <h4>Life Events This Year</h4>
+        <div class="events-list">
+            ${lifeEvents.length > 0 ? 
+                lifeEvents.map(event => `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-name">${event.name}</div>
+                            <div class="event-age">Age ${event.age}</div>
+                        </div>
+                        <div class="event-description">${event.description}</div>
+                        <div class="event-impact">
+                            ${event.impact.income !== 0 ? `
+                                <div class="impact-item">
+                                    <span>Income:</span>
+                                    <span class="${event.impact.income > 0 ? 'positive' : 'negative'}">
+                                        ${event.impact.income > 0 ? '+' : ''}${(event.impact.income * 100).toFixed(1)}%
+                                    </span>
+                                </div>
+                            ` : ''}
+                            ${event.impact.expenses !== 0 ? `
+                                <div class="impact-item">
+                                    <span>Expenses:</span>
+                                    <span class="${event.impact.expenses > 0 ? 'negative' : 'positive'}">
+                                        ${event.impact.expenses > 0 ? '+' : ''}${(event.impact.expenses * 100).toFixed(1)}%
+                                    </span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('') :
+                '<div class="no-events">No major life events this year</div>'
+            }
+        </div>
+    `;
+}
+
+function updateMilestones() {
+    const milestonesElement = document.getElementById('milestones');
+    const progress = calculateRetirementProgress();
+    
+    milestonesElement.innerHTML = `
+        <h4>Retirement Milestones</h4>
+        <div class="milestones-list">
+            <div class="milestone ${progress >= 25 ? 'achieved' : ''}">
+                <div class="milestone-marker">25%</div>
+                <div class="milestone-label">On Track</div>
+            </div>
+            <div class="milestone ${progress >= 50 ? 'achieved' : ''}">
+                <div class="milestone-marker">50%</div>
+                <div class="milestone-label">Halfway There</div>
+            </div>
+            <div class="milestone ${progress >= 75 ? 'achieved' : ''}">
+                <div class="milestone-marker">75%</div>
+                <div class="milestone-label">Almost There</div>
+            </div>
+            <div class="milestone ${progress >= 100 ? 'achieved' : ''}">
+                <div class="milestone-marker">100%</div>
+                <div class="milestone-label">Retirement Ready</div>
+            </div>
+        </div>
+    `;
+}
+
+function nextYear() {
+    if (currentAge >= retirementAge) {
+        finishGame();
+        return;
+    }
+    
+    currentYear++;
+    currentAge++;
+    
+    // Generate life events
+    generateLifeEvents();
+    
+    // Apply life event impacts
+    applyLifeEventImpacts();
+    
+    // Calculate and apply savings
+    const netIncome = annualIncome - annualExpenses;
+    if (netIncome > 0) {
+        savings += netIncome;
+        retirementSavings += netIncome * 0.8; // 80% of savings goes to retirement
+    }
+    
+    // Apply investment growth
+    retirementSavings = calculatePortfolioValue();
+    
+    // Update UI
+    renderTimeline();
+    updateDashboard();
+    
+    // Check achievements
+    checkAchievements();
+    
+    showFeedback(`Year ${currentYear} complete!`, 'info');
+}
+
+function previousYear() {
+    if (currentYear > 0) {
+        currentYear--;
+        currentAge--;
+        
+        // For simplicity, we won't recalculate previous years
+        renderTimeline();
+        updateDashboard();
+    }
+}
+
+function generateLifeEvents() {
+    lifeEvents = [];
+    
+    gameData.lifeEvents.forEach(event => {
+        if (Math.random() < event.probability) {
+            lifeEvents.push({
+                ...event,
+                age: currentAge
+            });
+        }
+    });
+}
+
+function applyLifeEventImpacts() {
+    lifeEvents.forEach(event => {
+        if (event.impact.income !== 0) {
+            annualIncome *= (1 + event.impact.income);
+        }
+        if (event.impact.expenses !== 0) {
+            annualExpenses *= (1 + event.impact.expenses);
+        }
+    });
+}
+
+function checkAchievements() {
+    const progress = calculateRetirementProgress();
+    
+    if (progress >= 25 && !achievements.includes('on_track')) {
+        achievements.push('on_track');
+        showAchievement('On Track', 'Reached 25% retirement goal!');
+    }
+    
+    if (progress >= 50 && !achievements.includes('halfway')) {
+        achievements.push('halfway');
+        showAchievement('Halfway There', 'Reached 50% retirement goal!');
+    }
+    
+    if (progress >= 75 && !achievements.includes('almost_there')) {
+        achievements.push('almost_there');
+        showAchievement('Almost There', 'Reached 75% retirement goal!');
+    }
+    
+    if (savings > 100000 && !achievements.includes('saver')) {
+        achievements.push('saver');
+        showAchievement('Super Saver', 'Accumulated over $100,000 in savings!');
+    }
+}
+
+function showAchievement(title, text) {
+    showFeedback(`🏆 ${title}: ${text}`, 'success');
+}
+
+function finishGame() {
+    gameActive = false;
+    
+    // Calculate final score
+    const progress = calculateRetirementProgress();
+    score = Math.round(progress);
+    
+    showFinalResults();
+}
+
+function showFinalResults() {
+    const progress = calculateRetirementProgress();
+    
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = `
+        <h3>🎉 Retirement Journey Complete!</h3>
+        <div class="final-results">
+            <div class="result-summary">
+                <h4>Final Financial Status</h4>
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <span class="stat-label">Final Age:</span>
+                        <span class="stat-value">${currentAge}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Annual Income:</span>
+                        <span class="stat-value">$${annualIncome.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Annual Expenses:</span>
+                        <span class="stat-value">$${annualExpenses.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Portfolio Value:</span>
+                        <span class="stat-value">$${portfolioValue.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Retirement Progress:</span>
+                        <span class="stat-value">${progress.toFixed(1)}%</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Final Score:</span>
+                        <span class="stat-value">${score}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="achievements-summary">
+                <h4>Achievements Earned</h4>
+                <div class="achievements-list">
+                    ${achievements.length > 0 ? 
+                        achievements.map(a => `<div class="achievement-badge">🏆 ${a.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>`).join('') :
+                        '<div class="no-achievements">No achievements earned this time</div>'
+                    }
+                </div>
+            </div>
+            <div class="retirement-status">
+                <h4>Retirement Status</h4>
+                <div class="status-message ${progress >= 100 ? 'success' : progress >= 75 ? 'warning' : 'danger'}">
+                    ${progress >= 100 ? '🎉 Retirement Ready! You can comfortably retire.' :
+                      progress >= 75 ? '💪 Almost There! You\'re very close to your goal.' :
+                      progress >= 50 ? '📈 Making Progress! Keep saving and investing.' :
+                      '🚀 Keep Going! You have time to reach your goal.'}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Update UI
+    document.getElementById('timelineSection').style.display = 'none';
+    document.getElementById('eventsSection').style.display = 'none';
+    document.getElementById('milestonesSection').style.display = 'none';
+    document.getElementById('finishBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'inline-block';
+    document.getElementById('resultsSection').style.display = 'block';
+}
+
+function restartGame() {
+    // Reset everything
+    currentAge = 25;
+    currentYear = 0;
+    annualIncome = 50000;
+    annualExpenses = 40000;
+    savings = 10000;
+    retirementSavings = 0;
+    selectedGoal = null;
+    investmentAllocation = {};
+    lifeEvents = [];
+    score = 0;
+    gameActive = false;
+    portfolioValue = 0;
+    achievements = [];
+    
+    // Reset investment allocation
+    gameData.investmentOptions.forEach(option => {
+        investmentAllocation[option.id] = option.allocation;
+    });
+    
+    // Update UI
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('startBtn').style.display = 'inline-block';
+    document.getElementById('planningSection').style.display = 'block';
+    document.getElementById('goalSection').style.display = 'block';
+    
+    renderGoalSelection();
+    
+    showFeedback('Game reset! Choose your retirement goal to play again.', 'info');
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+    }, 4000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>🛣️ Retirement Road</h1>
+        <p>Plan your financial future from age 25 to 65. Set goals, save consistently, and navigate life's financial challenges!</p>
+    </div>
+    
+    <div class="planning-section" id="planningSection">
+        <div class="planning-header">
+            <h3>Set Your Retirement Goals</h3>
+        </div>
+        
+        <div class="goal-setting">
+            <div>
+                <div class="input-group">
+                    <label class="input-label">Retirement Age</label>
+                    <input type="number" class="input-field" id="retirementAge" value="65" min="60" max="70">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Retirement Goal ($)</label>
+                    <input type="number" class="input-field" id="retirementGoal" value="1000000" min="100000" step="100000">
+                </div>
+            </div>
+            
+            <div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span class="slider-name">Monthly Savings ($)</span>
+                        <span class="slider-value" id="savingsValue">$500</span>
+                    </div>
+                    <input type="range" class="savings-slider" id="savingsSlider" 
+                           min="100" max="2000" value="500" step="50"
+                           oninput="updateSavings(this.value)">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Current Age</label>
+                    <input type="number" class="input-field" id="currentAge" value="25" min="20" max="40">
+                </div>
+            </div>
+        </div>
+        
+        <div class="investment-options">
+            <div class="investment-option selected" onclick="selectInvestment('conservative')" data-type="conservative">
+                <div class="investment-name">Conservative</div>
+                <div class="investment-return">5% avg return</div>
+                <div style="font-size: 0.8rem; color: #666;">Low risk, bonds</div>
+            </div>
+            
+            <div class="investment-option" onclick="selectInvestment('balanced')" data-type="balanced">
+                <div class="investment-name">Balanced</div>
+                <div class="investment-return">8% avg return</div>
+                <div style="font-size: 0.8rem; color: #666;">Moderate risk, mixed</div>
+            </div>
+            
+            <div class="investment-option" onclick="selectInvestment('aggressive')" data-type="aggressive">
+                <div class="investment-name">Aggressive</div>
+                <div class="investment-return">12% avg return</div>
+                <div style="font-size: 0.8rem; color: #666;">High risk, stocks</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="timeline-section" id="timelineSection">
+        <div class="timeline-header">
+            <h3>Your Financial Journey</h3>
+        </div>
+        
+        <div class="age-indicator" id="ageIndicator">Age 25</div>
+        
+        <div class="timeline-controls">
+            <button class="btn-timeline" id="stepBackBtn" onclick="stepBack()" disabled>← Step Back</button>
+            <button class="btn-timeline" id="autoPlayBtn" onclick="toggleAutoPlay()">▶ Auto Play</button>
+            <button class="btn-timeline" id="stepForwardBtn" onclick="stepForward()">Step Forward →</button>
+        </div>
+        
+        <div class="progress-chart">
+            <svg id="progressChart" width="100%" height="100%"></svg>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="currentSavings">$0</div>
+                <div class="stat-label">Current Savings</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalContributed">$0</div>
+                <div class="stat-label">Total Contributed</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="investmentReturns">$0</div>
+                <div class="stat-label">Investment Returns</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="goalProgress">0%</div>
+                <div class="stat-label">Goal Progress</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="events-section" id="eventsSection">
+        <div class="events-header">
+            <h3>Life Events</h3>
+        </div>
+        <div class="events-log" id="eventsLog">
+            <!-- Events will be dynamically added -->
+        </div>
+    </div>
+    
+    <div class="milestones-section" id="milestonesSection">
+        <div class="milestones-header">
+            <h3>🏆 Financial Milestones</h3>
+        </div>
+        <div class="milestones-grid" id="milestonesGrid">
+            <!-- Milestones will be dynamically generated -->
+        </div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="startBtn" onclick="startSimulation()">Start Journey</button>
+        <button class="btn-game" id="finishBtn" onclick="finishGame()" style="display: none;">Finish Game</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+{% endblock %}

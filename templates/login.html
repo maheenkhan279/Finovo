@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .loading { opacity: 0.6; pointer-events: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <h1>Welcome Back</h1>
+            <p>Login to access financial games</p>
+        </div>
+
+        <div id="auth-message"></div>
+
+        <form id="login-form" class="auth-form" method="post">
+            <div class="form-group">
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" id="email" name="email" required 
+                       class="form-input"
+                       placeholder="Enter your email" autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input type="password" id="password" name="password" required 
+                       class="form-input"
+                       placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Don't have an account?</p>
+            <a href="{{ url_for('register') }}" class="btn btn-outline" style="width: 100%;">
+                <i class="fas fa-user-plus"></i> Sign Up Here
+            </a>
+        </div>
+
+        <div class="auth-back-link">
+            <a href="{{ url_for('home') }}">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('login-form');
+    const authMessage = document.getElementById('auth-message');
+
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+            authMessage.innerHTML = '';
+            var miss = document.createElement('div');
+            miss.className = 'fv-inline-msg fv-inline-msg--error';
+            miss.textContent = 'Please enter both your email and password.';
+            authMessage.appendChild(miss);
+            if (window.FinovoToast && window.FinovoToast.warning) {
+                window.FinovoToast.warning('Please complete all fields to continue.', { title: 'Almost there', duration: 4000 });
+            }
+            return;
+        }
+
+        loginForm.classList.add('loading');
+        authMessage.innerHTML = '<div class="fv-inline-msg fv-inline-msg--info">Signing you in…</div>';
+
+        try {
+            await loginUser(email, password);
+        } catch (error) {
+            console.error('Login error:', error);
+            var em = (error && error.message) || 'An unexpected error occurred. Please try again.';
+            authMessage.innerHTML = '';
+            var errBox = document.createElement('div');
+            errBox.className = 'fv-inline-msg fv-inline-msg--error';
+            errBox.textContent = em;
+            authMessage.appendChild(errBox);
+            if (window.FinovoToast && window.FinovoToast.error) {
+                window.FinovoToast.error(em, { title: 'Sign-in issue', duration: 5500 });
+            }
+        } finally {
+            loginForm.classList.remove('loading');
+        }
+    });
+});
+</script>
+{% endblock %}

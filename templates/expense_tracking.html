@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Expense Tracking Overview - Finovo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Expense Tracking Overview</h1>
+    <p>Learn effective strategies to track and manage your expenses</p>
+</div>
+
+<section class="modules-section">
+    <div class="game-container">
+        <div class="game-card">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-xl);">Why Track Your Expenses?</h2>
+            <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-xl);">
+                Expense tracking is the foundation of sound financial management. By understanding where your money goes, you can make informed decisions, identify spending patterns, and work toward your financial goals. Regular tracking helps you stay accountable and maintain control over your finances.
+            </p>
+
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i class="fas fa-list-check" style="color: var(--primary-blue);"></i>
+                    Benefits of Expense Tracking
+                </h3>
+                <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-lg);">
+                    <li><strong>Financial Awareness:</strong> See exactly where your money is being spent</li>
+                    <li><strong>Budget Accuracy:</strong> Create realistic budgets based on actual spending patterns</li>
+                    <li><strong>Goal Achievement:</strong> Identify areas to cut back and redirect funds toward savings</li>
+                    <li><strong>Debt Reduction:</strong> Find opportunities to pay down debt faster</li>
+                    <li><strong>Peace of Mind:</strong> Reduce financial stress through better control</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-xl);">How to Track Expenses</h2>
+            
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i class="fas fa-mobile-alt" style="color: var(--primary-blue);"></i>
+                    Method 1: Digital Apps
+                </h3>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-md);">
+                    Use budgeting apps like Mint, YNAB (You Need A Budget), or PocketGuard to automatically track expenses. These apps connect to your bank accounts and credit cards, categorize transactions, and provide visual reports of your spending.
+                </p>
+                <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md);">
+                    <strong style="color: var(--text-primary);">Pros:</strong> Automatic tracking, real-time updates, detailed reports<br>
+                    <strong style="color: var(--text-primary);">Cons:</strong> Requires linking accounts, privacy considerations
+                </div>
+            </div>
+
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i class="fas fa-spreadsheet" style="color: var(--primary-blue);"></i>
+                    Method 2: Spreadsheets
+                </h3>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-md);">
+                    Create a simple spreadsheet using Excel or Google Sheets. Record each expense with date, amount, category, and description. Use formulas to automatically calculate totals and create charts for visual analysis.
+                </p>
+                <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md);">
+                    <strong style="color: var(--text-primary);">Pros:</strong> Full control, customizable, no account linking<br>
+                    <strong style="color: var(--text-primary);">Cons:</strong> Manual entry required, time-consuming
+                </div>
+            </div>
+
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i class="fas fa-book" style="color: var(--primary-blue);"></i>
+                    Method 3: Expense Journal
+                </h3>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-md);">
+                    Keep a physical notebook or journal to record expenses. Write down every purchase immediately after making it. This method increases mindfulness about spending and helps you think twice before making purchases.
+                </p>
+                <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md);">
+                    <strong style="color: var(--text-primary);">Pros:</strong> Simple, no technology needed, increases awareness<br>
+                    <strong style="color: var(--text-primary);">Cons:</strong> Easy to forget entries, manual calculations
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-xl);">Expense Categories to Track</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-home"></i> Housing
+                    </h4>
+                    <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                        Rent/mortgage, utilities, maintenance, insurance
+                    </p>
+                </div>
+
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-utensils"></i> Food
+                    </h4>
+                    <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                        Groceries, dining out, coffee, snacks
+                    </p>
+                </div>
+
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-car"></i> Transportation
+                    </h4>
+                    <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                        Gas, public transit, car maintenance, parking
+                    </p>
+                </div>
+
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-heartbeat"></i> Healthcare
+                    </h4>
+                    <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                        Insurance, medications, doctor visits, gym
+                    </p>
+                </div>
+
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-shopping-bag"></i> Shopping
+                    </h4>
+                    <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                        Clothing, electronics, household items
+                    </p>
+                </div>
+
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-film"></i> Entertainment
+                    </h4>
+                    <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                        Movies, subscriptions, hobbies, events
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-xl);">Best Practices</h2>
+            
+            <div style="display: grid; gap: var(--spacing-md);">
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold;">1</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Track Daily</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">Record expenses as they happen. Don't wait until the end of the week - you'll forget items and lose accuracy.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold;">2</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Be Specific</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">Use detailed categories and descriptions. "Groceries - $50" is better than just "Shopping - $50".</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold;">3</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Review Weekly</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">Set aside time each week to review your expenses. Look for patterns, surprises, and opportunities to save.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold;">4</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Set Limits</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">Establish spending limits for each category based on your budget. Use alerts or notifications to stay within limits.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold;">5</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Adjust Regularly</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">Your spending patterns will change over time. Update your tracking system and budget categories as needed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <a href="{{ url_for('games') }}" class="btn btn-primary">
+                <i class="fas fa-gamepad"></i> Practice with Budget Balancer Game
+            </a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline" style="margin-left: var(--spacing-md);">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

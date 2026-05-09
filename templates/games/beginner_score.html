@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Score - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-wrap {
+        max-width: 920px;
+        margin: 2.5rem auto;
+        padding: 0 1.25rem;
+    }
+    .result-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid var(--gray-200, #e5e7eb);
+        border-radius: 18px;
+        box-shadow: 0 14px 40px rgba(15, 37, 55, 0.08);
+        padding: clamp(1.75rem, 3vw, 3rem);
+        text-align: center;
+    }
+    .result-trophy {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1e3a5f 0%, #2d7d7d 100%);
+        color: #fff;
+        font-size: 2.4rem;
+        box-shadow: 0 12px 28px rgba(30, 58, 95, 0.25);
+    }
+    .result-title {
+        color: var(--primary-blue, #1e3a5f);
+        font-weight: 800;
+        margin: 0.5rem 0 0.25rem;
+        letter-spacing: -0.01em;
+    }
+    .result-subtitle {
+        color: var(--text-secondary, #6b7280);
+        margin-bottom: 1.5rem;
+    }
+    .percentage-ring {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background:
+            conic-gradient(var(--ring-color, #16a085) calc(var(--p) * 1%), #e5e7eb 0);
+        margin: 1rem auto 1.5rem;
+        position: relative;
+    }
+    .percentage-ring::before {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        border-radius: 50%;
+        background: #fff;
+    }
+    .percentage-ring span {
+        position: relative;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-blue, #1e3a5f);
+    }
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    @media (max-width: 600px) {
+        .stat-row { grid-template-columns: 1fr; }
+    }
+    .stat-tile {
+        background: var(--bg-secondary, #f8f9fa);
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        border: 1px solid var(--gray-200, #e5e7eb);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .stat-tile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(15, 37, 55, 0.06);
+    }
+    .stat-tile .label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted, #7f8c8d);
+        margin-bottom: 0.25rem;
+    }
+    .stat-tile .value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .stat-tile.correct .value { color: var(--success-color, #16a085); }
+    .stat-tile.wrong .value { color: var(--error-color, #c0392b); }
+    .stat-tile.score .value { color: var(--primary-blue, #1e3a5f); }
+    .feedback-card {
+        text-align: left;
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem;
+        margin: 1rem 0 0.5rem;
+        font-size: 1rem;
+        line-height: 1.55;
+        border: 1px solid transparent;
+    }
+    .feedback-card.tier-excellent {
+        background: #ecfdf5; border-color: #a7f3d0; color: #065f46;
+    }
+    .feedback-card.tier-great {
+        background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a;
+    }
+    .feedback-card.tier-ok {
+        background: #fffbeb; border-color: #fde68a; color: #92400e;
+    }
+    .feedback-card.tier-low {
+        background: #fef2f2; border-color: #fecaca; color: #991b1b;
+    }
+    .tip-list {
+        text-align: left;
+        margin-top: 0.75rem;
+        padding-left: 1.1rem;
+        color: var(--text-secondary, #5a6c7d);
+    }
+    .tip-list li { margin-bottom: 0.35rem; }
+    .cta-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 1.75rem;
+    }
+    .cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1.6rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        border: 2px solid transparent;
+    }
+    .cta-btn.primary {
+        background: var(--primary-blue, #1e3a5f); color: #fff;
+    }
+    .cta-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(30, 58, 95, 0.28);
+        background: #2d4a6f;
+    }
+    .cta-btn.outline {
+        background: transparent; color: var(--primary-blue, #1e3a5f);
+        border-color: var(--primary-blue, #1e3a5f);
+    }
+    .cta-btn.outline:hover {
+        background: var(--primary-blue, #1e3a5f); color: #fff; transform: translateY(-2px);
+    }
+    .cta-btn.ghost {
+        color: var(--text-secondary, #5a6c7d);
+        border-color: var(--gray-300, #d1d5db);
+    }
+    .cta-btn.ghost:hover {
+        background: var(--gray-100, #f1f3f5); transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+    var ring = document.getElementById("score-ring");
+    if (ring) {
+        var pct = Math.max(0, Math.min(100, {{ percentage | float }}));
+        ring.style.setProperty("--p", pct);
+        var color = pct >= 90 ? "#16a085"
+                  : pct >= 70 ? "#3b82f6"
+                  : pct >= 50 ? "#f59e0b"
+                  : "#ef4444";
+        ring.style.setProperty("--ring-color", color);
+    }
+    var finalScore = {{ score | int }};
+    if (typeof window.finovoSessionDedupeKey !== "function" || typeof window.saveScore !== "function") return;
+    var saveKey = await window.finovoSessionDedupeKey("nvw_{{ score | int }}_{{ correct | int }}_{{ total | int }}");
+    if (sessionStorage.getItem(saveKey)) return;
+    sessionStorage.setItem(saveKey, "1");
+    console.log("GAME SAVE TRIGGERED");
+    console.log("FINAL SCORE:", finalScore);
+    await window.saveScore(finalScore, "Needs vs Wants", "Beginner");
+});
+</script>
+{% endblock %}
+
+{% block content %}
+{% set p = percentage | float %}
+{% if p >= 90 %}
+    {% set tier = "excellent" %}
+    {% set headline = "Outstanding! You're a financial superstar." %}
+    {% set tier_message = "Excellent financial decision making — you can clearly tell needs from wants." %}
+{% elif p >= 70 %}
+    {% set tier = "great" %}
+    {% set headline = "Great job! Strong understanding of needs vs wants." %}
+    {% set tier_message = "Solid result. Keep going — you're well on your way to confident money habits." %}
+{% elif p >= 50 %}
+    {% set tier = "ok" %}
+    {% set headline = "Good effort. A little more practice and you've got it." %}
+    {% set tier_message = "You should improve your needs-vs-wants instincts. Re-read the tips on each item and try again." %}
+{% else %}
+    {% set tier = "low" %}
+    {% set headline = "Don't worry — every expert started here." %}
+    {% set tier_message = "You should improve budgeting basics. Focus on essentials first, then save for the extras." %}
+{% endif %}
+
+<section class="result-wrap">
+    <div class="result-card">
+        <div class="result-trophy"><i class="fas fa-trophy"></i></div>
+        <h1 class="result-title">Quiz Complete</h1>
+        <p class="result-subtitle">You answered <strong>{{ correct }}</strong> out of <strong>{{ total }}</strong> correctly.</p>
+
+        <div id="score-ring" class="percentage-ring" style="--p: 0; --ring-color: #16a085;">
+            <span>{{ percentage }}%</span>
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-tile correct">
+                <div class="label">Correct</div>
+                <div class="value">{{ correct }}</div>
+            </div>
+            <div class="stat-tile wrong">
+                <div class="label">Wrong</div>
+                <div class="value">{{ wrong }}</div>
+            </div>
+            <div class="stat-tile score">
+                <div class="label">Final Score</div>
+                <div class="value">{{ score }}/100</div>
+            </div>
+        </div>
+
+        <div class="feedback-card tier-{{ tier }}">
+            <strong>{{ headline }}</strong>
+            <div style="margin-top: 0.35rem;">{{ tier_message }}</div>
+            <ul class="tip-list">
+                <li>Cover essentials (rent, food, utilities, insurance) before discretionary spending.</li>
+                <li>Pause 24 hours before any non-essential purchase — wants often fade.</li>
+                <li>Automate savings so wants don't crowd out needs at the end of the month.</li>
+            </ul>
+        </div>
+
+        <div class="cta-row">
+            <a href="{{ url_for('beginner_bp.beginner_game') }}" class="cta-btn primary">
+                <i class="fas fa-redo"></i> Retake Quiz
+            </a>
+            <a href="{{ url_for('games') }}" class="cta-btn outline">
+                <i class="fas fa-gamepad"></i> More Games
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="cta-btn ghost">
+                <i class="fas fa-chart-line"></i> View Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

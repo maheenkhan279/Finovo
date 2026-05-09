@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Signup Test</title>
+</head>
+<body>
+    <h1>Supabase Signup Test</h1>
+    <form id="signupForm">
+        <input type="email" id="email" placeholder="Email" required><br><br>
+        <input type="password" id="password" placeholder="Password" required><br><br>
+        <input type="text" id="username" placeholder="Username" required><br><br>
+        <button type="submit">Test Signup</button>
+    </form>
+    <div id="results"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://fjjbsilexhoorjuiywyq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqamJzaWxleGhvb3JqdWl5d3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5OTY2MTgsImV4cCI6MjA5MzU3MjYxOH0._2DSwLGg14Wx5rQmdA7xhpoRif79i-wBSZh4iAymfJQ';
+        
+        const results = document.getElementById('results');
+        
+        function log(message) {
+            console.log(message);
+            results.innerHTML += '<p>' + message + '</p>';
+        }
+        
+        // Initialize client
+        log('🔧 Creating Supabase client...');
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        log('✅ Client created');
+        
+        // Test signup
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            
+            log('🔄 Testing signup with: ' + email);
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            username: username
+                        }
+                    }
+                });
+                
+                if (error) {
+                    log('❌ Signup failed: ' + error.message);
+                    log('❌ Error code: ' + error.code);
+                } else {
+                    log('✅ Signup successful: ' + JSON.stringify(data));
+                }
+                
+            } catch (err) {
+                log('❌ Network error: ' + err.message);
+                log('❌ Error name: ' + err.name);
+            }
+        });
+    </script>
+</body>
+</html>

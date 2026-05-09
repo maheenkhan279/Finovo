@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Balancer Game - Beginner - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+.game-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.game-card {
+    background: var(--bg-primary);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--gray-200);
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--gray-200);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.balance-display {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.month-display {
+    background: var(--bg-secondary);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.phase-message {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.phase-message.info {
+    background: var(--info-light);
+    color: var(--text-primary);
+    border-left: 4px solid var(--info-color);
+}
+
+.phase-message.success {
+    background: var(--success-light);
+    color: var(--text-primary);
+    border-left: 4px solid var(--success-color);
+}
+
+.phase-message.error {
+    background: var(--error-light);
+    color: var(--text-primary);
+    border-left: 4px solid var(--error-color);
+}
+
+.choices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.choice-item {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+.choice-item label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.choice-item select {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    background: var(--bg-primary);
+    transition: all var(--transition-base);
+}
+
+.choice-item select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+}
+
+.game-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--spacing-xl);
+}
+
+.event-message {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin: var(--spacing-md) 0;
+    font-weight: 600;
+}
+
+.event-message.negative {
+    background: var(--error-light);
+    color: var(--text-primary);
+}
+
+.event-message.positive {
+    background: var(--success-light);
+    color: var(--text-primary);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-card">
+        <div class="game-header">
+            <div>
+                <h1 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">Budget Balancer Game</h1>
+                <p style="color: var(--text-secondary);">Beginner Level - Balance your budget across {{ total_months }} months</p>
+            </div>
+            <div style="text-align: right;">
+                <div class="balance-display" id="balance-display">${{ game_state.player_balance }}</div>
+                <div class="month-display">Month {{ game_state.current_month }} of {{ total_months }}</div>
+                <div style="margin-top:0.5rem;max-width:220px;margin-left:auto;">
+                    <div style="font-size:0.75rem;color:var(--text-secondary);">Season progress</div>
+                    <div style="height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;">
+                        <div id="season-progress" style="height:100%;width:0;background:linear-gradient(90deg,var(--success-color),var(--primary-blue));transition:width .4s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="phase-message" class="phase-message"></div>
+
+        <div id="choices-section" style="display: none;">
+            <h3 style="margin-bottom: var(--spacing-lg); color: var(--text-primary);">Choose Your Expenses</h3>
+            <div class="choices-grid">
+                {% for category, options in spending_options.items() %}
+                <div class="choice-item">
+                    <label>{{ category }}</label>
+                    <select id="choice-{{ category }}" onchange="updateChoice('{{ category }}', this.value)" disabled>
+                        {% for option in options %}
+                        <option value="{{ option.label }}" {% if game_state.choices[category] == option.label %}selected{% endif %}>
+                            {{ option.label }} - ${{ option.cost }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+            </div>
+            <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <strong style="color: var(--text-primary); display:block; margin-bottom: .75rem;">Quick sliders (sync with dropdowns)</strong>
+                {% for category, options in spending_options.items() %}
+                <div style="margin-bottom: .65rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">{{ category }}</label>
+                    <input type="range" class="budget-slider" data-category="{{ category }}" min="0" max="{{ options|length - 1 }}" step="1" style="width:100%;">
+                </div>
+                {% endfor %}
+            </div>
+            <div style="text-align: center; margin-top: var(--spacing-lg); padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <strong style="color: var(--text-primary);">Estimated Monthly Spending: $<span id="estimated-spending">0</span></strong>
+            </div>
+        </div>
+
+        <div class="game-buttons">
+            <button id="receive-income-btn" class="btn btn-primary" onclick="receiveIncome()" style="display: none;">Receive Income</button>
+            <button id="simulate-btn" class="btn btn-primary" onclick="simulateMonth()" style="display: none;">Lock Choices & Simulate Month</button>
+            <button id="next-month-btn" class="btn btn-primary" onclick="nextMonth()" style="display: none;">Next Month ▶</button>
+            <button class="btn btn-outline" onclick="resetGame()">Reset Game</button>
+            <a href="{{ url_for('games') }}" class="btn btn-outline">Back to Games</a>
+        </div>
+
+        <div id="event-display"></div>
+
+        {% if game_state.history %}
+        <div style="margin-top: var(--spacing-3xl);">
+            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-lg);">Monthly Summary</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--bg-secondary);">
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Month</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Housing</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Food</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Utilities</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Entertainment</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Total Spending</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">Event</th>
+                            <th style="padding: var(--spacing-md); text-align: left; border-bottom: 2px solid var(--gray-200);">End Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in game_state.history %}
+                        <tr>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">{{ record.month }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">{{ record.housing }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">{{ record.food }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">{{ record.utilities }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">{{ record.entertainment }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">${{ "%.2f"|format(record.spending_total) }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">{{ record.event }}</td>
+                            <td style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">${{ "%.2f"|format(record.end_balance) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let gameState = {{ game_state | tojson }};
+const spendingOptions = {{ spending_options | tojson }};
+const INFLATION_RATE = 0.03;
+
+function updateUI() {
+    document.getElementById('balance-display').textContent = '$' + gameState.player_balance.toFixed(2);
+    var sp = document.getElementById('season-progress');
+    if (sp) {
+        var totalM = {{ total_months|int }};
+        var pct = totalM > 0 ? Math.min(100, ((gameState.current_month - 1) / totalM) * 100 + (gameState.phase === 'won' ? 100/totalM : 0)) : 0;
+        if (gameState.phase === 'won') pct = 100;
+        sp.style.width = pct + '%';
+    }
+    
+    const phaseMessage = document.getElementById('phase-message');
+    const receiveBtn = document.getElementById('receive-income-btn');
+    const simulateBtn = document.getElementById('simulate-btn');
+    const nextMonthBtn = document.getElementById('next-month-btn');
+    const choicesSection = document.getElementById('choices-section');
+    
+    phaseMessage.className = 'phase-message';
+    receiveBtn.style.display = 'none';
+    simulateBtn.style.display = 'none';
+    nextMonthBtn.style.display = 'none';
+    choicesSection.style.display = 'none';
+    
+    document.querySelectorAll('[id^="choice-"]').forEach(select => {
+        select.disabled = true;
+    });
+    
+    if (gameState.phase === 'await_income') {
+        phaseMessage.className = 'phase-message info';
+        phaseMessage.innerHTML = '<i class="fas fa-info-circle"></i> Start of month: Click <strong>Receive Income</strong> to add your monthly income, then make your choices.';
+        receiveBtn.style.display = 'inline-block';
+    } else if (gameState.phase === 'await_choices') {
+        phaseMessage.className = 'phase-message success';
+        phaseMessage.innerHTML = '<i class="fas fa-check-circle"></i> Income received. Choose your expenses, then click <strong>Lock Choices & Simulate Month</strong>.';
+        simulateBtn.style.display = 'inline-block';
+        choicesSection.style.display = 'block';
+        document.querySelectorAll('[id^="choice-"]').forEach(select => {
+            select.disabled = false;
+        });
+        updateEstimatedSpending();
+    } else if (gameState.phase === 'simulated') {
+        phaseMessage.className = 'phase-message info';
+        phaseMessage.innerHTML = '<i class="fas fa-info-circle"></i> Month simulated. Review the summary below, then click <strong>Next Month ▶</strong>.';
+        nextMonthBtn.style.display = 'inline-block';
+    } else if (gameState.phase === 'won') {
+        phaseMessage.className = 'phase-message success';
+        phaseMessage.innerHTML = '<i class="fas fa-trophy"></i> 🎉 You balanced your budget for {{ total_months }} months! Final Balance: $' + gameState.player_balance.toFixed(2);
+    } else if (gameState.phase === 'lost') {
+        phaseMessage.className = 'phase-message error';
+        phaseMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 💀 GAME OVER! You ran out of money in Month ' + gameState.current_month + '. Final Balance: $' + gameState.player_balance.toFixed(2);
+    }
+}
+
+function updateEstimatedSpending() {
+    let total = 0;
+    const monthIndex = gameState.current_month - 1;
+    
+    document.querySelectorAll('[id^="choice-"]').forEach(select => {
+        const category = select.id.replace('choice-', '');
+        const selectedOption = select.options[select.selectedIndex];
+        const label = selectedOption.value.split(' - $')[0];
+        
+        const categoryOptions = spendingOptions[category];
+        const option = categoryOptions.find(opt => opt.label === label);
+        if (option) {
+            const inflated = option.cost * Math.pow(1 + INFLATION_RATE, monthIndex);
+            total += inflated;
+        }
+    });
+    
+    document.getElementById('estimated-spending').textContent = total.toFixed(2);
+}
+
+function updateChoice(category, choice) {
+    fetch('{{ url_for("beginner_budget_bp.update_choice") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({category: category, choice: choice})
+    })
+    .then(response => response.json())
+    .then(data => {
+        gameState = data;
+        syncSlidersFromSelects();
+        updateEstimatedSpending();
+    });
+}
+
+function receiveIncome() {
+    fetch('{{ url_for("beginner_budget_bp.receive_income") }}', {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            gameState = data;
+            updateUI();
+            location.reload();
+        });
+}
+
+function simulateMonth() {
+    fetch('{{ url_for("beginner_budget_bp.simulate_month") }}', {method: 'POST'})
+        .then(response => response.json())
+        .then(async data => {
+            gameState = data;
+            const lastEvent = data.history[data.history.length - 1];
+            
+            const eventDisplay = document.getElementById('event-display');
+            if (lastEvent.event_type !== 'none') {
+                const eventClass = lastEvent.event_type === 'negative' ? 'negative' : 'positive';
+                const symbol = lastEvent.event_type === 'negative' ? '-' : '+';
+                eventDisplay.innerHTML = `<div class="event-message ${eventClass}">
+                    ${lastEvent.event}: ${symbol}$${lastEvent.event_amount}
+                </div>`;
+            }
+            
+            updateUI();
+            await maybeSaveBudgetBalancer();
+            location.reload();
+        });
+}
+
+function nextMonth() {
+    fetch('{{ url_for("beginner_budget_bp.next_month") }}', {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            gameState = data;
+            document.getElementById('event-display').innerHTML = '';
+            updateUI();
+            location.reload();
+        });
+}
+
+function resetGame() {
+    if (window.showConfirm) {
+        showConfirm(
+            'Are you sure you want to reset the game? All your progress will be lost.',
+            () => {
+                fetch('{{ url_for("beginner_budget_bp.reset_game") }}', {method: 'POST'})
+                    .then(response => response.json())
+                    .then(data => {
+                        gameState = data;
+                        updateUI();
+                        if (window.showNotification) {
+                            showNotification('Game reset successfully!', 'success');
+                        }
+                        setTimeout(() => location.reload(), 500);
+                    });
+            }
+        );
+    } else {
+        if (confirm('Are you sure you want to reset the game?')) {
+            fetch('{{ url_for("beginner_budget_bp.reset_game") }}', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    gameState = data;
+                    updateUI();
+                    location.reload();
+                });
+        }
+    }
+}
+
+function syncSlidersFromSelects() {
+    document.querySelectorAll('.budget-slider').forEach(function (slider) {
+        var cat = slider.getAttribute('data-category');
+        var sel = document.getElementById('choice-' + cat);
+        if (!sel) return;
+        var label = sel.options[sel.selectedIndex].value.split(' - $')[0];
+        var opts = spendingOptions[cat];
+        var idx = opts.findIndex(function (o) { return o.label === label; });
+        slider.value = String(idx >= 0 ? idx : 0);
+    });
+}
+
+document.querySelectorAll('.budget-slider').forEach(function (slider) {
+    slider.addEventListener('input', function () {
+        var cat = slider.getAttribute('data-category');
+        var sel = document.getElementById('choice-' + cat);
+        if (!sel || sel.disabled) return;
+        var idx = parseInt(slider.value, 10);
+        if (sel.options[idx]) {
+            sel.selectedIndex = idx;
+            updateChoice(cat, sel.value);
+        }
+    });
+});
+
+async function maybeSaveBudgetBalancer() {
+    if (!gameState) return;
+    var phase = gameState.phase;
+    if (phase !== 'won' && phase !== 'lost') return;
+    if (typeof window.saveScore !== 'function' || typeof window.finovoSessionDedupeKey !== 'function') return;
+    var bal = Number(gameState.player_balance) || 0;
+    var finalScore = Math.max(0, Math.round(bal));
+    var saveKey = await window.finovoSessionDedupeKey("bb_" + phase + "_" + finalScore + "_" + (gameState.history ? gameState.history.length : 0));
+    if (sessionStorage.getItem(saveKey)) return;
+    sessionStorage.setItem(saveKey, '1');
+    console.log("GAME SAVE TRIGGERED");
+    console.log("FINAL SCORE:", finalScore);
+    await window.saveScore(finalScore, "Budget Balancer", "Beginner");
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateUI();
+    syncSlidersFromSelects();
+    
+    document.querySelectorAll('[id^="choice-"]').forEach(select => {
+        select.addEventListener('change', function() {
+            if (!this.disabled) {
+                syncSlidersFromSelects();
+                updateEstimatedSpending();
+            }
+        });
+    });
+
+    maybeSaveBudgetBalancer();
+});
+</script>
+{% endblock %}
+

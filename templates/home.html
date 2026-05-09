@@ -1,0 +1,1659 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    #watch-demo .card { border: 1px solid var(--gray-200, #e5e7eb); background: var(--bg-primary, #fff); }
+    #watch-demo .card-title { color: var(--primary-blue); font-size: 1.1rem; }
+    #watch-demo .btn-primary { background-color: var(--primary-blue); border-color: var(--primary-blue); }
+    #watch-demo .btn-primary:hover { filter: brightness(0.92); }
+
+    /* ===================================================================
+       Premium Features section (scoped to .fv-features-v2)
+       =================================================================== */
+    .fv-features-v2 {
+        position: relative;
+        padding: clamp(3.5rem, 6vw, 5.5rem) 1rem;
+        background:
+            radial-gradient(900px 460px at 8% -10%, rgba(34, 211, 238, 0.10), transparent 65%),
+            radial-gradient(900px 460px at 100% 110%, rgba(22, 160, 133, 0.10), transparent 65%),
+            linear-gradient(180deg, #f5f8fc 0%, #eef3fa 100%);
+        overflow: hidden;
+        isolation: isolate;
+    }
+    .fv-features-v2::before,
+    .fv-features-v2::after {
+        content: "";
+        position: absolute;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.45;
+        z-index: -1;
+        pointer-events: none;
+    }
+    .fv-features-v2::before {
+        top: -120px;
+        left: -120px;
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, transparent 70%);
+    }
+    .fv-features-v2::after {
+        bottom: -140px;
+        right: -120px;
+        background: radial-gradient(circle, rgba(22, 160, 133, 0.30) 0%, transparent 70%);
+    }
+
+    .fv-features-v2 .fv-section-head {
+        text-align: center;
+        max-width: 720px;
+        margin: 0 auto 3rem;
+    }
+    .fv-features-v2 .fv-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(22, 160, 133, 0.10);
+        color: var(--fv-teal-700, #0d8770);
+        border: 1px solid rgba(22, 160, 133, 0.22);
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .fv-features-v2 .fv-eyebrow i {
+        font-size: 0.7rem;
+    }
+    .fv-features-v2 h2.fv-feat-title {
+        font-size: clamp(1.85rem, 3.4vw, 2.6rem);
+        font-weight: 800;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+        color: var(--fv-navy-700, #0f2537);
+        margin: 0 0 0.85rem;
+    }
+    .fv-features-v2 h2.fv-feat-title .fv-grad {
+        background: linear-gradient(135deg, #16a085 0%, #22d3ee 100%);
+        -webkit-background-clip: text;
+                background-clip: text;
+        color: transparent;
+    }
+    .fv-features-v2 .fv-feat-sub {
+        color: var(--fv-text-muted, #4b5b6e);
+        font-size: 1.05rem;
+        line-height: 1.65;
+        margin: 0 auto;
+        max-width: 620px;
+    }
+
+    .fv-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.75rem;
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+    @media (max-width: 640px) {
+        .fv-feature-grid { gap: 1.25rem; }
+    }
+
+    .fv-feature-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 2.1rem 1.85rem 1.85rem;
+        border-radius: 22px;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.86) 100%);
+        border: 1px solid rgba(15, 37, 55, 0.08);
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.7) inset,
+            0 12px 30px -18px rgba(15, 37, 55, 0.30);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition:
+            transform 340ms cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 340ms cubic-bezier(0.4, 0, 0.2, 1),
+            border-color 340ms cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        overflow: hidden;
+        isolation: isolate;
+    }
+    .fv-feature-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0) 0%, rgba(22, 160, 133, 0) 100%);
+        -webkit-mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+                mask-composite: exclude;
+        transition: background 320ms cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .fv-feature-card::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.0) 0%, transparent 70%);
+        transition: background 320ms cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .fv-feature-card > * { position: relative; z-index: 1; }
+
+    .fv-feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow:
+            0 22px 48px -18px rgba(15, 37, 55, 0.32),
+            0 6px 22px rgba(34, 211, 238, 0.14);
+        border-color: rgba(22, 160, 133, 0.32);
+    }
+    .fv-feature-card:hover::before {
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0.55) 0%, rgba(22, 160, 133, 0.45) 100%);
+    }
+    .fv-feature-card:hover::after {
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.18) 0%, transparent 70%);
+    }
+    .fv-feature-card:focus-visible {
+        outline: 2px solid var(--fv-teal-500, #16a085);
+        outline-offset: 3px;
+    }
+
+    .fv-feature-card .fv-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        display: inline-grid;
+        place-items: center;
+        background: linear-gradient(135deg, #1e3a5f 0%, #16a085 100%);
+        color: #fff;
+        font-size: 1.4rem;
+        box-shadow: 0 10px 24px -6px rgba(22, 160, 133, 0.45);
+        transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        will-change: transform;
+    }
+    .fv-feature-card:hover .fv-icon {
+        transform: scale(1.08) rotate(-3deg);
+    }
+
+    .fv-feature-card[data-variant="ai"] .fv-icon {
+        background: linear-gradient(135deg, #1e3a5f 0%, #22d3ee 100%);
+        box-shadow: 0 10px 24px -6px rgba(34, 211, 238, 0.45);
+    }
+    .fv-feature-card[data-variant="sim"] .fv-icon {
+        background: linear-gradient(135deg, #ff6b4a 0%, #ff7a5c 100%);
+        box-shadow: 0 10px 24px -6px rgba(255, 122, 92, 0.45);
+    }
+    .fv-feature-card[data-variant="learn"] .fv-icon {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2d7d7d 100%);
+        box-shadow: 0 10px 24px -6px rgba(45, 125, 125, 0.42);
+    }
+    .fv-feature-card[data-variant="track"] .fv-icon {
+        background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+        box-shadow: 0 10px 24px -6px rgba(51, 65, 85, 0.5);
+    }
+
+    .fv-feature-card .fv-card-eyebrow {
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--fv-teal-700, #0d8770);
+    }
+    .fv-feature-card[data-variant="ai"] .fv-card-eyebrow { color: #0891b2; }
+    .fv-feature-card[data-variant="sim"] .fv-card-eyebrow { color: #ea580c; }
+    .fv-feature-card[data-variant="learn"] .fv-card-eyebrow { color: #0f766e; }
+    .fv-feature-card[data-variant="track"] .fv-card-eyebrow { color: #64748b; }
+
+    .fv-feat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        align-self: flex-start;
+        padding: 0.28rem 0.65rem 0.28rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--fv-navy-700, #0f2537);
+        background: rgba(15, 37, 55, 0.06);
+        border: 1px solid rgba(15, 37, 55, 0.1);
+    }
+    .fv-feat-pill i {
+        font-size: 0.68rem;
+        opacity: 0.88;
+        color: var(--fv-teal-600, #0d9488);
+    }
+    .fv-feature-card[data-variant="ai"] .fv-feat-pill i { color: #0891b2; }
+    .fv-feature-card[data-variant="sim"] .fv-feat-pill i { color: #ea580c; }
+    .fv-feature-card[data-variant="learn"] .fv-feat-pill i { color: #0f766e; }
+    .fv-feature-card[data-variant="track"] .fv-feat-pill i { color: #475569; }
+
+    .fv-feature-card h3 {
+        font-size: 1.28rem;
+        font-weight: 800;
+        color: var(--fv-navy-700, #0f2537);
+        margin: 0.15rem 0 0;
+        line-height: 1.22;
+        letter-spacing: -0.02em;
+    }
+    .fv-feature-card .fv-feat-lead {
+        color: var(--fv-text-muted, #4b5b6e);
+        line-height: 1.62;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    .fv-feature-card .fv-feat-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 0.15rem;
+        flex: 1 1 auto;
+    }
+    .fv-feature-card .fv-feat-block {
+        margin: 0;
+        padding: 0.65rem 0.75rem;
+        border-radius: 12px;
+        background: rgba(15, 37, 55, 0.03);
+        border: 1px solid rgba(15, 37, 55, 0.06);
+    }
+    .fv-feature-card .fv-feat-block--benefit {
+        background: linear-gradient(135deg, rgba(22, 160, 133, 0.08) 0%, rgba(34, 211, 238, 0.06) 100%);
+        border-color: rgba(22, 160, 133, 0.18);
+    }
+    .fv-feature-card .fv-feat-label {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--fv-navy-600, #1e3a5f);
+        margin-bottom: 0.35rem;
+    }
+    .fv-feature-card .fv-feat-block--benefit .fv-feat-label {
+        color: var(--fv-teal-700, #0d8770);
+    }
+    .fv-feature-card .fv-feat-text {
+        color: var(--fv-text-muted, #4b5b6e);
+        line-height: 1.58;
+        margin: 0;
+        font-size: 0.88rem;
+    }
+    .fv-feature-card p {
+        color: var(--fv-text-muted, #4b5b6e);
+        line-height: 1.65;
+        margin: 0;
+        font-size: 0.96rem;
+    }
+    .fv-feature-card .fv-arrow {
+        margin-top: auto;
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding-top: 0.25rem;
+        color: var(--fv-navy-600, #1e3a5f);
+        font-weight: 600;
+        font-size: 0.92rem;
+        transition: gap 280ms cubic-bezier(0.4, 0, 0.2, 1), color 280ms;
+    }
+    .fv-feature-card:hover .fv-arrow {
+        gap: 0.75rem;
+        color: var(--fv-teal-500, #16a085);
+    }
+    .fv-feature-card[data-variant="sim"]:hover .fv-arrow {
+        color: var(--fv-coral-500, #ff6b4a);
+    }
+
+    @keyframes fvFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+    .fv-feature-card .fv-icon { animation: fvFloat 6s ease-in-out infinite; }
+    .fv-feature-card:nth-child(2) .fv-icon { animation-delay: 0.6s; }
+    .fv-feature-card:nth-child(3) .fv-icon { animation-delay: 1.2s; }
+    .fv-feature-card:nth-child(4) .fv-icon { animation-delay: 1.8s; }
+    .fv-feature-card:nth-child(5) .fv-icon { animation-delay: 2.4s; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .fv-feature-card,
+        .fv-feature-card .fv-icon,
+        .fv-feature-card .fv-arrow {
+            animation: none !important;
+            transition: none !important;
+        }
+        .fv-feature-card:hover { transform: none; }
+    }
+
+    @media (max-width: 480px) {
+        .fv-feature-card {
+            padding: 1.6rem 1.35rem 1.4rem;
+            border-radius: 18px;
+        }
+        .fv-feature-card .fv-icon {
+            width: 50px; height: 50px; font-size: 1.2rem; border-radius: 14px;
+        }
+        .fv-features-v2 .fv-eyebrow { font-size: 0.68rem; }
+    }
+    
+    /* Game Preview Demo Styles */
+    .game-preview-demo {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 10px 0;
+    }
+    
+    .demo-interface {
+        background: white;
+        border-radius: 6px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .demo-item {
+        display: inline-block;
+        padding: 8px 12px;
+        margin: 3px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .demo-arrow {
+        font-size: 18px;
+        color: #6c757d;
+        margin: 0 10px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    .demo-slider label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+    
+    .slider-bar {
+        border-radius: 4px;
+        height: 8px;
+        background: linear-gradient(90deg, #007bff 0%, #28a745 100%);
+    }
+    
+    .demo-categories {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+    
+    .demo-goal {
+        text-align: center;
+        max-width: 200px;
+        margin: 0 auto;
+    }
+    
+    .demo-choices {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .demo-choices button {
+        font-size: 14px;
+        font-weight: 500;
+        transition: transform 0.2s;
+    }
+    
+    .demo-choices button:hover {
+        transform: translateY(-2px);
+    }
+    
+    .demo-progress {
+        margin-top: 20px;
+    }
+    
+    .demo-progress > div {
+        position: relative;
+        background: #e9ecef;
+    }
+    
+    .demo-progress > div > div {
+        background: linear-gradient(90deg, #ffc107 0%, #28a745 100%);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Demo Interactive Elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Budget Balancer Demo Slider
+    const budgetSlider = document.querySelector('.demo-slider .slider-bar');
+    const budgetLabel = document.querySelector('.demo-slider label');
+    
+    if (budgetSlider && budgetLabel) {
+        let sliderValue = 80;
+        budgetSlider.style.cursor = 'pointer';
+        
+        budgetSlider.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const newValue = Math.round((x / rect.width) * 100);
+            sliderValue = Math.max(20, Math.min(100, newValue));
+            
+            this.style.width = sliderValue + '%';
+            const income = Math.round(2000 + (sliderValue * 30));
+            budgetLabel.innerHTML = `Income: $${income.toLocaleString()}`;
+            
+            // Update category allocations based on income
+            updateBudgetCategories(income);
+        });
+    }
+    
+    // Update budget categories based on income
+    function updateBudgetCategories(income) {
+        const housing = Math.round(income * 0.30);
+        const food = Math.round(income * 0.15);
+        const transport = Math.round(income * 0.10);
+        const entertainment = Math.round(income * 0.05);
+        
+        const categoryDivs = document.querySelectorAll('.demo-categories > div > div');
+        if (categoryDivs.length >= 4) {
+            categoryDivs[0].innerHTML = `Housing $${housing}`;
+            categoryDivs[1].innerHTML = `Food $${food}`;
+            categoryDivs[2].innerHTML = `Transport $${transport}`;
+            categoryDivs[3].innerHTML = `Entertainment $${entertainment}`;
+        }
+    }
+    
+    // Savings Challenge Demo Buttons
+    const saveButton = document.querySelector('.demo-choices button:first-child');
+    const spendButton = document.querySelector('.demo-choices button:last-child');
+    const progressBar = document.querySelector('.demo-progress > div > div');
+    const progressText = document.querySelector('.demo-progress p');
+    const goalAmount = document.querySelector('.demo-goal div div:last-child');
+    
+    let currentProgress = 65;
+    let currentAmount = 3250; // 65% of $5000
+    
+    if (saveButton && spendButton && progressBar && progressText && goalAmount) {
+        saveButton.addEventListener('click', function() {
+            currentAmount += 100;
+            currentProgress = Math.min(100, Math.round((currentAmount / 5000) * 100));
+            updateSavingsProgress();
+        });
+        
+        spendButton.addEventListener('click', function() {
+            currentAmount -= 50;
+            currentProgress = Math.max(0, Math.round((currentAmount / 5000) * 100));
+            updateSavingsProgress();
+        });
+        
+        function updateSavingsProgress() {
+            progressBar.style.width = currentProgress + '%';
+            progressText.textContent = `Progress: ${currentProgress}% Complete`;
+            goalAmount.textContent = `$${currentAmount.toLocaleString()}`;
+            
+            // Change color based on progress
+            if (currentProgress >= 80) {
+                progressBar.style.background = '#28a745';
+            } else if (currentProgress >= 50) {
+                progressBar.style.background = '#ffc107';
+            } else {
+                progressBar.style.background = '#dc3545';
+            }
+        }
+    }
+    
+    // Needs vs Wants Demo - Make items draggable
+    const demoItems = document.querySelectorAll('.demo-item');
+    if (demoItems.length > 0) {
+        demoItems.forEach(item => {
+            item.style.cursor = 'grab';
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+                this.style.transition = 'transform 0.2s';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+            
+            item.addEventListener('click', function() {
+                // Simulate classification
+                const isNeed = this.textContent.includes('Housing') || this.textContent.includes('Food');
+                this.style.background = isNeed ? '#28a745' : '#ffc107';
+                this.style.animation = 'pulse 0.5s';
+            });
+        });
+    }
+    
+    // Add pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<section id="hero" class="hero-section">
+    <div class="hero-content animate__animated animate__fadeIn">
+        <h1>Transform Your Financial Future</h1>
+        <p>Learn finance through engaging games and AI-powered insights</p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('games') }}" class="cta-button primary" style="text-decoration: none; display: inline-block;">Start Learning</a>
+            <a href="#watch-demo" class="cta-button secondary" style="text-decoration: none; display: inline-block;">Watch Demo</a>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 p-md-5">
+                        <h2 class="mb-3" style="color: var(--primary-blue);">Finovo</h2>
+                        <p class="text-muted mb-4" style="line-height: 1.75;">
+                            Finovo is a financial literacy platform with interactive games that help you build practical money skills in a structured, beginner-to-advanced journey.
+                        </p>
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4" style="color: var(--primary-blue);">Who Finovo Is For</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-graduation-cap mb-3" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                        <h5 class="card-title">Students</h5>
+                        <p class="card-text text-muted">Build a strong money foundation before entering full-time work.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-seedling mb-3" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                        <h5 class="card-title">Finance Beginners</h5>
+                        <p class="card-text text-muted">Learn budgeting, saving, and decision-making in a simple way.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-briefcase mb-3" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                        <h5 class="card-title">Young Professionals</h5>
+                        <p class="card-text text-muted">Strengthen real-world financial planning and long-term habits.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4" style="color: var(--primary-blue);">Learning Levels</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: var(--success-color);">Beginner Level</h5>
+                        <p class="card-text text-muted mb-0">Master core concepts like needs vs wants, basic budgeting, and saving habits.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: var(--warning-color);">Moderate Level</h5>
+                        <p class="card-text text-muted mb-0">Practice decision-making with loans, insurance, and credit choices.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: var(--error-color);">Advanced Level</h5>
+                        <p class="card-text text-muted mb-0">Use simulations for stocks, portfolios, and retirement planning.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="watch-demo" class="modules-section" style="padding-top: var(--spacing-2xl); padding-bottom: var(--spacing-3xl); background: var(--bg-secondary);">
+    <div class="container">
+        <h2 class="text-center mb-2" style="color: var(--primary-blue);">Game Demos — Learn How to Play</h2>
+        <p class="text-center text-muted mx-auto mb-5 px-3" style="max-width: 720px; line-height: 1.7;">
+            Explore our interactive financial games through guided demos. Learn the concepts before playing with an account.
+        </p>
+
+        <div class="demo-section mb-5">
+            <h3 class="mb-3 d-flex align-items-center gap-2" style="color: var(--success-color);">
+                <i class="fas fa-seedling"></i> Beginner Level Games
+            </h3>
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Needs vs Wants</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Distinguish essential expenses from discretionary spending<br>
+                                <strong>Play:</strong> Drag-and-drop classification game<br>
+                                <strong>Skills:</strong> Budget prioritization, financial decision-making
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#needsVsWantsModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Budget Balancer</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Allocate income across expense categories<br>
+                                <strong>Play:</strong> Interactive sliders and 12-month simulation<br>
+                                <strong>Skills:</strong> Income management, expense tracking
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#budgetBalancerModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Savings Challenge</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Set financial goals and saving strategies<br>
+                                <strong>Play:</strong> Decision-based scenarios with multiple goals<br>
+                                <strong>Skills:</strong> Goal setting, delayed gratification
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#savingsChallengeModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section mb-5">
+            <h3 class="mb-3 d-flex align-items-center gap-2" style="color: var(--warning-color);">
+                <i class="fas fa-chart-bar"></i> Moderate Level Games
+            </h3>
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Loan Management</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Understand interest rates and loan terms<br>
+                                <strong>Play:</strong> Calculate payments and compare loan options<br>
+                                <strong>Skills:</strong> Debt management, financial calculations
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loanModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Insurance Planning</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Types of insurance and coverage needs<br>
+                                <strong>Play:</strong> Match coverage to life scenarios<br>
+                                <strong>Skills:</strong> Risk assessment, protection planning
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#insuranceModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Credit Score Challenge</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Factors that affect credit scores<br>
+                                <strong>Play:</strong> Make decisions that impact your score<br>
+                                <strong>Skills:</strong> Credit building, financial responsibility
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#creditModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="mb-3 d-flex align-items-center gap-2" style="color: var(--error-color);">
+                <i class="fas fa-rocket"></i> Advanced Level Games
+            </h3>
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Stock Market Simulator</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Stock trading and market dynamics<br>
+                                <strong>Play:</strong> Paper-trade with real market data<br>
+                                <strong>Skills:</strong> Investment analysis, market timing
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#stockModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Portfolio Management</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Diversification and asset allocation<br>
+                                <strong>Play:</strong> Build and optimize investment portfolios<br>
+                                <strong>Skills:</strong> Risk management, investment strategy
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portfolioModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Retirement Planning</h5>
+                            <p class="card-text small text-muted flex-grow-1 mb-3">
+                                <strong>Learn:</strong> Long-term financial planning<br>
+                                <strong>Play:</strong> Plan retirement savings and investments<br>
+                                <strong>Skills:</strong> Future planning, compound growth
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#retirementModal">
+                                    <i class="fas fa-play-circle"></i> View Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <p class="text-muted mb-3">Ready to start playing? Create an account to track your progress!</p>
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-user-plus"></i> Sign Up to Play
+            </a>
+            <a href="{{ url_for('games') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-gamepad"></i> Browse All Games
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Demo Modals -->
+<!-- Needs vs Wants Modal -->
+<div class="modal fade" id="needsVsWantsModal" tabindex="-1" aria-labelledby="needsVsWantsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="needsVsWantsModalLabel">
+                    <i class="fas fa-hand-pointer text-success"></i> Needs vs Wants - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Classify items as essential needs or discretionary wants to build smart spending habits.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Drag & Drop:</strong> Items appear on screen - drag them to "Needs" or "Wants" boxes</li>
+                    <li><strong>Quick Decisions:</strong> Make fast choices to build your streak bonus</li>
+                    <li><strong>Learn from Feedback:</strong> Each choice includes an explanation of why it's a need or want</li>
+                    <li><strong>Level Progression:</strong> Complete levels to unlock more complex scenarios</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Distinguish essential expenses (housing, food, healthcare) from discretionary spending</li>
+                    <li>Understand opportunity costs of wants vs needs</li>
+                    <li>Build budgeting foundations for financial independence</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-item" style="background: #28a745; color: white; padding: 10px; border-radius: 5px; margin: 5px;">
+                                <i class="fas fa-home"></i> Housing
+                            </div>
+                            <div class="demo-arrow">→</div>
+                            <div class="demo-item" style="background: #28a745; color: white; padding: 10px; border-radius: 5px; margin: 5px;">
+                                <i class="fas fa-utensils"></i> Food
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Drag items to classify as Needs or Wants</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('needs_vs_wants_game') }}" class="btn btn-success">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Budget Balancer Modal -->
+<div class="modal fade" id="budgetBalancerModal" tabindex="-1" aria-labelledby="budgetBalancerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="budgetBalancerModalLabel">
+                    <i class="fas fa-sliders-h text-primary"></i> Budget Balancer - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Balance your monthly budget across categories while handling unexpected life events.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Set Income:</strong> Start with your monthly income using the income slider</li>
+                    <li><strong>Allocate Expenses:</strong> Use sliders to divide income across housing, food, transportation, entertainment, and other categories</li>
+                    <li><strong>Handle Events:</strong> Random events (car repairs, bonuses, medical bills) will appear - make smart choices</li>
+                    <li><strong>12-Month Challenge:</strong> Progress through 12 months and maximize your savings</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>The 50/30/20 budget rule (needs/wants/savings)</li>
+                    <li>How to handle unexpected financial emergencies</li>
+                    <li>Long-term budget planning and savings strategies</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-slider">
+                                <label style="color: #007bff; font-weight: bold;">Income: $3000</label>
+                                <div class="slider-bar" style="background: #007bff; height: 8px; border-radius: 4px; width: 80%; margin: 10px 0;"></div>
+                            </div>
+                            <div class="demo-categories" style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                                <div style="text-align: center;">
+                                    <div style="background: #28a745; color: white; padding: 8px; border-radius: 4px; font-size: 12px;">Housing</div>
+                                    <div style="background: #007bff; color: white; padding: 8px; border-radius: 4px; font-size: 12px;">Food</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="background: #ffc107; color: white; padding: 8px; border-radius: 4px; font-size: 12px;">Transport</div>
+                                    <div style="background: #dc3545; color: white; padding: 8px; border-radius: 4px; font-size: 12px;">Entertainment</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Use sliders to balance your budget across categories</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('budget_balancer_game') }}" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Savings Challenge Modal -->
+<div class="modal fade" id="savingsChallengeModal" tabindex="-1" aria-labelledby="savingsChallengeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="savingsChallengeModalLabel">
+                    <i class="fas fa-piggy-bank text-warning"></i> Savings Challenge - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Choose a savings goal and make smart financial decisions to reach it.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Choose Goal:</strong> Select from emergency fund, vacation, car, education, home, or retirement</li>
+                    <li><strong>Face Decisions:</strong> Make choices about spending vs saving in various scenarios</li>
+                    <li><strong>Track Progress:</strong> Watch your savings grow toward your goal</li>
+                    <li><strong>Learn Consequences:</strong> See how each decision impacts your financial future</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Goal-setting and delayed gratification</li>
+                    <li>Impact of daily choices on long-term savings</li>
+                    <li>Different savings strategies for different life goals</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-goal">
+                                <div style="background: #ffc107; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                    <i class="fas fa-piggy-bank fa-2x"></i>
+                                    <h6 style="margin: 10px 0 5px 0;">Savings Goal</h6>
+                                    <div style="font-size: 18px; font-weight: bold;">$5,000</div>
+                                </div>
+                            </div>
+                            <div class="demo-choices" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                                <button style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px;">
+                                    <i class="fas fa-plus"></i> Save $100
+                                </button>
+                                <button style="background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px;">
+                                    <i class="fas fa-shopping-bag"></i> Spend $50
+                                </button>
+                            </div>
+                            <div class="demo-progress" style="margin-top: 20px;">
+                                <div style="background: #e9ecef; height: 20px; border-radius: 10px; overflow: hidden;">
+                                    <div style="background: #ffc107; height: 100%; width: 65%; transition: width 0.3s;"></div>
+                                </div>
+                                <p class="text-muted small mt-2">Progress: 65% Complete</p>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Make smart choices to reach your savings goals</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('savings_challenge_game') }}" class="btn btn-warning">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Management Modal -->
+<div class="modal fade" id="loanModal" tabindex="-1" aria-labelledby="loanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loanModalLabel">
+                    <i class="fas fa-hand-holding-usd text-warning"></i> Loan Management - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Understand loan terms, interest rates, and make smart borrowing decisions.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Compare Loans:</strong> Analyze different loan offers with varying interest rates and terms</li>
+                    <li><strong>Calculate Payments:</strong> Use loan calculators to understand monthly payments</li>
+                    <li><strong>Make Decisions:</strong> Choose between different loan options for various scenarios</li>
+                    <li><strong>See Impact:</strong> Understand how loans affect your long-term financial health</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>How interest rates affect total loan cost</li>
+                    <li>Difference between good debt and bad debt</li>
+                    <li>Loan terms and their impact on monthly payments</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-loan-comparison" style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px;">
+                                <div style="background: #ffc107; color: white; padding: 15px; border-radius: 8px; text-align: center; min-width: 140px;">
+                                    <h6 style="margin: 0 0 10px 0;">Loan A</h6>
+                                    <div style="font-size: 14px;">5% Interest</div>
+                                    <div style="font-size: 16px; font-weight: bold;">$250/mo</div>
+                                    <div style="font-size: 12px; margin-top: 5px;">36 months</div>
+                                </div>
+                                <div style="background: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; min-width: 140px;">
+                                    <h6 style="margin: 0 0 10px 0;">Loan B</h6>
+                                    <div style="font-size: 14px;">8% Interest</div>
+                                    <div style="font-size: 16px; font-weight: bold;">$280/mo</div>
+                                    <div style="font-size: 12px; margin-top: 5px;">36 months</div>
+                                </div>
+                            </div>
+                            <div class="demo-calculator" style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: bold; margin-bottom: 10px;">Loan Calculator</div>
+                                <div style="display: flex; justify-content: space-around; align-items: center;">
+                                    <div>
+                                        <label style="font-size: 12px;">Amount: $10,000</label>
+                                        <div class="slider-bar" style="background: #ffc107; height: 6px; border-radius: 3px; width: 100px; margin: 5px 0;"></div>
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: bold;">Total: $9,000</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Compare loan options and calculate payments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('moderate_loan_game') }}" class="btn btn-warning">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Insurance Planning Modal -->
+<div class="modal fade" id="insuranceModal" tabindex="-1" aria-labelledby="insuranceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="insuranceModalLabel">
+                    <i class="fas fa-shield-alt text-info"></i> Insurance Planning - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Learn about different insurance types and match coverage to life situations.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Explore Types:</strong> Learn about health, auto, home, and life insurance</li>
+                    <li><strong>Match Scenarios:</strong> Choose appropriate coverage for different life events</li>
+                    <li><strong>Budget Coverage:</strong> Balance insurance costs with protection needs</li>
+                    <li><strong>Understand Risk:</strong> See how insurance protects against financial loss</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Different types of insurance and their purposes</li>
+                    <li>How to determine appropriate coverage levels</li>
+                    <li>Cost-benefit analysis of insurance decisions</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-insurance-types" style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                                <div style="background: #17a2b8; color: white; padding: 12px; border-radius: 6px; text-align: center; min-width: 100px;">
+                                    <i class="fas fa-heartbeat"></i>
+                                    <div style="font-size: 12px; margin-top: 5px;">Health</div>
+                                </div>
+                                <div style="background: #28a745; color: white; padding: 12px; border-radius: 6px; text-align: center; min-width: 100px;">
+                                    <i class="fas fa-car"></i>
+                                    <div style="font-size: 12px; margin-top: 5px;">Auto</div>
+                                </div>
+                                <div style="background: #ffc107; color: white; padding: 12px; border-radius: 6px; text-align: center; min-width: 100px;">
+                                    <i class="fas fa-home"></i>
+                                    <div style="font-size: 12px; margin-top: 5px;">Home</div>
+                                </div>
+                                <div style="background: #6f42c1; color: white; padding: 12px; border-radius: 6px; text-align: center; min-width: 100px;">
+                                    <i class="fas fa-user-shield"></i>
+                                    <div style="font-size: 12px; margin-top: 5px;">Life</div>
+                                </div>
+                            </div>
+                            <div class="demo-scenario" style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: bold; margin-bottom: 10px;">Scenario: New Car Purchase</div>
+                                <div style="display: flex; justify-content: space-around; align-items: center;">
+                                    <div>
+                                        <div style="background: #17a2b8; color: white; padding: 8px; border-radius: 4px; font-size: 12px;">
+                                            <i class="fas fa-check"></i> Auto Insurance: $200/mo
+                                        </div>
+                                        <div style="background: #ffc107; color: white; padding: 8px; border-radius: 4px; font-size: 12px; margin-top: 5px;">
+                                            <i class="fas fa-check"></i> Gap Coverage: $50/mo
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: bold;">Total: $250/mo</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Match insurance types to life scenarios</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('moderate_insurance_game') }}" class="btn btn-info">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Score Challenge Modal -->
+<div class="modal fade" id="creditModal" tabindex="-1" aria-labelledby="creditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="creditModalLabel">
+                    <i class="fas fa-chart-line text-warning"></i> Credit Score Challenge - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Understand how your decisions impact your credit score and financial future.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Make Choices:</strong> Face financial decisions that affect credit</li>
+                    <li><strong>See Impact:</strong> Watch your credit score change with each decision</li>
+                    <li><strong>Learn Factors:</strong> Understand what affects credit scores</li>
+                    <li><strong>Build Credit:</strong> Practice good credit habits</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Factors that influence credit scores</li>
+                    <li>How to build and maintain good credit</li>
+                    <li>Long-term impact of credit decisions</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-credit-score" style="text-align: center; margin-bottom: 20px;">
+                                <div style="font-size: 48px; font-weight: bold; color: #ffc107;">720</div>
+                                <div style="color: #6c757d;">GOOD CREDIT</div>
+                                <div class="slider-bar" style="background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%); height: 12px; border-radius: 6px; width: 200px; margin: 10px auto; position: relative;">
+                                    <div style="position: absolute; left: 60%; top: -4px; width: 20px; height: 20px; background: white; border: 3px solid #ffc107; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="demo-decisions" style="display: flex; gap: 15px; justify-content: center;">
+                                <button style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-size: 12px;">
+                                    <i class="fas fa-check"></i> Pay Bill
+                                </button>
+                                <button style="background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-size: 12px;">
+                                    <i class="fas fa-times"></i> Miss Payment
+                                </button>
+                                <button style="background: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-size: 12px;">
+                                    <i class="fas fa-credit-card"></i> Use Card
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Make decisions to build or damage your credit score</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('games') }}" class="btn btn-warning">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stock Market Simulator Modal -->
+<div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="stockModalLabel">
+                    <i class="fas fa-chart-line text-danger"></i> Stock Market Simulator - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Learn stock market basics through paper trading with simulated market data.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Research Stocks:</strong> Analyze company information and market trends</li>
+                    <li><strong>Buy & Sell:</strong> Practice trading stocks with virtual money</li>
+                    <li><strong>Track Performance:</strong> Monitor your portfolio's performance</li>
+                    <li><strong>Learn Strategy:</strong> Understand investment strategies and risk</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Basic stock market concepts and terminology</li>
+                    <li>How to research and analyze stocks</li>
+                    <li>Risk management in investing</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-stock-chart" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #dc3545;">AAPL - Apple Inc.</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="font-size: 24px; font-weight: bold;">$175.50</div>
+                                    <div style="color: #28a745; font-weight: bold;">+2.3% ▲</div>
+                                </div>
+                                <div class="slider-bar" style="background: linear-gradient(90deg, #dc3545 0%, #dc3545 30%, #28a745 70%, #28a745 100%); height: 40px; border-radius: 4px; position: relative;">
+                                    <div style="position: absolute; left: 50%; top: 15px; width: 10px; height: 10px; background: white; border: 2px solid #dc3545; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="demo-trading-actions" style="display: flex; gap: 15px; justify-content: center;">
+                                <button style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px;">
+                                    <i class="fas fa-arrow-up"></i> Buy 10 Shares
+                                </button>
+                                <button style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px;">
+                                    <i class="fas fa-arrow-down"></i> Sell 5 Shares
+                                </button>
+                                <div style="background: #6c757d; color: white; padding: 10px 15px; border-radius: 5px;">
+                                    <div style="font-size: 12px;">Portfolio</div>
+                                    <div style="font-weight: bold;">$50,000</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Paper-trade stocks with real market data</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('advanced_stock_game') }}" class="btn btn-danger">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Portfolio Management Modal -->
+<div class="modal fade" id="portfolioModal" tabindex="-1" aria-labelledby="portfolioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="portfolioModalLabel">
+                    <i class="fas fa-briefcase text-danger"></i> Portfolio Management - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Learn to build and manage diversified investment portfolios.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Asset Allocation:</strong> Distribute investments across different asset classes</li>
+                    <li><strong>Risk Assessment:</strong> Balance risk vs. return in your portfolio</li>
+                    <li><strong>Rebalancing:</strong> Adjust portfolio as market conditions change</li>
+                    <li><strong>Performance Tracking:</strong> Monitor portfolio growth and make adjustments</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Diversification principles and benefits</li>
+                    <li>Risk tolerance assessment</li>
+                    <li>Portfolio rebalancing strategies</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-portfolio" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <div style="font-weight: bold; margin-bottom: 15px; text-align: center;">Diversified Portfolio</div>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                                    <div style="background: #28a745; color: white; padding: 10px; border-radius: 4px; text-align: center;">
+                                        <div style="font-size: 12px;">Stocks</div>
+                                        <div style="font-weight: bold;">40%</div>
+                                    </div>
+                                    <div style="background: #17a2b8; color: white; padding: 10px; border-radius: 4px; text-align: center;">
+                                        <div style="font-size: 12px;">Bonds</div>
+                                        <div style="font-weight: bold;">30%</div>
+                                    </div>
+                                    <div style="background: #ffc107; color: white; padding: 10px; border-radius: 4px; text-align: center;">
+                                        <div style="font-size: 12px;">Real Estate</div>
+                                        <div style="font-weight: bold;">20%</div>
+                                    </div>
+                                    <div style="background: #6f42c1; color: white; padding: 10px; border-radius: 4px; text-align: center;">
+                                        <div style="font-size: 12px;">Cash</div>
+                                        <div style="font-weight: bold;">10%</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: center; font-weight: bold; color: #dc3545;">Total Value: $100,000</div>
+                            </div>
+                            <div class="demo-risk-meter" style="text-align: center;">
+                                <div style="font-weight: bold; margin-bottom: 10px;">Risk Level: Moderate</div>
+                                <div class="slider-bar" style="background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%); height: 10px; border-radius: 5px; width: 200px; margin: 0 auto; position: relative;">
+                                    <div style="position: absolute; left: 50%; top: -3px; width: 16px; height: 16px; background: white; border: 2px solid #ffc107; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Balance risk across different asset classes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('advanced_portfolio_tool') }}" class="btn btn-danger">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Retirement Planning Modal -->
+<div class="modal fade" id="retirementModal" tabindex="-1" aria-labelledby="retirementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="retirementModalLabel">
+                    <i class="fas fa-home text-danger"></i> Retirement Planning - Game Demo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Objective:</strong> Plan for long-term financial security and retirement goals.
+                </div>
+                
+                <h6>How to Play:</h6>
+                <ol>
+                    <li><strong>Set Goals:</strong> Define retirement age and lifestyle goals</li>
+                    <li><strong>Calculate Needs:</strong> Estimate retirement expenses and savings needed</li>
+                    <li><strong>Investment Strategy:</strong> Choose appropriate retirement investments</li>
+                    <li><strong>Track Progress:</strong> Monitor progress toward retirement goals</li>
+                </ol>
+                
+                <h6>What You'll Learn:</h6>
+                <ul>
+                    <li>Retirement savings calculations and planning</li>
+                    <li>Compound interest and long-term growth</li>
+                    <li>Retirement account types and strategies</li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <div class="game-preview-demo">
+                        <div class="demo-interface">
+                            <div class="demo-retirement" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <div style="font-weight: bold; margin-bottom: 15px; text-align: center;">Retirement Timeline</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 14px; color: #6c757d;">Current Age</div>
+                                        <div style="font-size: 20px; font-weight: bold;">30</div>
+                                    </div>
+                                    <div class="slider-bar" style="background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%); height: 8px; border-radius: 4px; flex: 1; margin: 0 20px;"></div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 14px; color: #6c757d;">Retirement Age</div>
+                                        <div style="font-size: 20px; font-weight: bold;">65</div>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                                    <div style="background: #28a745; color: white; padding: 10px; border-radius: 4px;">
+                                        <div style="font-size: 12px;">Monthly Savings</div>
+                                        <div style="font-weight: bold;">$800</div>
+                                    </div>
+                                    <div style="background: #17a2b8; color: white; padding: 10px; border-radius: 4px;">
+                                        <div style="font-size: 12px;">Total Saved</div>
+                                        <div style="font-weight: bold;">$1.2M</div>
+                                    </div>
+                                    <div style="background: #ffc107; color: white; padding: 10px; border-radius: 4px;">
+                                        <div style="font-size: 12px;">Monthly Income</div>
+                                        <div style="font-weight: bold;">$6,000</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demo-goals" style="text-align: center;">
+                                <div style="font-weight: bold; margin-bottom: 10px;">Retirement Goals</div>
+                                <div style="display: flex; gap: 10px; justify-content: center;">
+                                    <div style="background: #6f42c1; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+                                        <i class="fas fa-home"></i> Travel
+                                    </div>
+                                    <div style="background: #dc3545; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+                                        <i class="fas fa-heart"></i> Healthcare
+                                    </div>
+                                    <div style="background: #28a745; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+                                        <i class="fas fa-umbrella-beach"></i> Leisure
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2">Plan your long-term financial security</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('retirement_road') }}" class="btn btn-danger">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section id="features" class="fv-features-v2">
+    <div class="container" style="max-width: 1240px;">
+        <div class="fv-section-head">
+            <span class="fv-eyebrow">
+                <i class="fas fa-route"></i> How Finovo helps
+            </span>
+            <h2 class="fv-feat-title">
+                Your path from <span class="fv-grad">first lesson</span> to confident choices
+            </h2>
+            <p class="fv-feat-sub">
+                Finovo is built for students and beginners: short reads, hands-on games, a simple progress view, plain-language insights, and safe calculators—so you always know what to try next.
+            </p>
+        </div>
+
+        <div class="fv-feature-grid">
+            <a href="{{ url_for('financial_tips') }}" class="fv-feature-card" data-variant="learn">
+                <div class="fv-icon"><i class="fas fa-graduation-cap" aria-hidden="true"></i></div>
+                <span class="fv-feat-pill"><i class="fas fa-book-open" aria-hidden="true"></i> Learn</span>
+                <h3>Plain-language money guides</h3>
+                <p class="fv-feat-lead">Short articles on saving, spending, credit, and planning—written to be read in a few minutes.</p>
+                <div class="fv-feat-body">
+                    <div class="fv-feat-block">
+                        <span class="fv-feat-label">How it works</span>
+                        <p class="fv-feat-text">Open a topic you care about, read the takeaway, then use it when you play games or run a simulation.</p>
+                    </div>
+                    <div class="fv-feat-block fv-feat-block--benefit">
+                        <span class="fv-feat-label">Why it helps</span>
+                        <p class="fv-feat-text">You pick up useful words and ideas first, so games and numbers feel less intimidating.</p>
+                    </div>
+                </div>
+                <span class="fv-arrow">Browse tips <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+
+            <a href="{{ url_for('games') }}" class="fv-feature-card" data-variant="games">
+                <div class="fv-icon"><i class="fas fa-gamepad" aria-hidden="true"></i></div>
+                <span class="fv-feat-pill"><i class="fas fa-gamepad" aria-hidden="true"></i> Play</span>
+                <h3>Interactive money games</h3>
+                <p class="fv-feat-lead">Practice real-life choices in quizzes and simulations—from everyday budgets to investing basics.</p>
+                <div class="fv-feat-body">
+                    <div class="fv-feat-block">
+                        <span class="fv-feat-label">How it works</span>
+                        <p class="fv-feat-text">Choose a skill level, complete short scenarios, and get instant feedback and a score you can improve on.</p>
+                    </div>
+                    <div class="fv-feat-block fv-feat-block--benefit">
+                        <span class="fv-feat-label">Why it helps</span>
+                        <p class="fv-feat-text">You learn by doing, which makes habits like saving and comparing trade-offs easier to remember.</p>
+                    </div>
+                </div>
+                <span class="fv-arrow">View games <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="fv-feature-card" data-variant="track">
+                <div class="fv-icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></div>
+                <span class="fv-feat-pill"><i class="fas fa-chart-pie" aria-hidden="true"></i> Track</span>
+                <h3>Progress in one dashboard</h3>
+                <p class="fv-feat-lead">After you sign in, see the games you have played, scores, and simple charts in a single view.</p>
+                <div class="fv-feat-body">
+                    <div class="fv-feat-block">
+                        <span class="fv-feat-label">How it works</span>
+                        <p class="fv-feat-text">Each finished game can save to your account so your dashboard updates as you go.</p>
+                    </div>
+                    <div class="fv-feat-block fv-feat-block--benefit">
+                        <span class="fv-feat-label">Why it helps</span>
+                        <p class="fv-feat-text">You can spot what you have already tried and what to focus on next—without digging through menus.</p>
+                    </div>
+                </div>
+                <span class="fv-arrow">Open dashboard <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+
+            <a href="{{ url_for('ai_insights') }}" class="fv-feature-card" data-variant="ai">
+                <div class="fv-icon"><i class="fas fa-lightbulb" aria-hidden="true"></i></div>
+                <span class="fv-feat-pill"><i class="fas fa-chart-line" aria-hidden="true"></i> Analyze</span>
+                <h3>Insights from your activity</h3>
+                <p class="fv-feat-lead">Turn your saved game activity into clear, gentle suggestions about what to revisit or try next.</p>
+                <div class="fv-feat-body">
+                    <div class="fv-feat-block">
+                        <span class="fv-feat-label">How it works</span>
+                        <p class="fv-feat-text">Finovo looks at the progress stored on your account and summarizes patterns in simple language.</p>
+                    </div>
+                    <div class="fv-feat-block fv-feat-block--benefit">
+                        <span class="fv-feat-label">Why it helps</span>
+                        <p class="fv-feat-text">You spend less time guessing what to study next and more time on the skills that matter to you.</p>
+                    </div>
+                </div>
+                <span class="fv-arrow">See insights <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+
+            <a href="{{ url_for('simulations') }}" class="fv-feature-card" data-variant="sim">
+                <div class="fv-icon"><i class="fas fa-sliders-h" aria-hidden="true"></i></div>
+                <span class="fv-feat-pill"><i class="fas fa-seedling" aria-hidden="true"></i> Improve</span>
+                <h3>Safe practice for big decisions</h3>
+                <p class="fv-feat-lead">Use calculators and “what if” tools to compare loans, savings targets, and plans—without using real money.</p>
+                <div class="fv-feat-body">
+                    <div class="fv-feat-block">
+                        <span class="fv-feat-label">How it works</span>
+                        <p class="fv-feat-text">Enter amounts you are curious about, change one variable at a time, and compare outcomes side by side.</p>
+                    </div>
+                    <div class="fv-feat-block fv-feat-block--benefit">
+                        <span class="fv-feat-label">Why it helps</span>
+                        <p class="fv-feat-text">You build number confidence before you make similar choices in real life.</p>
+                    </div>
+                </div>
+                <span class="fv-arrow">Try simulations <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section id="testimonials" class="testimonials-section" style="padding: var(--spacing-3xl) var(--spacing-xl);">
+    <div class="container" style="max-width: 900px;">
+        <h2 style="text-align: center; color: var(--primary-blue); margin-bottom: var(--spacing-xl);">What Our Users Say</h2>
+        <div class="testimonials-slider">
+            <div class="testimonial-card">
+                <div class="rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p>"Finovo transformed how I understand personal finance. The games made learning fun!"</p>
+                <div class="user-info"><span>Sarah Johnson</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="faq" class="faq-section fv-faq">
+    <div class="container" style="max-width: 1000px;">
+        <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">Frequently Asked Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>How does the gamification work?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Our platform uses interactive games and challenges to teach financial concepts. Start with beginner games to learn the basics, then progress to more advanced simulations.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Do I need to create an account to use FINOVO?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, creating a free account is required to access our financial games. Registration is quick and easy.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>What topics does FINOVO cover?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>FINOVO covers needs vs wants, budgeting, saving, investing, stock market basics, and personal finance management organized into beginner, moderate, and advanced levels.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Result - Finovo{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 2rem auto; padding: 2rem;">
+    <div style="background: var(--white); padding: 2rem; border-radius: 10px; box-shadow: var(--shadow); text-align: center;">
+        {% if result.correct %}
+        <div style="font-size: 4rem; color: var(--success-color); margin-bottom: 1rem;">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 style="color: var(--success-color); margin-bottom: 1rem;">Correct!</h2>
+        {% else %}
+        <div style="font-size: 4rem; color: var(--error-color); margin-bottom: 1rem;">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <h2 style="color: var(--error-color); margin-bottom: 1rem;">Incorrect</h2>
+        {% endif %}
+        
+        <div style="background: var(--light-bg); padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
+            <p style="margin-bottom: 1rem;"><strong>Your Answer:</strong> {{ result.selected }}</p>
+            <p style="margin-bottom: 1rem;"><strong>Correct Answer:</strong> {{ result.correct_answer }}</p>
+            <p style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--primary-blue);">
+                <strong>Explanation:</strong> {{ result.explanation }}
+            </p>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            {% if next_question_id <= total_questions %}
+            <a href="{{ url_for('beginner_bp.quiz_question', question_id=next_question_id) }}" 
+               style="background: var(--primary-blue); color: var(--white); padding: 1rem 3rem; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;">
+                Next Question <i class="fas fa-arrow-right"></i>
+            </a>
+            {% else %}
+            <a href="{{ url_for('beginner_bp.quiz_score') }}" 
+               style="background: var(--primary-blue); color: var(--white); padding: 1rem 3rem; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;">
+                View Final Score <i class="fas fa-trophy"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

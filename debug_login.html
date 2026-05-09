@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Login</title>
+    <style>
+        .auth-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+        .auth-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Login Page</h1>
+    <div id="auth-message"></div>
+    
+    <script>
+        console.log('🚀 Debug page starting...');
+    </script>
+    
+    <!-- Load Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        console.log('✅ Supabase CDN script tag executed');
+        console.log('📊 window.supabase type:', typeof window.supabase);
+        console.log('📊 window.supabase value:', window.supabase);
+        
+        // Test Supabase connection
+        if (typeof window.supabase !== 'undefined') {
+            console.log('✅ Supabase is available');
+            
+            try {
+                const { createClient } = window.supabase;
+                const supabase = createClient('https://kxlhtycezfqqkgklwyzp.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bGh0eWNlemZxcWtna2x3eXpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MjE4NjAsImV4cCI6MjA5MzE5Nzg2MH0.kYqEixBnFJkDfzY8CFkNWaeX4vqzyVk_496a_d8c21E');
+                
+                console.log('✅ Supabase client created successfully');
+                
+                // Test session check
+                supabase.auth.getSession().then(({ data: { session } }) => {
+                    console.log('📊 Session check result:', session);
+                    
+                    if (session && session.user) {
+                        document.getElementById('auth-message').innerHTML = `
+                            <div class="auth-success">
+                                ✅ User is logged in: ${session.user.email}
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('auth-message').innerHTML = `
+                            <div class="auth-success">
+                                ✅ Supabase working, but no active session
+                            </div>
+                        `;
+                    }
+                }).catch(error => {
+                    console.error('❌ Session check failed:', error);
+                    document.getElementById('auth-message').innerHTML = `
+                        <div class="auth-error">
+                            ❌ Session check failed: ${error.message}
+                        </div>
+                    `;
+                });
+                
+            } catch (error) {
+                console.error('❌ Supabase client creation failed:', error);
+                document.getElementById('auth-message').innerHTML = `
+                    <div class="auth-error">
+                        ❌ Supabase client creation failed: ${error.message}
+                    </div>
+                `;
+            }
+        } else {
+            console.error('❌ Supabase not available');
+            document.getElementById('auth-message').innerHTML = `
+                <div class="auth-error">
+                    ❌ Supabase not available. Check CDN loading.
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

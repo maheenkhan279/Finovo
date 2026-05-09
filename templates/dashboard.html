@@ -1,0 +1,782 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --fin-navy-1: #0b1b34;
+        --fin-navy-2: #11264d;
+        --fin-navy-3: #16325c;
+        --fin-cyan: #22d3ee;
+        --fin-green: #34d399;
+        --fin-blue: #60a5fa;
+        --fin-violet: #a78bfa;
+        --fin-rose: #fb7185;
+        --fin-amber: #fbbf24;
+        --fin-line: rgba(255, 255, 255, 0.08);
+        --fin-text: #e5edff;
+        --fin-text-dim: #98a4c5;
+    }
+
+    body {
+        background:
+            radial-gradient(1200px 600px at 90% -10%, rgba(34, 211, 238, 0.12), transparent 60%),
+            radial-gradient(900px 600px at -10% 110%, rgba(167, 139, 250, 0.12), transparent 60%),
+            linear-gradient(180deg, var(--fin-navy-1) 0%, #08152b 100%);
+        color: var(--fin-text);
+        min-height: 100vh;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0.15) 0%, rgba(96, 165, 250, 0.10) 60%, rgba(167, 139, 250, 0.18) 100%);
+        border-bottom: 1px solid var(--fin-line);
+        padding: 2.25rem 0;
+        margin-bottom: 1.75rem;
+        backdrop-filter: blur(8px);
+    }
+
+    .dashboard-header h2 {
+        color: #fff;
+    }
+
+    .dashboard-header p {
+        color: var(--fin-text-dim);
+    }
+
+    .glass-card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+        border: 1px solid var(--fin-line);
+        border-radius: 16px;
+        padding: 1.25rem 1.25rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        color: var(--fin-text);
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(140px 90px at 90% 0%, rgba(34, 211, 238, 0.18), transparent 70%);
+        pointer-events: none;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        margin-bottom: 0.5rem;
+        background: rgba(34, 211, 238, 0.12);
+        color: var(--fin-cyan);
+    }
+
+    .stat-icon.green { background: rgba(52, 211, 153, 0.12); color: var(--fin-green); }
+    .stat-icon.blue  { background: rgba(96, 165, 250, 0.14); color: var(--fin-blue); }
+    .stat-icon.amber { background: rgba(251, 191, 36, 0.14); color: var(--fin-amber); }
+
+    .stat-number {
+        font-size: 2.1rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.3px;
+    }
+
+    .stat-label {
+        color: var(--fin-text-dim);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 320px;
+    }
+
+    .chart-container.small {
+        height: 280px;
+    }
+
+    .panel-title {
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .panel-subtitle {
+        color: var(--fin-text-dim);
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--fin-text-dim);
+        border: 1px dashed var(--fin-line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .quick-action-btn {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--fin-line);
+        border-radius: 14px;
+        padding: 1.25rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--fin-text);
+        display: block;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(34, 211, 238, 0.18);
+        border-color: rgba(34, 211, 238, 0.4);
+        color: #fff;
+    }
+
+    .quick-action-btn i {
+        color: var(--fin-cyan);
+        font-size: 1.6rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .table-mini {
+        width: 100%;
+        font-size: 0.92rem;
+        color: var(--fin-text);
+    }
+
+    .table-mini th, .table-mini td {
+        padding: 0.55rem 0.5rem;
+        border-bottom: 1px solid var(--fin-line);
+        text-align: left;
+    }
+
+    .badge-level {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
+        text-transform: capitalize;
+    }
+
+    .badge-level.beginner { background: rgba(52, 211, 153, 0.16); color: var(--fin-green); }
+    .badge-level.moderate { background: rgba(251, 191, 36, 0.16); color: var(--fin-amber); }
+    .badge-level.advanced { background: rgba(251, 113, 133, 0.16); color: var(--fin-rose); }
+    .badge-level.unknown  { background: rgba(148, 163, 184, 0.16); color: #cbd5e1; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+async function waitForSupabaseClient(maxMs = 5000) {
+    const start = Date.now();
+    while (!window.supabaseClient && Date.now() - start < maxMs) {
+        await new Promise((r) => setTimeout(r, 100));
+    }
+    return window.supabaseClient || null;
+}
+
+function classifyLevel(row) {
+    var raw = (row && row.level ? String(row.level) : "").toLowerCase();
+    if (raw.indexOf("begin") >= 0) return "beginner";
+    if (raw.indexOf("mod") >= 0) return "moderate";
+    if (raw.indexOf("adv") >= 0) return "advanced";
+    var name = (row && row.game_name ? String(row.game_name) : "").toLowerCase();
+    if (name.indexOf("beginner") >= 0 || name.indexOf("quiz") >= 0 || name.indexOf("savings") >= 0 || name.indexOf("budget_balancer") >= 0) return "beginner";
+    if (name.indexOf("loan") >= 0 || name.indexOf("credit") >= 0 || name.indexOf("insurance") >= 0 || name.indexOf("moderate") >= 0) return "moderate";
+    if (name.indexOf("stock") >= 0 || name.indexOf("portfolio") >= 0 || name.indexOf("retirement") >= 0 || name.indexOf("advanced") >= 0) return "advanced";
+    return "unknown";
+}
+
+function prettyName(name) {
+    if (!name) return "Game";
+    return String(name).replace(/_/g, " ").replace(/\s+/g, " ").trim()
+        .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+}
+
+var __scoreChart = null;
+var __levelChart = null;
+/** Cancels stale async work when auth user switches mid-flight. */
+var __dashLoadGen = 0;
+var __lastDashboardUserId = null;
+
+window.progressChart = null;
+window.skillChart = null;
+
+function destroyDashboardChartsFully() {
+    ["scoreChart", "levelChart"].forEach(function (canvasId) {
+        var el = document.getElementById(canvasId);
+        if (!el || typeof Chart === "undefined") return;
+        try {
+            if (typeof Chart.getChart === "function") {
+                var reg = Chart.getChart(el);
+                if (reg) reg.destroy();
+            }
+        } catch (e) { /* ignore */ }
+    });
+    if (__scoreChart) {
+        try { __scoreChart.destroy(); } catch (e) { /* ignore */ }
+        __scoreChart = null;
+    }
+    if (__levelChart) {
+        try { __levelChart.destroy(); } catch (e) { /* ignore */ }
+        __levelChart = null;
+    }
+    window.progressChart = null;
+    window.skillChart = null;
+}
+
+function remountDashboardCanvases() {
+    var sHost = document.getElementById("scoreChartMount");
+    var lHost = document.getElementById("levelChartMount");
+    if (sHost) sHost.innerHTML = '<canvas id="scoreChart"></canvas>';
+    if (lHost) lHost.innerHTML = '<canvas id="levelChart"></canvas>';
+}
+
+/**
+ * Hard reset all client-only dashboard state (charts, table, stats).
+ * Safe to call from logout flows on this page only.
+ */
+window.finovoDestroyDashboardState = function () {
+    __dashLoadGen++;
+    destroyDashboardChartsFully();
+    remountDashboardCanvases();
+    __lastDashboardUserId = null;
+    var tbody = document.getElementById("recentRowsBody");
+    if (tbody) tbody.innerHTML = "";
+    var gp = document.getElementById("gamesPlayed");
+    var ts = document.getElementById("totalScore");
+    var hi = document.getElementById("highScore");
+    var av = document.getElementById("avg-score");
+    if (gp) gp.innerText = "0";
+    if (ts) ts.innerText = "0";
+    if (hi) hi.innerText = "0";
+    if (av) av.innerText = "0";
+    var msgEl = document.getElementById("dashboard-message");
+    if (msgEl) msgEl.innerText = "";
+    var usernameEl = document.getElementById("username");
+    if (usernameEl) usernameEl.innerText = "…";
+    showEmptyAnalytics(true);
+};
+
+function resetDashboardView() {
+    destroyDashboardChartsFully();
+    remountDashboardCanvases();
+    var tbody = document.getElementById("recentRowsBody");
+    if (tbody) tbody.innerHTML = "";
+    var gp = document.getElementById("gamesPlayed");
+    var ts = document.getElementById("totalScore");
+    var hi = document.getElementById("highScore");
+    var av = document.getElementById("avg-score");
+    if (gp) gp.innerText = "0";
+    if (ts) ts.innerText = "0";
+    if (hi) hi.innerText = "0";
+    if (av) av.innerText = "0";
+    var msgEl = document.getElementById("dashboard-message");
+    if (msgEl) msgEl.innerText = "";
+    showEmptyAnalytics(true);
+}
+
+function renderScoreChart(rows) {
+    var ctx = document.getElementById("scoreChart");
+    if (!ctx || typeof Chart === "undefined") return;
+    if (!Array.isArray(rows) || !rows.length) return;
+
+    var sorted = rows.slice().sort(function (a, b) {
+        var ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+        var tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return ta - tb;
+    });
+
+    var labels = sorted.map(function (r, i) {
+        if (r.created_at) {
+            try {
+                var d = new Date(r.created_at);
+                return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+            } catch (e) { return prettyName(r.game_name) || ("#" + (i + 1)); }
+        }
+        return prettyName(r.game_name) || ("#" + (i + 1));
+    });
+    var scores = sorted.map(function (r) { return Number(r.score) || 0; });
+
+    if (typeof Chart !== "undefined" && Chart.getChart && ctx) {
+        var exS = Chart.getChart(ctx);
+        if (exS) {
+            try { exS.destroy(); } catch (e) { /* ignore */ }
+        }
+    }
+    if (__scoreChart) {
+        try { __scoreChart.destroy(); } catch (e) { /* ignore */ }
+        __scoreChart = null;
+    }
+
+    var grad = ctx.getContext("2d").createLinearGradient(0, 0, 0, 320);
+    grad.addColorStop(0, "rgba(34, 211, 238, 0.45)");
+    grad.addColorStop(1, "rgba(34, 211, 238, 0.02)");
+
+    __scoreChart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Score",
+                data: scores,
+                borderColor: "#22d3ee",
+                backgroundColor: grad,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#34d399",
+                pointBorderColor: "#0b1b34",
+                pointHoverRadius: 6,
+                borderWidth: 2.5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 900, easing: "easeOutQuart" },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "rgba(8, 21, 43, 0.95)",
+                    titleColor: "#e5edff",
+                    bodyColor: "#cbd5e1",
+                    borderColor: "rgba(34, 211, 238, 0.4)",
+                    borderWidth: 1,
+                    callbacks: {
+                        title: function (items) {
+                            if (!items || !items.length) return "";
+                            var i = items[0].dataIndex;
+                            var row = sorted[i];
+                            return prettyName(row && row.game_name) || items[0].label;
+                        },
+                        label: function (item) { return "Score: " + item.parsed.y; }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: "rgba(255,255,255,0.05)", drawBorder: false },
+                    ticks: { color: "#98a4c5", maxRotation: 0, autoSkip: true }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "rgba(255,255,255,0.06)", drawBorder: false },
+                    ticks: { color: "#98a4c5" }
+                }
+            }
+        }
+    });
+    window.progressChart = __scoreChart;
+}
+
+function renderLevelChart(rows) {
+    var ctx = document.getElementById("levelChart");
+    if (!ctx || typeof Chart === "undefined") return;
+    if (!Array.isArray(rows) || !rows.length) return;
+
+    var counts = { beginner: 0, moderate: 0, advanced: 0, unknown: 0 };
+    rows.forEach(function (r) { counts[classifyLevel(r)] += 1; });
+
+    var order = [
+        { key: "beginner", label: "Beginner", color: "#34d399" },
+        { key: "moderate", label: "Moderate", color: "#fbbf24" },
+        { key: "advanced", label: "Advanced", color: "#fb7185" },
+        { key: "unknown", label: "Other", color: "#94a3b8" }
+    ];
+    var labels = [];
+    var data = [];
+    var bg = [];
+    order.forEach(function (o) {
+        var n = counts[o.key];
+        if (n > 0) {
+            labels.push(o.label);
+            data.push(n);
+            bg.push(o.color);
+        }
+    });
+    if (!data.length) return;
+
+    if (typeof Chart !== "undefined" && Chart.getChart && ctx) {
+        var exL = Chart.getChart(ctx);
+        if (exL) {
+            try { exL.destroy(); } catch (e) { /* ignore */ }
+        }
+    }
+    if (__levelChart) {
+        try { __levelChart.destroy(); } catch (e) { /* ignore */ }
+        __levelChart = null;
+    }
+
+    __levelChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: bg,
+                borderColor: "rgba(8, 21, 43, 0.95)",
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "62%",
+            animation: { duration: 900, easing: "easeOutQuart" },
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: { color: "#cbd5e1", boxWidth: 12, padding: 12 }
+                },
+                tooltip: {
+                    backgroundColor: "rgba(8, 21, 43, 0.95)",
+                    titleColor: "#e5edff",
+                    bodyColor: "#cbd5e1",
+                    borderColor: "rgba(96, 165, 250, 0.4)",
+                    borderWidth: 1
+                }
+            }
+        }
+    });
+    window.skillChart = __levelChart;
+}
+
+function renderRecentTable(rows) {
+    var tbody = document.getElementById("recentRowsBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    var recent = rows.slice().sort(function (a, b) {
+        var ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+        var tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return tb - ta;
+    }).slice(0, 6);
+
+    if (!recent.length) {
+        tbody.innerHTML = "";
+        return;
+    }
+
+    tbody.innerHTML = recent.map(function (r) {
+        var level = classifyLevel(r);
+        var when = r.created_at
+            ? new Date(r.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+            : "—";
+        return "<tr>"
+            + "<td>" + (prettyName(r.game_name) || "Game") + "</td>"
+            + "<td><span class=\"badge-level " + level + "\">" + level + "</span></td>"
+            + "<td>" + (Number(r.score) || 0) + "</td>"
+            + "<td style=\"color:#98a4c5\">" + when + "</td>"
+            + "</tr>";
+    }).join("");
+}
+
+function showEmptyAnalytics(showEmpty) {
+    var emptyEl = document.getElementById("analyticsEmpty");
+    var chartsEl = document.getElementById("analyticsCharts");
+    var recentEl = document.getElementById("recentPanel");
+    if (!emptyEl || !chartsEl) return;
+    if (showEmpty) {
+        emptyEl.style.display = "block";
+        chartsEl.style.display = "none";
+        if (recentEl) recentEl.style.display = "none";
+    } else {
+        emptyEl.style.display = "none";
+        chartsEl.style.display = "";
+        if (recentEl) recentEl.style.display = "";
+    }
+}
+
+async function loadDashboard() {
+    var myGen = ++__dashLoadGen;
+    resetDashboardView();
+    try {
+        await waitForSupabaseClient();
+        if (myGen !== __dashLoadGen) return;
+        if (!window.supabaseClient) {
+            console.error("Supabase client not ready");
+            return;
+        }
+
+        var userRes = await window.supabaseClient.auth.getUser();
+        if (myGen !== __dashLoadGen) return;
+        if (userRes.error) console.error("getUser error:", userRes.error.message);
+        var user = userRes.data && userRes.data.user ? userRes.data.user : null;
+
+        if (!user) {
+            try { await window.supabaseClient.auth.refreshSession(); } catch (e) { /* ignore */ }
+            userRes = await window.supabaseClient.auth.getUser();
+            if (userRes.error) console.error("getUser (retry) error:", userRes.error.message);
+            user = userRes.data && userRes.data.user ? userRes.data.user : null;
+        }
+
+        if (!user) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (myGen !== __dashLoadGen) return;
+
+        console.log("CURRENT USER:", user.id);
+
+        if (typeof window.ensureProfile === "function") {
+            try { await window.ensureProfile(); } catch (e) { /* non-fatal */ }
+        }
+        if (myGen !== __dashLoadGen) return;
+
+        const usernameEl = document.getElementById("username");
+        if (usernameEl) {
+            usernameEl.innerText = "";
+            try {
+                const { data: profile } = await window.supabaseClient
+                    .from("profiles")
+                    .select("username, full_name")
+                    .eq("id", user.id)
+                    .maybeSingle();
+                usernameEl.innerText =
+                    (profile && profile.username) ||
+                    (profile && profile.full_name) ||
+                    user.user_metadata?.username ||
+                    (user.email ? user.email.split("@")[0] : "") ||
+                    user.email ||
+                    "";
+            } catch (e) {
+                usernameEl.innerText =
+                    user.user_metadata?.username || user.email || "";
+            }
+        }
+
+        if (myGen !== __dashLoadGen) return;
+
+        const { data, error } = await window.supabaseClient
+            .from("game_progress")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+
+        console.log("LIVE FETCHED DATA:", data);
+
+        if (myGen !== __dashLoadGen) return;
+
+        if (error) {
+            console.error("game_progress fetch failed:", error.message || error);
+        }
+
+        var rows = Array.isArray(data) ? data.slice() : [];
+        rows = rows.filter(function (r) {
+            return r && r.user_id === user.id;
+        });
+
+        if (!rows.length) {
+            const msgEl = document.getElementById("dashboard-message");
+            if (msgEl) {
+                msgEl.innerText = error
+                    ? "Could not load your game progress. Please refresh."
+                    : "Play games to see your analytics";
+            }
+            showEmptyAnalytics(true);
+            __lastDashboardUserId = user.id;
+            return;
+        }
+
+        let totalScore = 0;
+        let highScore = 0;
+        rows.forEach(function (item) {
+            var s = Number(item.score) || 0;
+            totalScore += s;
+            if (s > highScore) highScore = s;
+        });
+        const gamesPlayed = rows.length;
+
+        const gpEl = document.getElementById("gamesPlayed");
+        if (gpEl) gpEl.innerText = String(gamesPlayed);
+        const tsEl = document.getElementById("totalScore");
+        if (tsEl) tsEl.innerText = String(totalScore);
+        const hiEl = document.getElementById("highScore");
+        if (hiEl) hiEl.innerText = String(highScore);
+        const avgScoreEl = document.getElementById("avg-score");
+        if (avgScoreEl) avgScoreEl.innerText = String(Math.round(totalScore / gamesPlayed));
+
+        const msgEl2 = document.getElementById("dashboard-message");
+        if (msgEl2) msgEl2.innerText = "";
+
+        showEmptyAnalytics(false);
+        renderScoreChart(rows);
+        if (myGen !== __dashLoadGen) return;
+        renderLevelChart(rows);
+        if (myGen !== __dashLoadGen) return;
+        renderRecentTable(rows);
+        __lastDashboardUserId = user.id;
+    } catch (e) {
+        console.error("Dashboard load error:", e);
+    }
+}
+
+window.addEventListener("DOMContentLoaded", function () {
+    loadDashboard();
+    waitForSupabaseClient().then(function () {
+        if (!window.supabaseClient || !window.supabaseClient.auth) return;
+        window.supabaseClient.auth.onAuthStateChange(function () {
+            loadDashboard();
+        });
+    });
+});
+
+window.addEventListener("pageshow", function (ev) {
+    if (ev.persisted) {
+        __dashLoadGen++;
+        loadDashboard();
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">Welcome, <span id="username">…</span></h2>
+                <p class="mb-0">Your financial learning analytics, powered by your real game activity.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex align-items-center justify-content-md-end gap-3">
+                    <div class="stat-icon"><i class="fas fa-user"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card stat-card">
+                <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
+                <div class="stat-number" id="gamesPlayed">0</div>
+                <div class="stat-label">Total Games Played</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card stat-card">
+                <div class="stat-icon green"><i class="fas fa-coins"></i></div>
+                <div class="stat-number" id="totalScore">0</div>
+                <div class="stat-label">Total Score</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card stat-card">
+                <div class="stat-icon amber"><i class="fas fa-trophy"></i></div>
+                <div class="stat-number" id="highScore">0</div>
+                <div class="stat-label">Highest Score</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card stat-card">
+                <div class="stat-icon blue"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-number" id="avg-score">0</div>
+                <div class="stat-label">Average Score</div>
+            </div>
+        </div>
+    </div>
+
+    <p id="dashboard-message" class="mb-3" style="color: var(--fin-text-dim);"></p>
+
+    <div id="analyticsEmpty" class="empty-state mb-4" style="display:none;">
+        <i class="fas fa-chart-line" style="font-size:2rem;color:var(--fin-cyan);"></i>
+        <h5 class="mt-2 mb-1" style="color:#fff;">Play games to see your analytics</h5>
+        <p class="mb-2">Your scores, levels, and progress charts will appear here once you complete a game.</p>
+        <a href="{{ url_for('games') }}" class="btn btn-primary">
+            <i class="fas fa-play"></i> Start a game
+        </a>
+    </div>
+
+    <div id="analyticsCharts" class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <h5 class="panel-title">Financial Learning Progress</h5>
+                <p class="panel-subtitle">Score progression across your recent game sessions.</p>
+                <div class="chart-container" id="scoreChartMount">
+                    <canvas id="scoreChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h5 class="panel-title">Skill Level Mix</h5>
+                <p class="panel-subtitle">Beginner / Moderate / Advanced game share.</p>
+                <div class="chart-container small" id="levelChartMount">
+                    <canvas id="levelChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="recentPanel" class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <h5 class="panel-title">Recent Sessions</h5>
+                <p class="panel-subtitle">Your latest entries from <code>game_progress</code>.</p>
+                <table class="table-mini">
+                    <thead>
+                        <tr>
+                            <th>Game</th>
+                            <th>Level</th>
+                            <th>Score</th>
+                            <th>When</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentRowsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h5 class="panel-title">Quick Actions</h5>
+                <div class="row g-3 mt-1">
+                    <div class="col-6">
+                        <a href="{{ url_for('games') }}" class="quick-action-btn">
+                            <i class="fas fa-gamepad"></i>
+                            <div>Play Games</div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('simulations') }}" class="quick-action-btn">
+                            <i class="fas fa-calculator"></i>
+                            <div>Simulations</div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('ai_insights') }}" class="quick-action-btn">
+                            <i class="fas fa-brain"></i>
+                            <div>AI Insights</div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="#" class="quick-action-btn">
+                            <i class="fas fa-certificate"></i>
+                            <div>Certificates</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

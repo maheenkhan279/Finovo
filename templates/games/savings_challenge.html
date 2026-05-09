@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Savings Challenge - Finovo{% endblock %}
+{% block extra_css %}
+<style>
+.wrap { max-width: 820px; margin: 2rem auto; padding: 0 1rem; }
+.card {
+    background: var(--bg-primary);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+}
+.goal-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.goal-chip {
+    padding: 0.35rem 0.75rem; border-radius: 999px; border: 1px solid var(--gray-300);
+    background: var(--bg-secondary); cursor: pointer; font-size: 0.85rem;
+}
+.goal-chip.active { border-color: var(--primary-blue); background: #eff6ff; font-weight: 600; }
+.bar { background: var(--gray-200); border-radius: var(--radius-full); height: 1.35rem; overflow: hidden; margin: 1rem 0; }
+.fill { height: 100%; background: linear-gradient(90deg, var(--success-color), var(--primary-blue)); transition: width 0.35s ease; }
+.row { display: flex; flex-wrap: wrap; gap: var(--spacing-md); align-items: center; margin-top: var(--spacing-lg); }
+.inp { width: 100px; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 0.75rem; margin-top: 1rem; }
+.stat-box { background: var(--bg-secondary); padding: 0.75rem; border-radius: var(--radius-md); text-align: center; font-size: 0.9rem; }
+.stat-box strong { display: block; font-size: 1.25rem; color: var(--primary-blue); }
+.feedback { min-height: 1.25rem; margin-top: 0.75rem; font-weight: 600; color: var(--text-secondary); }
+</style>
+{% endblock %}
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Savings Challenge</h1>
+        <p>Pick a goal, then each month choose to <strong>save</strong>, <strong>spend</strong>, or <strong>invest</strong> (simulated small return).</p>
+    </div>
+</section>
+<div class="wrap">
+    <div class="card">
+        <p><strong>Goal:</strong> <span id="goal-label">{{ game.goal_label or 'Emergency fund' }}</span> — $<span id="g">{{ game.goal }}</span></p>
+        <div class="goal-row" id="goal-picks">
+            <button type="button" class="goal-chip" data-goal="300" data-label="Bike fund">Bike ($300)</button>
+            <button type="button" class="goal-chip" data-goal="500" data-label="Emergency fund">Emergency ($500)</button>
+            <button type="button" class="goal-chip" data-goal="900" data-label="New phone">Phone ($900)</button>
+            <button type="button" class="goal-chip" data-goal="1500" data-label="Travel">Travel ($1500)</button>
+        </div>
+        {% set pct = ((100 * game.saved / game.goal)|round(1)) if game.goal > 0 else 0 %}
+        {% set pw = pct if pct < 100 else 100 %}
+        <div class="stat-grid">
+            <div class="stat-box">Saved<strong id="s">{{ game.saved }}</strong></div>
+            <div class="stat-box">Cash<strong id="c">{{ game.cash }}</strong></div>
+            <div class="stat-box">Invested (sim)<strong id="inv">{{ game.invested or 0 }}</strong></div>
+            <div class="stat-box">Streak<strong id="streak">{{ game.streak or 0 }}</strong></div>
+        </div>
+        <div class="bar"><div class="fill" id="p" style="width: {{ pw }}%;"></div></div>
+        <p id="lbl">{{ pct }}% of goal</p>
+        <p class="feedback" id="fb"></p>
+        <div class="row">
+            <label>Amount <input type="number" class="inp" id="amt" value="25" min="1" step="1"></label>
+            <button type="button" class="module-btn" onclick="t('save')">Save</button>
+            <button type="button" class="module-btn" style="background:var(--warning-color)" onclick="t('spend')">Spend</button>
+            <button type="button" class="module-btn" style="background:#6366f1;color:#fff" onclick="t('invest')">Invest</button>
+            <button type="button" class="module-btn" style="background:var(--gray-600);color:#fff" onclick="t('reset')">Reset</button>
+        </div>
+    </div>
+</div>
+<script>
+const TRANS_URL = "{{ url_for('beginner_savings_challenge_bp.transact') }}";
+
+function ui(d) {
+    document.getElementById('g').textContent = d.goal;
+    document.getElementById('goal-label').textContent = d.goal_label || 'Goal';
+    document.getElementById('s').textContent = d.saved;
+    document.getElementById('c').textContent = d.cash;
+    document.getElementById('inv').textContent = d.invested != null ? d.invested : 0;
+    document.getElementById('streak').textContent = d.streak != null ? d.streak : 0;
+    var pct = d.goal > 0 ? Math.min(100, (100 * d.saved / d.goal)) : 0;
+    document.getElementById('p').style.width = pct + '%';
+    document.getElementById('lbl').textContent = pct.toFixed(1) + '% of goal';
+    if (window.FinovoSim && d.streak >= 3) {
+        FinovoSim.flashMessage(document.getElementById('fb'), 'Streak bonus may apply on saves!', 'ok');
+    }
+}
+
+function setGoal(goal, label) {
+    fetch(TRANS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_goal', goal: goal, goal_label: label })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.error) { alert(d.error); return; }
+        ui(d);
+        document.querySelectorAll('.goal-chip').forEach(function (b) {
+            b.classList.toggle('active', String(b.getAttribute('data-goal')) === String(goal));
+        });
+    });
+}
+
+document.querySelectorAll('.goal-chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        setGoal(btn.getAttribute('data-goal'), btn.getAttribute('data-label'));
+    });
+});
+
+function t(act) {
+    var body = { action: act };
+    if (act !== 'reset') {
+        var v = parseFloat(document.getElementById('amt').value);
+        if (!v || v <= 0) { if (typeof AppUtils !== 'undefined') AppUtils.showNotification('Enter a valid amount', 'info'); return; }
+        body.amount = v;
+    }
+    fetch(TRANS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(async function (d) {
+        if (d.error) { if (typeof AppUtils !== 'undefined') AppUtils.showNotification(d.error, 'info'); return; }
+        ui(d);
+        var fb = document.getElementById('fb');
+        if (act === 'invest') fb.textContent = 'Invested: simulated ~6% instant lesson-return on that move.';
+        else if (act === 'save') fb.textContent = d.streak >= 3 ? 'Nice streak — small consistency bonus applied.' : '';
+        else if (act === 'spend') fb.textContent = 'Spending resets streak — balance fun and goals.';
+        else fb.textContent = '';
+        if (d.goal > 0 && d.saved >= d.goal && typeof window.saveScore === 'function' && typeof window.finovoSessionDedupeKey === 'function') {
+            var dedupe = await window.finovoSessionDedupeKey('sv_goal_' + String(d.goal) + '_' + String(d.saved));
+            if (!sessionStorage.getItem(dedupe)) {
+                sessionStorage.setItem(dedupe, '1');
+                var finalScore = Math.min(100, Math.round((100 * d.saved) / d.goal));
+                console.log("GAME SAVE TRIGGERED");
+                console.log("FINAL SCORE:", finalScore);
+                await window.saveScore(finalScore, 'Savings Challenge', 'Beginner');
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

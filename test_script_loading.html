@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Script Loading Test</title>
+</head>
+<body>
+    <h1>Script Loading Test</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        console.log('🔍 Test page: Starting script loading test');
+        document.getElementById('test-results').innerHTML += '<p>🔍 Test page loaded</p>';
+    </script>
+    
+    <!-- Test 1: Load script.js directly -->
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1"></script>
+    <script>
+        console.log('🔍 Test page: script.js tag executed');
+        document.getElementById('test-results').innerHTML += '<p>🔍 script.js tag executed</p>';
+    </script>
+    
+    <!-- Test 2: Load supabase.js directly -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="{{ url_for('static', filename='js/supabase.js') }}?v=1"></script>
+    <script>
+        console.log('🔍 Test page: supabase.js tag executed');
+        document.getElementById('test-results').innerHTML += '<p>🔍 supabase.js tag executed</p>';
+        
+        // Test if auth is available
+        setTimeout(function() {
+            if (typeof window.auth !== 'undefined') {
+                console.log('✅ Test page: window.auth is available');
+                document.getElementById('test-results').innerHTML += '<p>✅ window.auth is available</p>';
+            } else {
+                console.log('❌ Test page: window.auth is NOT available');
+                document.getElementById('test-results').innerHTML += '<p>❌ window.auth is NOT available</p>';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

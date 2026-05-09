@@ -1,0 +1,880 @@
+{% extends "base.html" %}
+
+{% block title %}Investment Challenge - Moderate Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .game-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 30px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #f5576c;
+    }
+    
+    .investment-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .investment-area {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .portfolio-section, .market-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 15px;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+    
+    .investment-options {
+        display: grid;
+        gap: 15px;
+    }
+    
+    .investment-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+    }
+    
+    .investment-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .investment-card.selected {
+        border-color: #f5576c;
+        background: #fff0f3;
+    }
+    
+    .investment-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .investment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .investment-name {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .investment-risk {
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .risk-low { background: #28a745; }
+    .risk-medium { background: #ffc107; color: #333; }
+    .risk-high { background: #dc3545; }
+    
+    .investment-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .detail-item {
+        text-align: center;
+        padding: 5px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .detail-label {
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .detail-value {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .investment-description {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 10px;
+    }
+    
+    .market-ticker {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #f5576c;
+    }
+    
+    .ticker-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .ticker-name {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .ticker-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    .price-up { color: #28a745; }
+    .price-down { color: #dc3545; }
+    
+    .ticker-change {
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .portfolio-summary {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .summary-row:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #f5576c;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .progress-bar {
+        background: #e9ecef;
+        height: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .progress-fill {
+        background: linear-gradient(90deg, #f093fb, #f5576c);
+        height: 100%;
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    .round-indicator {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        color: #f5576c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>💰 Investment Challenge</h1>
+        <p>Build a diversified investment portfolio and watch it grow!</p>
+    </div>
+    
+    <div class="game-stats">
+        <div class="stat-box">
+            <div class="stat-value" id="capital">$10,000</div>
+            <div>Initial Capital</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="currentValue">$10,000</div>
+            <div>Current Value</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="return">0%</div>
+            <div>Return</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="score">0</div>
+            <div>Score</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="round">1/3</div>
+            <div>Round</div>
+        </div>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%">
+            Round 1 of 3
+        </div>
+    </div>
+    
+    <div class="round-indicator" id="roundInfo">
+        Round 1: Invest your capital wisely (Choose 3-5 investments)
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="investment-area">
+        <div class="portfolio-section">
+            <div class="section-title">📊 Your Portfolio</div>
+            <div class="investment-options" id="portfolioOptions">
+                <!-- Investment options will be rendered here -->
+            </div>
+            <div class="portfolio-summary" id="portfolioSummary">
+                <div class="summary-row">
+                    <span>Total Invested:</span>
+                    <span id="totalInvested">$0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Cash Remaining:</span>
+                    <span id="cashRemaining">$10,000</span>
+                </div>
+                <div class="summary-row">
+                    <span>Portfolio Value:</span>
+                    <span id="portfolioValue">$0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="market-section">
+            <div class="section-title">📈 Market Overview</div>
+            <div id="marketOverview">
+                <!-- Market info will be rendered here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="investBtn" onclick="makeInvestments()">Make Investments</button>
+        <button class="btn-game" id="nextBtn" onclick="nextRound()" style="display: none;">Next Round</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Game data
+const gameData = {
+    rounds: [
+        {
+            capital: 10000,
+            marketCondition: "bull",
+            investments: [
+                {
+                    id: 1,
+                    name: "Tech Growth Fund",
+                    risk: "high",
+                    minAmount: 1000,
+                    maxAmount: 5000,
+                    expectedReturn: 0.15,
+                    volatility: 0.25,
+                    description: "High-growth technology companies with strong potential"
+                },
+                {
+                    id: 2,
+                    name: "Blue Chip Stocks",
+                    risk: "medium",
+                    minAmount: 500,
+                    maxAmount: 3000,
+                    expectedReturn: 0.10,
+                    volatility: 0.15,
+                    description: "Large, stable companies with consistent performance"
+                },
+                {
+                    id: 3,
+                    name: "Government Bonds",
+                    risk: "low",
+                    minAmount: 100,
+                    maxAmount: 2000,
+                    expectedReturn: 0.04,
+                    volatility: 0.05,
+                    description: "Safe government-backed securities"
+                },
+                {
+                    id: 4,
+                    name: "Real Estate ETF",
+                    risk: "medium",
+                    minAmount: 500,
+                    maxAmount: 4000,
+                    expectedReturn: 0.08,
+                    volatility: 0.12,
+                    description: "Diversified real estate investment trust"
+                },
+                {
+                    id: 5,
+                    name: "Emerging Markets",
+                    risk: "high",
+                    minAmount: 1000,
+                    maxAmount: 3000,
+                    expectedReturn: 0.18,
+                    volatility: 0.30,
+                    description: "High-growth potential in developing economies"
+                },
+                {
+                    id: 6,
+                    name: "Corporate Bonds",
+                    risk: "low",
+                    minAmount: 200,
+                    maxAmount: 2500,
+                    expectedReturn: 0.06,
+                    volatility: 0.08,
+                    description: "Investment-grade corporate debt securities"
+                }
+            ]
+        },
+        {
+            capital: 10000,
+            marketCondition: "bear",
+            investments: [
+                {
+                    id: 7,
+                    name: "Defensive Stocks",
+                    risk: "low",
+                    minAmount: 500,
+                    maxAmount: 3000,
+                    expectedReturn: 0.03,
+                    volatility: 0.10,
+                    description: "Companies that perform well in economic downturns"
+                },
+                {
+                    id: 8,
+                    name: "Gold & Precious Metals",
+                    risk: "medium",
+                    minAmount: 500,
+                    maxAmount: 2000,
+                    expectedReturn: 0.08,
+                    volatility: 0.20,
+                    description: "Safe haven assets during market uncertainty"
+                },
+                {
+                    id: 9,
+                    name: "Healthcare Sector",
+                    risk: "medium",
+                    minAmount: 1000,
+                    maxAmount: 4000,
+                    expectedReturn: 0.05,
+                    volatility: 0.15,
+                    description: "Essential healthcare services and products"
+                },
+                {
+                    id: 10,
+                    name: "Utility Stocks",
+                    risk: "low",
+                    minAmount: 300,
+                    maxAmount: 2000,
+                    expectedReturn: 0.04,
+                    volatility: 0.08,
+                    description: "Essential services with stable dividends"
+                },
+                {
+                    id: 11,
+                    name: "Cash Equivalents",
+                    risk: "low",
+                    minAmount: 100,
+                    maxAmount: 1000,
+                    expectedReturn: 0.02,
+                    volatility: 0.02,
+                    description: "Money market funds and short-term instruments"
+                },
+                {
+                    id: 12,
+                    name: "Consumer Staples",
+                    risk: "low",
+                    minAmount: 500,
+                    maxAmount: 3000,
+                    expectedReturn: 0.03,
+                    volatility: 0.10,
+                    description: "Essential goods and services companies"
+                }
+            ]
+        },
+        {
+            capital: 10000,
+            marketCondition: "volatile",
+            investments: [
+                {
+                    id: 13,
+                    name: "Cryptocurrency Fund",
+                    risk: "high",
+                    minAmount: 500,
+                    maxAmount: 2000,
+                    expectedReturn: 0.25,
+                    volatility: 0.40,
+                    description: "Digital assets with high volatility and potential"
+                },
+                {
+                    id: 14,
+                    name: "Balanced Portfolio",
+                    risk: "medium",
+                    minAmount: 1000,
+                    maxAmount: 5000,
+                    expectedReturn: 0.08,
+                    volatility: 0.12,
+                    description: "Mix of stocks and bonds for balanced risk"
+                },
+                {
+                    id: 15,
+                    name: "Small Cap Growth",
+                    risk: "high",
+                    minAmount: 800,
+                    maxAmount: 2500,
+                    expectedReturn: 0.20,
+                    volatility: 0.35,
+                    description: "Small companies with high growth potential"
+                },
+                {
+                    id: 16,
+                    name: "International Stocks",
+                    risk: "medium",
+                    minAmount: 1000,
+                    maxAmount: 3000,
+                    expectedReturn: 0.09,
+                    volatility: 0.18,
+                    description: "Diversified international equity exposure"
+                },
+                {
+                    id: 17,
+                    name: "Inflation Protected Bonds",
+                    risk: "low",
+                    minAmount: 200,
+                    maxAmount: 2000,
+                    expectedReturn: 0.05,
+                    volatility: 0.06,
+                    description: "Bonds that protect against inflation"
+                },
+                {
+                    id: 18,
+                    name: "Sector Rotation Fund",
+                    risk: "medium",
+                    minAmount: 800,
+                    maxAmount: 3000,
+                    expectedReturn: 0.12,
+                    volatility: 0.20,
+                    description: "Active sector allocation strategy"
+                }
+            ]
+        }
+    ]
+};
+
+// Game state
+let currentRound = 0;
+let score = 0;
+let portfolio = [];
+let availableCapital = 10000;
+let investmentAmounts = {};
+
+function initGame() {
+    currentRound = 0;
+    score = 0;
+    portfolio = [];
+    availableCapital = 10000;
+    investmentAmounts = {};
+    loadRound();
+}
+
+function loadRound() {
+    const round = gameData.rounds[currentRound];
+    availableCapital = round.capital;
+    portfolio = [];
+    investmentAmounts = {};
+    
+    // Update UI
+    document.getElementById('capital').textContent = `$${round.capital.toLocaleString()}`;
+    document.getElementById('currentValue').textContent = `$${round.capital.toLocaleString()}`;
+    document.getElementById('return').textContent = '0%';
+    document.getElementById('score').textContent = score;
+    document.getElementById('round').textContent = `${currentRound + 1}/3`;
+    document.getElementById('roundInfo').textContent = 
+        `Round ${currentRound + 1}: ${round.marketCondition === 'bull' ? '📈 Bull Market' : round.marketCondition === 'bear' ? '📉 Bear Market' : '📊 Volatile Market'} - Invest wisely!`;
+    
+    updateProgressBar();
+    renderInvestments(round.investments);
+    renderMarketOverview(round.marketCondition);
+    updatePortfolioSummary();
+    
+    // Reset buttons
+    document.getElementById('investBtn').style.display = 'inline-block';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('investBtn').disabled = false;
+    
+    // Clear feedback
+    document.getElementById('feedbackMessage').innerHTML = '';
+}
+
+function renderInvestments(investments) {
+    const container = document.getElementById('portfolioOptions');
+    container.innerHTML = '';
+    
+    investments.forEach(investment => {
+        const card = document.createElement('div');
+        card.className = 'investment-card';
+        card.dataset.investmentId = investment.id;
+        
+        card.innerHTML = `
+            <div class="investment-header">
+                <div class="investment-name">${investment.name}</div>
+                <div class="investment-risk risk-${investment.risk}">${investment.risk.toUpperCase()}</div>
+            </div>
+            <div class="investment-details">
+                <div class="detail-item">
+                    <div class="detail-label">Min</div>
+                    <div class="detail-value">$${investment.minAmount.toLocaleString()}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Max</div>
+                    <div class="detail-value">$${investment.maxAmount.toLocaleString()}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Exp. Return</div>
+                    <div class="detail-value">${(investment.expectedReturn * 100).toFixed(1)}%</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Volatility</div>
+                    <div class="detail-value">${(investment.volatility * 100).toFixed(1)}%</div>
+                </div>
+            </div>
+            <div class="investment-description">${investment.description}</div>
+            <div style="margin-top: 10px;">
+                <input type="number" 
+                       id="amount-${investment.id}" 
+                       placeholder="Investment amount" 
+                       min="${investment.minAmount}" 
+                       max="${investment.maxAmount}"
+                       step="100"
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+function renderMarketOverview(marketCondition) {
+    const container = document.getElementById('marketOverview');
+    
+    const marketData = {
+        bull: [
+            { name: "S&P 500", price: 4500, change: 2.3, trend: "up" },
+            { name: "NASDAQ", price: 14000, change: 3.1, trend: "up" },
+            { name: "Dow Jones", price: 35000, change: 1.8, trend: "up" }
+        ],
+        bear: [
+            { name: "S&P 500", price: 4200, change: -1.5, trend: "down" },
+            { name: "NASDAQ", price: 13000, change: -2.2, trend: "down" },
+            { name: "Dow Jones", price: 33000, change: -1.1, trend: "down" }
+        ],
+        volatile: [
+            { name: "S&P 500", price: 4350, change: 0.5, trend: "up" },
+            { name: "NASDAQ", price: 13500, change: -1.8, trend: "down" },
+            { name: "Bitcoin", price: 45000, change: 5.2, trend: "up" }
+        ]
+    };
+    
+    container.innerHTML = '';
+    
+    marketData[marketCondition].forEach(ticker => {
+        const tickerDiv = document.createElement('div');
+        tickerDiv.className = 'market-ticker';
+        
+        const trendClass = ticker.trend === 'up' ? 'price-up' : 'price-down';
+        const trendIcon = ticker.trend === 'up' ? '↑' : '↓';
+        
+        tickerDiv.innerHTML = `
+            <div class="ticker-header">
+                <div class="ticker-name">${ticker.name}</div>
+                <div class="ticker-price ${trendClass}">$${ticker.price.toLocaleString()}</div>
+            </div>
+            <div class="ticker-change ${trendClass}">
+                ${trendIcon} ${Math.abs(ticker.change)}%
+            </div>
+        `;
+        
+        container.appendChild(tickerDiv);
+    });
+}
+
+function updatePortfolioSummary() {
+    const totalInvested = Object.values(investmentAmounts).reduce((sum, amount) => sum + amount, 0);
+    const cashRemaining = availableCapital - totalInvested;
+    
+    document.getElementById('totalInvested').textContent = `$${totalInvested.toLocaleString()}`;
+    document.getElementById('cashRemaining').textContent = `$${cashRemaining.toLocaleString()}`;
+    document.getElementById('portfolioValue').textContent = `$${totalInvested.toLocaleString()}`;
+}
+
+function makeInvestments() {
+    const round = gameData.rounds[currentRound];
+    let totalInvested = 0;
+    let validInvestments = [];
+    
+    // Validate investments
+    round.investments.forEach(investment => {
+        const amountInput = document.getElementById(`amount-${investment.id}`);
+        const amount = parseInt(amountInput.value) || 0;
+        
+        if (amount > 0) {
+            if (amount < investment.minAmount) {
+                showFeedback(`${investment.name}: Minimum investment is $${investment.minAmount.toLocaleString()}`, 'error');
+                return;
+            }
+            if (amount > investment.maxAmount) {
+                showFeedback(`${investment.name}: Maximum investment is $${investment.maxAmount.toLocaleString()}`, 'error');
+                return;
+            }
+            
+            totalInvested += amount;
+            validInvestments.push({ ...investment, amount });
+        }
+    });
+    
+    if (totalInvested > availableCapital) {
+        showFeedback(`Total investment ($${totalInvested.toLocaleString()}) exceeds available capital ($${availableCapital.toLocaleString()})`, 'error');
+        return;
+    }
+    
+    if (validInvestments.length < 3) {
+        showFeedback('Please select at least 3 investments for diversification', 'error');
+        return;
+    }
+    
+    if (validInvestments.length > 5) {
+        showFeedback('Please select maximum 5 investments to keep portfolio manageable', 'error');
+        return;
+    }
+    
+    // Process investments
+    portfolio = validInvestments;
+    validInvestments.forEach(inv => {
+        investmentAmounts[inv.id] = inv.amount;
+    });
+    
+    // Calculate returns based on market conditions
+    let totalReturn = 0;
+    portfolio.forEach(investment => {
+        const marketModifier = round.marketCondition === 'bull' ? 1.2 : 
+                              round.marketCondition === 'bear' ? 0.7 : 1.0;
+        
+        const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+        const actualReturn = investment.expectedReturn * marketModifier * randomFactor;
+        totalReturn += investment.amount * (1 + actualReturn);
+    });
+    
+    const cashRemaining = availableCapital - totalInvested;
+    const finalValue = totalReturn + cashRemaining;
+    const returnPercentage = ((finalValue - availableCapital) / availableCapital * 100);
+    
+    // Calculate score
+    let roundScore = 0;
+    if (returnPercentage > 10) {
+        roundScore = 100;
+    } else if (returnPercentage > 5) {
+        roundScore = 80;
+    } else if (returnPercentage > 0) {
+        roundScore = 60;
+    } else if (returnPercentage > -5) {
+        roundScore = 40;
+    } else {
+        roundScore = 20;
+    }
+    
+    // Bonus for diversification
+    const riskLevels = new Set(portfolio.map(inv => inv.risk));
+    if (riskLevels.size >= 3) roundScore += 10;
+    
+    score += roundScore;
+    
+    // Update UI
+    document.getElementById('currentValue').textContent = `$${finalValue.toLocaleString()}`;
+    document.getElementById('return').textContent = `${returnPercentage.toFixed(1)}%`;
+    document.getElementById('score').textContent = score;
+    
+    // Disable investment inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.disabled = true;
+    });
+    document.getElementById('investBtn').disabled = true;
+    
+    // Show feedback
+    let feedback = '';
+    if (roundScore >= 90) {
+        feedback = `🏆 Excellent investment strategy! You achieved ${returnPercentage.toFixed(1)}% return!`;
+    } else if (roundScore >= 70) {
+        feedback = `🌟 Good job! You achieved ${returnPercentage.toFixed(1)}% return.`;
+    } else if (roundScore >= 50) {
+        feedback = `👍 Decent performance. You achieved ${returnPercentage.toFixed(1)}% return.`;
+    } else {
+        feedback = `📚 Challenging market conditions. You achieved ${returnPercentage.toFixed(1)}% return. Keep learning!`;
+    }
+    
+    showFeedback(feedback, roundScore >= 70 ? 'success' : 'info');
+    
+    // Show next button or restart button
+    if (currentRound < gameData.rounds.length - 1) {
+        document.getElementById('nextBtn').style.display = 'inline-block';
+    } else {
+        document.getElementById('restartBtn').style.display = 'inline-block';
+        showFinalScore();
+    }
+}
+
+function showFinalScore() {
+    let finalMessage = '';
+    if (score >= 250) {
+        finalMessage = '🏆 Outstanding! You\'re an investment expert!';
+    } else if (score >= 200) {
+        finalMessage = '🌟 Excellent! You have great investment instincts!';
+    } else if (score >= 150) {
+        finalMessage = '👍 Good job! You understand investment principles!';
+    } else {
+        finalMessage = '📚 Keep learning! Investment skills improve with practice!';
+    }
+    
+    showFeedback(`Game Complete! Final Score: ${score}/300. ${finalMessage}`, 'info');
+}
+
+function nextRound() {
+    currentRound++;
+    loadRound();
+}
+
+function restartGame() {
+    initGame();
+}
+
+function updateProgressBar() {
+    const progress = ((currentRound + 1) / gameData.rounds.length) * 100;
+    const fillElement = document.getElementById('progressFill');
+    fillElement.style.width = `${progress}%`;
+    fillElement.textContent = `Round ${currentRound + 1} of ${gameData.rounds.length}`;
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+}
+
+// Initialize game when page loads
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+{% endblock %}

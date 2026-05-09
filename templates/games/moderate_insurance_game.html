@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Insurance Decision Game - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+.game-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.game-card {
+    background: var(--bg-primary);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--gray-200);
+}
+
+.scenario-card {
+    background: var(--bg-secondary);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-xl);
+    border-left: 4px solid var(--primary-blue);
+}
+
+.options-grid {
+    display: grid;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.option-card {
+    background: var(--bg-primary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--gray-300);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.option-card:hover {
+    border-color: var(--primary-blue);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.option-card.selected {
+    border-color: var(--primary-blue);
+    background: var(--gray-50);
+    box-shadow: var(--shadow-md);
+}
+
+.option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.option-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.option-cost {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.option-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.score-display {
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.score-value {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-card">
+        <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+            <h1 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">Insurance Decision Game</h1>
+            <p style="color: var(--text-secondary);">Make smart insurance decisions based on different life scenarios</p>
+        </div>
+
+        {% if not game_state.completed %}
+            {% if scenario %}
+            <div class="score-display">
+                <div style="color: var(--text-secondary); margin-bottom: var(--spacing-xs);">Your Score</div>
+                <div class="score-value">{{ game_state.score }}/{{ total_scenarios * 10 }}</div>
+                <div style="color: var(--text-secondary); margin-top: var(--spacing-xs);">Scenario {{ scenario.id }} of {{ total_scenarios }}</div>
+            </div>
+
+            <div class="scenario-card">
+                <h3 style="color: var(--primary-blue); margin-bottom: var(--spacing-md);">
+                    <i class="fas fa-user-circle"></i> Scenario {{ scenario.id }}
+                </h3>
+                <p style="color: var(--text-secondary); line-height: 1.8; font-size: var(--font-size-lg);">
+                    {{ scenario.scenario }}
+                </p>
+            </div>
+
+            <div class="scenario-card" style="border-left-color: #f59e0b;">
+                <h3 style="color: var(--primary-blue); margin-bottom: var(--spacing-md);">
+                    <i class="fas fa-bolt"></i> Risk simulator (learning)
+                </h3>
+                <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--spacing-md);">
+                    Roll a random covered event (e.g. ER visit, car repair). Compare what you might pay out-of-pocket with each plan vs no coverage.
+                </p>
+                <button type="button" class="btn btn-outline" onclick="rollRiskEvent()">
+                    <i class="fas fa-dice"></i> Simulate random claim
+                </button>
+                <div id="risk-sim-out" style="margin-top: var(--spacing-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;"></div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-lg);">Choose the Best Insurance Option:</h3>
+                <div class="options-grid">
+                    {% for option in scenario.options %}
+                    <div class="option-card" onclick="selectOption('{{ option.type|e }}', this)" id="option-{{ loop.index }}">
+                        <div class="option-header">
+                            <div class="option-title">{{ option.type }}</div>
+                            <div class="option-cost">${{ option.monthly_cost }}/mo</div>
+                        </div>
+                        <div class="option-details">
+                            <div><strong>Coverage:</strong> {{ option.coverage }}</div>
+                            <div><strong>Deductible:</strong> ${{ option.deductible }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: var(--spacing-xl);">
+                <button class="btn btn-primary" onclick="submitAnswer()" id="submit-btn" disabled style="padding: var(--spacing-md) var(--spacing-2xl);">
+                    <i class="fas fa-check"></i> Submit Answer
+                </button>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="score-display">
+                <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-md);">
+                    <i class="fas fa-trophy"></i> Game Complete!
+                </h2>
+                <div class="score-value">{{ game_state.score }}/{{ total_scenarios * 10 }}</div>
+                <p style="color: var(--text-secondary); margin-top: var(--spacing-md);">
+                    You scored {{ (game_state.score / (total_scenarios * 10) * 100)|round }}%!
+                </p>
+            </div>
+
+            <div style="margin-top: var(--spacing-2xl);">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-lg);">Your Answers Review:</h3>
+                {% for answer in game_state.answers %}
+                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-md); border-left: 4px solid {% if answer.is_correct %}var(--success-color){% else %}var(--error-color){% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-sm);">
+                        <h4 style="color: var(--text-primary);">Scenario {{ answer.scenario_id }}</h4>
+                        {% if answer.is_correct %}
+                        <span style="background: var(--success-color); color: var(--white); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-size: var(--font-size-sm);">
+                            <i class="fas fa-check"></i> Correct
+                        </span>
+                        {% else %}
+                        <span style="background: var(--error-color); color: var(--white); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-size: var(--font-size-sm);">
+                            <i class="fas fa-times"></i> Incorrect
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-xs);">
+                        <strong>Your choice:</strong> {{ answer.selected }}
+                    </p>
+                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-xs);">
+                        <strong>Correct answer:</strong> {{ answer.correct }}
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: var(--spacing-sm);">
+                        <strong>Explanation:</strong> {{ answer.explanation }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="text-align: center; margin-top: var(--spacing-2xl);">
+                <button class="btn btn-primary" onclick="resetGame()" style="margin-right: var(--spacing-md);">
+                    <i class="fas fa-redo"></i> Play Again
+                </button>
+                <a href="{{ url_for('games') }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Back to Games
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let selectedOption = null;
+const scenarioId = {{ scenario.id if scenario else 0 }};
+const __insScenario = {{ scenario|tojson if scenario else 'null' }};
+
+function copayFraction(coverageLabel) {
+    if (!coverageLabel) return 1;
+    var c = String(coverageLabel).toLowerCase();
+    if (c.indexOf('none') >= 0) return 1;
+    if (c.indexOf('high') >= 0) return 0.12;
+    if (c.indexOf('medium') >= 0) return 0.28;
+    if (c.indexOf('low') >= 0) return 0.45;
+    return 0.35;
+}
+
+function outOfPocketForOption(claimAmount, opt) {
+    if (!opt || String(opt.type).toLowerCase().indexOf('no insurance') >= 0) {
+        return Math.round(claimAmount);
+    }
+    var ded = parseFloat(opt.deductible) || 0;
+    var frac = copayFraction(opt.coverage);
+    var afterDed = Math.max(0, claimAmount - ded);
+    return Math.round(ded + afterDed * frac);
+}
+
+function rollRiskEvent() {
+    var out = document.getElementById('risk-sim-out');
+    if (!out || !__insScenario || !__insScenario.options) return;
+    var claim = Math.round(800 + Math.random() * 11200);
+    var rows = [];
+    rows.push('<p><strong>Simulated bill:</strong> $' + claim.toLocaleString() + '</p>');
+    rows.push('<table style="width:100%;border-collapse:collapse;margin-top:0.5rem;"><thead><tr><th style="text-align:left;padding:0.35rem;border-bottom:1px solid var(--gray-200);">Plan</th><th style="text-align:right;padding:0.35rem;border-bottom:1px solid var(--gray-200);">Est. you pay</th><th style="text-align:left;padding:0.35rem;border-bottom:1px solid var(--gray-200);">Notes</th></tr></thead><tbody>');
+    __insScenario.options.forEach(function (opt) {
+        var oop = outOfPocketForOption(claim, opt);
+        var note = String(opt.type).toLowerCase().indexOf('no insurance') >= 0
+            ? 'Full cost without coverage'
+            : 'Deductible + modeled share of remaining bill';
+        rows.push('<tr><td style="padding:0.35rem;border-bottom:1px solid var(--gray-200);">' + opt.type + '</td><td style="text-align:right;padding:0.35rem;border-bottom:1px solid var(--gray-200);font-weight:700;color:' + (oop < claim ? 'var(--success-color)' : 'var(--text-primary)') + '">$' + oop.toLocaleString() + '</td><td style="padding:0.35rem;border-bottom:1px solid var(--gray-200);">' + note + '</td></tr>');
+    });
+    rows.push('</tbody></table>');
+    rows.push('<p style="margin-top:0.75rem;font-size:0.85rem;">This is a simplified classroom model—not real insurance pricing.</p>');
+    out.innerHTML = rows.join('');
+}
+
+function selectOption(optionType, el) {
+    selectedOption = optionType;
+    document.querySelectorAll('.option-card').forEach(function (card) {
+        card.classList.remove('selected');
+    });
+    if (el) el.classList.add('selected');
+    document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+    if (!selectedOption) {
+        if (window.showNotification) {
+            showNotification('Please select an option first.', 'warning');
+        }
+        return;
+    }
+
+    fetch('{{ url_for("moderate_insurance_bp.submit_answer") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            selected_option: selectedOption,
+            scenario_id: scenarioId
+        })
+    })
+    .then(response => response.json())
+    .then(async data => {
+        if (data.error) {
+            console.error("Insurance submit error:", data.error);
+            return;
+        }
+        if (data.completed && typeof window.saveScore === "function" && typeof window.finovoSessionDedupeKey === "function") {
+            var finalScore = Number(data.score) || 0;
+            var saveKey = await window.finovoSessionDedupeKey(
+                "insurance_" + finalScore + "_" + (Array.isArray(data.answers) ? data.answers.length : 0)
+            );
+            if (!sessionStorage.getItem(saveKey)) {
+                sessionStorage.setItem(saveKey, '1');
+                console.log("GAME SAVE TRIGGERED");
+                console.log("FINAL SCORE:", finalScore);
+                await window.saveScore(finalScore, "Insurance Decisions", "Moderate");
+            }
+        }
+        if (data.completed) {
+            if (window.showNotification) {
+                showNotification('Game completed! Review your answers below.', 'success');
+            }
+        } else {
+            if (window.showNotification) {
+                showNotification('Answer submitted! Moving to next scenario...', 'success');
+            }
+        }
+        setTimeout(() => location.reload(), 1000);
+    })
+    .catch(error => {
+        if (window.showNotification) {
+            showNotification('Error submitting answer. Please try again.', 'error');
+        }
+    });
+}
+
+function resetGame() {
+    if (window.showConfirm) {
+        showConfirm(
+            'Are you sure you want to reset the game?',
+            () => {
+                fetch('{{ url_for("moderate_insurance_bp.reset_game") }}', {method: 'POST'})
+                    .then(response => response.json())
+                    .then(data => {
+                        if (window.showNotification) {
+                            showNotification('Game reset successfully!', 'success');
+                        }
+                        setTimeout(() => location.reload(), 500);
+                    });
+            }
+        );
+    } else {
+        if (confirm('Are you sure you want to reset?')) {
+            fetch('{{ url_for("moderate_insurance_bp.reset_game") }}', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    location.reload();
+                });
+        }
+    }
+}
+</script>
+{% endblock %}
+

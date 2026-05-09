@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+
+{% block title %}About Finovo — Financial Education Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fv-about-page { overflow-x: hidden; }
+
+    .fv-about-hero {
+        position: relative;
+        padding: clamp(3rem, 8vw, 5.5rem) 1.25rem clamp(3.5rem, 7vw, 5rem);
+        background:
+            radial-gradient(700px 380px at 15% 20%, rgba(34, 211, 238, 0.18), transparent 55%),
+            radial-gradient(600px 360px at 95% 60%, rgba(22, 160, 133, 0.2), transparent 50%),
+            var(--fv-grad-navy-deep);
+        color: var(--fv-text-on-dark);
+    }
+    .fv-about-hero .container { position: relative; z-index: 2; max-width: 1120px; }
+    .fv-about-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 48px 48px;
+        opacity: 0.35;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .fv-about-hero-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        align-items: center;
+    }
+    @media (min-width: 900px) {
+        .fv-about-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 3rem; }
+    }
+
+    .fv-about-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: var(--fv-r-full);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(232, 238, 245, 0.92);
+        margin-bottom: 1.1rem;
+    }
+    .fv-about-hero h1 {
+        font-size: clamp(2rem, 4.2vw, 3.05rem);
+        font-weight: 800;
+        line-height: 1.12;
+        letter-spacing: -0.03em;
+        margin: 0 0 1rem;
+        color: #fff;
+    }
+    .fv-about-hero h1 .fv-about-grad {
+        background: linear-gradient(135deg, #5eead4 0%, #22d3ee 50%, #a5f3fc 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .fv-about-hero-lead {
+        font-size: clamp(1rem, 1.35vw, 1.15rem);
+        line-height: 1.7;
+        color: rgba(232, 238, 245, 0.88);
+        max-width: 34rem;
+        margin: 0 0 1.75rem;
+    }
+    .fv-about-hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        align-items: center;
+    }
+    .fv-about-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1.45rem;
+        border-radius: var(--fv-r-lg);
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: transform 280ms var(--fv-ease), box-shadow 280ms var(--fv-ease), filter 280ms var(--fv-ease);
+    }
+    .fv-about-btn--primary {
+        background: linear-gradient(135deg, #16a085 0%, #22d3ee 100%);
+        color: #061021;
+        box-shadow: 0 10px 28px rgba(34, 211, 238, 0.35);
+    }
+    .fv-about-btn--primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 36px rgba(34, 211, 238, 0.45);
+        color: #061021;
+    }
+    .fv-about-btn--ghost {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .fv-about-btn--ghost:hover {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+    @keyframes fvAboutPulse {
+        0%, 100% { box-shadow: 0 10px 28px rgba(34, 211, 238, 0.35); }
+        50% { box-shadow: 0 12px 36px rgba(45, 212, 191, 0.5); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+        .fv-about-btn--primary.fv-about-btn--pulse {
+            animation: fvAboutPulse 3.2s ease-in-out infinite;
+        }
+    }
+
+    .fv-about-hero-art {
+        position: relative;
+        min-height: 220px;
+        display: grid;
+        place-items: center;
+    }
+    .fv-about-hero-art-inner {
+        position: relative;
+        width: min(100%, 380px);
+        aspect-ratio: 1;
+        border-radius: 28px;
+        background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+        display: grid;
+        place-items: center;
+    }
+    .fv-about-hero-art-inner i {
+        font-size: clamp(4rem, 12vw, 5.5rem);
+        color: rgba(94, 234, 212, 0.95);
+        filter: drop-shadow(0 8px 24px rgba(34, 211, 238, 0.35));
+    }
+    .fv-about-orbit {
+        position: absolute;
+        width: 120%;
+        height: 120%;
+        border: 1px dashed rgba(255, 255, 255, 0.12);
+        border-radius: 50%;
+        animation: fvAboutSpin 48s linear infinite;
+        pointer-events: none;
+    }
+    @keyframes fvAboutSpin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+        .fv-about-orbit { animation: none; }
+        .fv-about-btn--primary.fv-about-btn--pulse { animation: none; }
+    }
+
+    .fv-about-section {
+        padding: clamp(2.75rem, 5vw, 4.25rem) 1.25rem;
+    }
+    .fv-about-section .container { max-width: 1040px; }
+
+    .fv-about-h2 {
+        font-size: clamp(1.55rem, 2.8vw, 2rem);
+        font-weight: 800;
+        color: var(--fv-navy-700);
+        letter-spacing: -0.02em;
+        margin: 0 0 0.65rem;
+    }
+    .fv-about-intro {
+        color: var(--fv-text-muted);
+        font-size: 1.05rem;
+        line-height: 1.65;
+        max-width: 640px;
+        margin: 0 0 2rem;
+    }
+
+    .fv-about-story-grid {
+        display: grid;
+        gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+        .fv-about-story-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .fv-about-panel {
+        background: var(--fv-bg-elev);
+        border: 1px solid var(--fv-border);
+        border-radius: var(--fv-r-xl);
+        padding: 1.5rem 1.45rem;
+        box-shadow: var(--fv-shadow-sm);
+        transition: transform 280ms var(--fv-ease), box-shadow 280ms var(--fv-ease), border-color 280ms var(--fv-ease);
+    }
+    .fv-about-panel:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--fv-shadow-md);
+        border-color: rgba(22, 160, 133, 0.22);
+    }
+    .fv-about-panel h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--fv-navy-700);
+        margin: 0 0 0.65rem;
+    }
+    .fv-about-panel h3 i {
+        color: var(--fv-teal-600);
+        font-size: 1.1rem;
+    }
+    .fv-about-panel p {
+        margin: 0;
+        color: var(--fv-text-muted);
+        line-height: 1.65;
+        font-size: 0.94rem;
+    }
+
+    .fv-about-features {
+        background: linear-gradient(180deg, var(--fv-bg-tinted) 0%, var(--fv-bg) 100%);
+    }
+    .fv-about-feat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.35rem;
+    }
+    .fv-about-feat-card {
+        background: #fff;
+        border: 1px solid var(--fv-border);
+        border-radius: var(--fv-r-xl);
+        padding: 1.65rem 1.4rem;
+        text-align: left;
+        transition: transform 280ms var(--fv-ease), box-shadow 280ms var(--fv-ease);
+    }
+    .fv-about-feat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--fv-shadow-lg), 0 0 0 1px rgba(34, 211, 238, 0.12);
+    }
+    .fv-about-feat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: var(--fv-grad-teal-navy);
+        color: #fff;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--fv-glow-teal);
+    }
+    .fv-about-feat-card:nth-child(2) .fv-about-feat-icon { background: var(--fv-grad-cool); }
+    .fv-about-feat-card:nth-child(3) .fv-about-feat-icon { background: linear-gradient(135deg, #334155 0%, #1e3a5f 100%); }
+    .fv-about-feat-card:nth-child(4) .fv-about-feat-icon { background: var(--fv-grad-teal); }
+    .fv-about-feat-card h3 {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: var(--fv-navy-700);
+        margin: 0 0 0.5rem;
+    }
+    .fv-about-feat-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--fv-text-muted);
+        line-height: 1.6;
+    }
+
+    .fv-about-vision {
+        padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    }
+    .fv-about-vision-grid {
+        display: grid;
+        gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+        .fv-about-vision-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .fv-about-vision-card {
+        position: relative;
+        padding: 1.75rem 1.5rem;
+        border-radius: var(--fv-r-xl);
+        background: var(--fv-grad-navy);
+        color: var(--fv-text-on-dark);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform 280ms var(--fv-ease), box-shadow 280ms var(--fv-ease);
+    }
+    .fv-about-vision-card::before {
+        content: "";
+        position: absolute;
+        top: 0; right: 0;
+        width: 140px; height: 140px;
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .fv-about-vision-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--fv-glow-navy);
+    }
+    .fv-about-vision-card h3 {
+        position: relative;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(167, 243, 208, 0.95);
+        margin: 0 0 0.5rem;
+    }
+    .fv-about-vision-card .fv-about-v-title {
+        position: relative;
+        font-size: 1.2rem;
+        font-weight: 800;
+        margin: 0 0 0.65rem;
+        color: #fff;
+    }
+    .fv-about-vision-card p {
+        position: relative;
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.62;
+        color: rgba(232, 238, 245, 0.88);
+    }
+
+    .fv-about-stats {
+        background: #fff;
+        border-block: 1px solid var(--fv-border);
+    }
+    .fv-about-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.15rem;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+    @media (min-width: 768px) {
+        .fv-about-stats-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .fv-about-stat {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        border-radius: var(--fv-r-lg);
+        background: var(--fv-bg);
+        border: 1px solid var(--fv-border);
+        transition: transform 260ms var(--fv-ease), border-color 260ms var(--fv-ease);
+    }
+    .fv-about-stat:hover {
+        transform: translateY(-3px);
+        border-color: rgba(22, 160, 133, 0.25);
+    }
+    .fv-about-stat-num {
+        font-size: clamp(1.85rem, 4vw, 2.35rem);
+        font-weight: 800;
+        color: var(--fv-teal-600);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+    }
+    .fv-about-stat-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--fv-navy-600);
+        margin-top: 0.35rem;
+    }
+    .fv-about-stat-hint {
+        font-size: 0.8rem;
+        color: var(--fv-text-muted);
+        margin-top: 0.35rem;
+        line-height: 1.4;
+    }
+
+    .fv-about-cta {
+        padding: clamp(2.5rem, 5vw, 3.5rem) 1.25rem 3.5rem;
+    }
+    .fv-about-cta-box {
+        max-width: 720px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 2.25rem 1.5rem;
+        border-radius: var(--fv-r-2xl);
+        background: var(--fv-grad-teal-navy);
+        color: #fff;
+        box-shadow: var(--fv-shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .fv-about-cta-box h2 {
+        font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+        font-weight: 800;
+        margin: 0 0 0.65rem;
+        color: #fff;
+    }
+    .fv-about-cta-box p {
+        margin: 0 0 1.35rem;
+        color: rgba(255, 255, 255, 0.92);
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+    .fv-about-cta-box .fv-about-btn--primary {
+        background: #fff;
+        color: var(--fv-navy-700);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    .fv-about-cta-box .fv-about-btn--primary:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    .fv-reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 0.65s var(--fv-ease), transform 0.65s var(--fv-ease);
+    }
+    .fv-reveal.fv-reveal--visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .fv-reveal { opacity: 1; transform: none; transition: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fv-about-page">
+    <header class="fv-about-hero">
+        <div class="container">
+            <div class="fv-about-hero-grid">
+                <div class="fv-reveal" data-reveal>
+                    <span class="fv-about-eyebrow"><i class="fas fa-seedling" aria-hidden="true"></i> Finovo</span>
+                    <h1>Empowering financial literacy through <span class="fv-about-grad">interactive learning</span></h1>
+                    <p class="fv-about-hero-lead">
+                        Finovo is a fintech education platform where you learn money skills by doing—short reads, guided games, safe simulations, and a clear view of your progress. Built for students and beginners who want confidence, not jargon.
+                    </p>
+                    <div class="fv-about-hero-cta">
+                        {% if g.user %}
+                        <a href="{{ url_for('games') }}" class="fv-about-btn fv-about-btn--primary fv-about-btn--pulse">
+                            <i class="fas fa-gamepad" aria-hidden="true"></i> Play games
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('register') }}" class="fv-about-btn fv-about-btn--primary fv-about-btn--pulse">
+                            <i class="fas fa-user-plus" aria-hidden="true"></i> Create free account
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('financial_tips') }}" class="fv-about-btn fv-about-btn--ghost">
+                            <i class="fas fa-book-open" aria-hidden="true"></i> Browse tips
+                        </a>
+                    </div>
+                </div>
+                <div class="fv-about-hero-art fv-reveal" data-reveal>
+                    <div class="fv-about-orbit" aria-hidden="true"></div>
+                    <div class="fv-about-hero-art-inner">
+                        <i class="fas fa-coins" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="fv-about-section" aria-labelledby="about-story-heading">
+        <div class="container">
+            <h2 id="about-story-heading" class="fv-about-h2 fv-reveal" data-reveal>Our story</h2>
+            <p class="fv-about-intro fv-reveal" data-reveal>Many people leave school without practical money skills. Finovo exists to close that gap with a simple path: learn the idea, practice it in a game, see your progress, then explore “what if” tools—all in one place.</p>
+            <div class="fv-about-story-grid">
+                <article class="fv-about-panel fv-reveal" data-reveal>
+                    <h3><i class="fas fa-layer-group" aria-hidden="true"></i> What is Finovo?</h3>
+                    <p>A web platform that combines articles, interactive games, calculators, and a personal dashboard. You move from beginner topics to more advanced scenarios at your own pace—always in a safe, simulated environment.</p>
+                </article>
+                <article class="fv-about-panel fv-reveal" data-reveal>
+                    <h3><i class="fas fa-heart" aria-hidden="true"></i> Why we built it</h3>
+                    <p>Traditional finance content can feel abstract. We wanted a friendly first step: clear language, immediate feedback, and small wins that build real confidence before you face bigger money decisions in life.</p>
+                </article>
+                <article class="fv-about-panel fv-reveal" data-reveal>
+                    <h3><i class="fas fa-exclamation-circle" aria-hidden="true"></i> The problem we address</h3>
+                    <p>Budgeting, credit, loans, insurance, and investing are easy to postpone when they sound complicated. Finovo breaks them into short activities so you can practice decisions before they carry real-world risk.</p>
+                </article>
+                <article class="fv-about-panel fv-reveal" data-reveal>
+                    <h3><i class="fas fa-puzzle-piece" aria-hidden="true"></i> Why games help</h3>
+                    <p>When you learn by playing, you remember patterns: trade-offs stick, mistakes become lessons, and progress feels rewarding. Gamification keeps you coming back until good habits start to feel natural.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="fv-about-section fv-about-features" aria-labelledby="about-features-heading">
+        <div class="container">
+            <h2 id="about-features-heading" class="fv-about-h2 fv-reveal" data-reveal>What you can do here</h2>
+            <p class="fv-about-intro fv-reveal" data-reveal>Four pillars that work together—so learning, practice, and reflection stay connected.</p>
+            <div class="fv-about-feat-grid">
+                <div class="fv-about-feat-card fv-reveal" data-reveal>
+                    <div class="fv-about-feat-icon" aria-hidden="true"><i class="fas fa-gamepad"></i></div>
+                    <h3>Interactive games</h3>
+                    <p>Quizzes and simulations for budgeting, saving, credit, loans, insurance, and investing—leveled from beginner to advanced.</p>
+                </div>
+                <div class="fv-about-feat-card fv-reveal" data-reveal>
+                    <div class="fv-about-feat-icon" aria-hidden="true"><i class="fas fa-flask"></i></div>
+                    <h3>Financial simulations</h3>
+                    <p>Try “what if” questions with calculators and scenarios so you understand numbers before you act on them in real life.</p>
+                </div>
+                <div class="fv-about-feat-card fv-reveal" data-reveal>
+                    <div class="fv-about-feat-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></div>
+                    <h3>Progress analytics</h3>
+                    <p>Your dashboard summarizes activity and scores over time so you can see growth and choose what to focus on next.</p>
+                </div>
+                <div class="fv-about-feat-card fv-reveal" data-reveal>
+                    <div class="fv-about-feat-icon" aria-hidden="true"><i class="fas fa-gauge-high"></i></div>
+                    <h3>Learning dashboard</h3>
+                    <p>One hub for your journey: recent games, highlights, and gentle suggestions to keep momentum without overwhelm.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="fv-about-section fv-about-vision" aria-labelledby="about-vision-heading">
+        <div class="container">
+            <h2 id="about-vision-heading" class="fv-about-h2 fv-reveal" data-reveal>Mission, vision &amp; direction</h2>
+            <p class="fv-about-intro fv-reveal" data-reveal>We measure success by how clearly you can explain your own money choices—not by hype.</p>
+            <div class="fv-about-vision-grid">
+                <article class="fv-about-vision-card fv-reveal" data-reveal>
+                    <h3>Mission</h3>
+                    <div class="fv-about-v-title">Money skills for everyone</div>
+                    <p>Give every learner a calm, structured place to build financial literacy—free of intimidation and confusing jargon.</p>
+                </article>
+                <article class="fv-about-vision-card fv-reveal" data-reveal>
+                    <h3>Vision</h3>
+                    <div class="fv-about-v-title">Confident everyday decisions</div>
+                    <p>A world where students and first-time earners feel equipped to budget, save, borrow wisely, and plan ahead with clarity.</p>
+                </article>
+                <article class="fv-about-vision-card fv-reveal" data-reveal>
+                    <h3>What’s next</h3>
+                    <div class="fv-about-v-title">Deeper learning paths</div>
+                    <p>We continue to refine games, insights, and simulations so each visit adds a clear next step on your personal finance journey.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="fv-about-section fv-about-stats" aria-labelledby="about-stats-heading">
+        <div class="container">
+            <h2 id="about-stats-heading" class="fv-about-h2 text-center fv-reveal" data-reveal>Platform at a glance</h2>
+            <p class="fv-about-intro text-center mx-auto fv-reveal" data-reveal>Real structure behind the experience—transparent numbers you can explore on the site.</p>
+            <div class="fv-about-stats-grid">
+                <div class="fv-about-stat fv-reveal" data-reveal>
+                    <div class="fv-about-stat-num" data-count="9" data-suffix="">0</div>
+                    <div class="fv-about-stat-label">Games</div>
+                    <div class="fv-about-stat-hint">Interactive modules across three levels</div>
+                </div>
+                <div class="fv-about-stat fv-reveal" data-reveal>
+                    <div class="fv-about-stat-num" data-count="3" data-suffix="">0</div>
+                    <div class="fv-about-stat-label">Skill levels</div>
+                    <div class="fv-about-stat-hint">Beginner → moderate → advanced path</div>
+                </div>
+                <div class="fv-about-stat fv-reveal" data-reveal>
+                    <div class="fv-about-stat-num" data-count="1" data-suffix="">0</div>
+                    <div class="fv-about-stat-label">Progress hub</div>
+                    <div class="fv-about-stat-hint">Dashboard for scores &amp; activity</div>
+                </div>
+                <div class="fv-about-stat fv-reveal" data-reveal>
+                    <div class="fv-about-stat-num" data-count="4" data-suffix="">0</div>
+                    <div class="fv-about-stat-label">Learning pillars</div>
+                    <div class="fv-about-stat-hint">Games, sims, insights &amp; tips</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="fv-about-cta" aria-labelledby="about-cta-heading">
+        <div class="container">
+            <div class="fv-about-cta-box fv-reveal" data-reveal id="about-cta-heading">
+                <h2>Ready to try Finovo?</h2>
+                <p>Open a free account to save progress, or explore games and tips first—your pace, your path.</p>
+                {% if g.user %}
+                <a href="{{ url_for('games') }}" class="fv-about-btn fv-about-btn--primary">
+                    Go to games <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="fv-about-btn fv-about-btn--primary">
+                    Get started <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    "use strict";
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    document.querySelectorAll("[data-reveal]").forEach(function (el) {
+        if (reduce) {
+            el.classList.add("fv-reveal--visible");
+            return;
+        }
+        try {
+            var io = new IntersectionObserver(
+                function (entries) {
+                    entries.forEach(function (en) {
+                        if (en.isIntersecting) {
+                            en.target.classList.add("fv-reveal--visible");
+                            io.unobserve(en.target);
+                        }
+                    });
+                },
+                { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+            );
+            io.observe(el);
+        } catch (e) {
+            el.classList.add("fv-reveal--visible");
+        }
+    });
+
+    function animateCount(el, target, duration) {
+        var start = 0;
+        var t0 = null;
+        function step(ts) {
+            if (!t0) t0 = ts;
+            var p = Math.min((ts - t0) / duration, 1);
+            var eased = 1 - Math.pow(1 - p, 3);
+            var val = Math.round(start + (target - start) * eased);
+            el.textContent = String(val) + (el.getAttribute("data-suffix") || "");
+            if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    if (!reduce) {
+        var statEls = document.querySelectorAll(".fv-about-stat-num[data-count]");
+        var sio = new IntersectionObserver(
+            function (entries) {
+                entries.forEach(function (en) {
+                    if (!en.isIntersecting) return;
+                    var el = en.target;
+                    var n = parseInt(el.getAttribute("data-count"), 10);
+                    if (!isNaN(n)) animateCount(el, n, 900);
+                    sio.unobserve(el);
+                });
+            },
+            { threshold: 0.4 }
+        );
+        statEls.forEach(function (el) { sio.observe(el); });
+    } else {
+        document.querySelectorAll(".fv-about-stat-num[data-count]").forEach(function (el) {
+            var n = parseInt(el.getAttribute("data-count"), 10);
+            el.textContent = (isNaN(n) ? "0" : String(n)) + (el.getAttribute("data-suffix") || "");
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Repayment Game - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+.game-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.game-card {
+    background: var(--bg-primary);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--gray-200);
+}
+
+.game-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.loan-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group input {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+}
+
+.results-card {
+    background: var(--bg-secondary);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-xl);
+    border-left: 4px solid var(--primary-blue);
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.result-item {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+}
+
+.result-item .label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.result-item .value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-card">
+        <div class="game-header">
+            <h1 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">Loan Repayment Calculator</h1>
+            <p style="color: var(--text-secondary);">Learn how loans work and calculate monthly payments</p>
+        </div>
+
+        <div class="loan-form">
+            <div class="form-group">
+                <label for="loan-amount">
+                    <i class="fas fa-dollar-sign"></i> Loan Amount ($)
+                </label>
+                <input type="number" id="loan-amount" value="{{ game_state.loan_amount }}" min="0" step="100" placeholder="Enter loan amount">
+            </div>
+
+            <div class="form-group">
+                <label for="interest-rate">
+                    <i class="fas fa-percent"></i> Annual Interest Rate (%)
+                </label>
+                <input type="number" id="interest-rate" value="{{ game_state.interest_rate }}" min="0" max="100" step="0.1" placeholder="Enter interest rate">
+            </div>
+
+            <div class="form-group">
+                <label for="loan-term">
+                    <i class="fas fa-calendar-alt"></i> Loan Term (Months)
+                </label>
+                <input type="number" id="loan-term" value="{{ game_state.loan_term_months }}" min="1" step="1" placeholder="Enter loan term">
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+            <button class="btn btn-primary" onclick="calculateLoan()" style="padding: var(--spacing-md) var(--spacing-2xl);">
+                <i class="fas fa-calculator"></i> Calculate Loan Payment
+            </button>
+        </div>
+
+        {% if game_state.calculated %}
+        <div class="results-card">
+            <h3 style="color: var(--primary-blue); margin-bottom: var(--spacing-md); text-align: center;">
+                <i class="fas fa-chart-pie"></i> Loan Calculation Results
+            </h3>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="label">Monthly Payment</div>
+                    <div class="value">${{ "%.2f"|format(game_state.monthly_payment) }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Total Interest</div>
+                    <div class="value">${{ "%.2f"|format(game_state.total_interest) }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Total Payment</div>
+                    <div class="value">${{ "%.2f"|format(game_state.total_payment) }}</div>
+                </div>
+            </div>
+            <div style="margin-top: var(--spacing-xl);">
+                <h4 style="color: var(--primary-blue); margin-bottom: var(--spacing-md);">Principal vs interest (year 1)</h4>
+                <canvas id="loan-canvas" width="520" height="220" style="max-width:100%;height:auto;border-radius:8px;background:#fafafa;"></canvas>
+                <div style="margin-top: var(--spacing-lg); display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                    <label style="font-weight:600;">Extra monthly payment ($)
+                        <input type="number" id="extra-pay" value="0" min="0" step="25" style="margin-left:.5rem;padding:.4rem;width:110px;border-radius:6px;border:1px solid #ccc;">
+                    </label>
+                    <button type="button" class="btn btn-outline" onclick="runStrategySim()">Simulate faster payoff</button>
+                </div>
+                <p id="strategy-out" style="margin-top:1rem;color:var(--text-secondary);line-height:1.6;"></p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: var(--spacing-2xl); padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+            <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">
+                <i class="fas fa-lightbulb"></i> Understanding Loan Payments
+            </h4>
+            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl);">
+                <li><strong>Monthly Payment:</strong> The fixed amount you pay each month to repay the loan</li>
+                <li><strong>Interest Rate:</strong> The cost of borrowing money, expressed as a percentage</li>
+                <li><strong>Loan Term:</strong> The length of time you have to repay the loan</li>
+                <li><strong>Total Interest:</strong> The total amount of interest you'll pay over the life of the loan</li>
+                <li><strong>Total Payment:</strong> The sum of the original loan amount plus all interest</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <button class="btn btn-outline" onclick="resetGame()" style="margin-right: var(--spacing-md);">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+            <a href="{{ url_for('games') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Games
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+const __loanState = {{ game_state|tojson }};
+
+function amortYearOne(principal, annualPct, termMonths, extraMonthly) {
+    var r = (annualPct / 100) / 12;
+    var bal = principal;
+    var pmt = 0;
+    if (r > 0) {
+        pmt = principal * (r / (1 - Math.pow(1 + r, -termMonths)));
+    } else {
+        pmt = principal / termMonths;
+    }
+    var principalParts = [];
+    var interestParts = [];
+    for (var m = 0; m < Math.min(12, termMonths); m++) {
+        var interest = bal * r;
+        var scheduledPrin = pmt - interest;
+        var extra = Math.min(extraMonthly || 0, bal - scheduledPrin);
+        var prin = Math.min(bal, scheduledPrin + Math.max(0, extra));
+        principalParts.push(prin);
+        interestParts.push(interest);
+        bal -= prin;
+        if (bal <= 0.01) break;
+    }
+    return { principalParts: principalParts, interestParts: interestParts, payment: pmt };
+}
+
+function drawLoanChart() {
+    if (!__loanState || !__loanState.calculated) return;
+    var c = document.getElementById('loan-canvas');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var w = c.width, h = c.height;
+    ctx.clearRect(0, 0, w, h);
+    var extra = parseFloat(document.getElementById('extra-pay').value) || 0;
+    var sim = amortYearOne(__loanState.loan_amount, __loanState.interest_rate, __loanState.loan_term_months, extra);
+    var n = sim.principalParts.length;
+    if (!n) return;
+    var maxBar = 0;
+    for (var i = 0; i < n; i++) maxBar = Math.max(maxBar, sim.principalParts[i] + sim.interestParts[i]);
+    var barW = (w - 40) / n - 4;
+    for (var j = 0; j < n; j++) {
+        var x = 20 + j * (barW + 4);
+        var totalH = (sim.principalParts[j] + sim.interestParts[j]) / maxBar * (h - 60);
+        var ih = sim.interestParts[j] / maxBar * (h - 60);
+        var ph = totalH - ih;
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(x, h - 40 - ih, barW, ih);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(x, h - 40 - ih - ph, barW, ph);
+    }
+    ctx.fillStyle = '#334155';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Months 1–' + n + ' (blue=principal, gray=interest)', 20, 18);
+}
+
+function runStrategySim() {
+    if (!__loanState || !__loanState.calculated) return;
+    var P = __loanState.loan_amount;
+    var annual = __loanState.interest_rate;
+    var term = __loanState.loan_term_months;
+    var extra = parseFloat(document.getElementById('extra-pay').value) || 0;
+    var r = (annual / 100) / 12;
+    var bal = P;
+    var pmt = __loanState.monthly_payment;
+    var months = 0;
+    var totalInt = 0;
+    while (bal > 0.02 && months < 600) {
+        var interest = bal * r;
+        var prin = Math.min(bal, pmt - interest + extra);
+        if (prin <= 0) break;
+        bal -= prin;
+        totalInt += interest;
+        months++;
+    }
+    var baseMonths = term;
+    var out = document.getElementById('strategy-out');
+    out.innerHTML = 'Baseline term: <strong>' + baseMonths + ' mo</strong>. With extra $' + extra.toFixed(0) + '/mo, paid in about <strong>' + months + ' mo</strong> (approx.). Total interest paid (sim): <strong>$' + totalInt.toFixed(0) + '</strong>.';
+    drawLoanChart();
+}
+
+function calculateLoan() {
+    const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+    const interestRate = parseFloat(document.getElementById('interest-rate').value);
+    const loanTerm = parseInt(document.getElementById('loan-term').value);
+
+    if (!loanAmount || !interestRate || !loanTerm || loanAmount <= 0 || loanTerm <= 0) {
+        if (window.showNotification) {
+            showNotification('Please enter valid values for all fields.', 'error');
+        } else {
+            alert('Please enter valid values for all fields.');
+        }
+        return;
+    }
+
+    fetch('{{ url_for("moderate_loan_bp.calculate_loan") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            loan_amount: loanAmount,
+            interest_rate: interestRate,
+            loan_term_months: loanTerm
+        })
+    })
+    .then(response => response.json())
+    .then(async data => {
+        if (window.showNotification) {
+            showNotification('Loan calculated successfully!', 'success');
+        }
+        if (data && data.calculated && typeof window.saveScore === 'function' && typeof window.finovoSessionDedupeKey === 'function') {
+            var finalScore = Math.round(Number(data.monthly_payment) || 0);
+            var saveKey = await window.finovoSessionDedupeKey(
+                "loan_" + finalScore + "_" + Math.round(Number(data.total_interest) || 0) + "_" + Number(data.loan_term_months || 0)
+            );
+            if (!sessionStorage.getItem(saveKey)) {
+                sessionStorage.setItem(saveKey, '1');
+                console.log("GAME SAVE TRIGGERED");
+                console.log("FINAL SCORE:", finalScore);
+                await window.saveScore(finalScore, "Loan Repayment", "Moderate");
+            }
+        }
+        setTimeout(function () { location.reload(); }, 400);
+    })
+    .catch(error => {
+        if (window.showNotification) {
+            showNotification('Error calculating loan. Please try again.', 'error');
+        }
+    });
+}
+
+function resetGame() {
+    if (window.showConfirm) {
+        showConfirm(
+            'Are you sure you want to reset?',
+            () => {
+                fetch('{{ url_for("moderate_loan_bp.reset_game") }}', {method: 'POST'})
+                    .then(response => response.json())
+                    .then(data => {
+                        if (window.showNotification) {
+                            showNotification('Game reset successfully!', 'success');
+                        }
+                        setTimeout(() => location.reload(), 500);
+                    });
+            }
+        );
+    } else {
+        if (confirm('Are you sure you want to reset?')) {
+            fetch('{{ url_for("moderate_loan_bp.reset_game") }}', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    location.reload();
+                });
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    var c = document.getElementById('loan-canvas');
+    if (!c || !__loanState || !__loanState.calculated) return;
+    var ex = document.getElementById('extra-pay');
+    if (ex) ex.addEventListener('input', drawLoanChart);
+    drawLoanChart();
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,1223 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio Diversifier - Investment Strategy Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .allocation-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .allocation-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .investment-amount {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .amount-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #f5576c;
+    }
+    
+    .asset-classes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .asset-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .asset-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        border-color: #f5576c;
+    }
+    
+    .asset-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .asset-name {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .asset-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+    
+    .allocation-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    
+    .allocation-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #f5576c;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .allocation-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #f5576c;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .allocation-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    
+    .allocation-percentage {
+        color: #f5576c;
+    }
+    
+    .allocation-amount {
+        color: #333;
+    }
+    
+    .charts-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .charts-section {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+    
+    .chart-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .pie-chart {
+        width: 100%;
+        height: 300px;
+        position: relative;
+    }
+    
+    .performance-chart {
+        width: 100%;
+        height: 300px;
+        position: relative;
+    }
+    
+    .risk-return-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .risk-return-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .risk-return-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .risk-return-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .metric-box {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #f5576c;
+    }
+    
+    .metric-label {
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .risk-meter {
+        width: 100%;
+        height: 30px;
+        background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+        border-radius: 15px;
+        position: relative;
+        margin: 20px 0;
+    }
+    
+    .risk-indicator {
+        position: absolute;
+        top: -10px;
+        width: 50px;
+        height: 50px;
+        background: white;
+        border: 3px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        transition: left 0.5s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .simulation-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .simulation-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .simulation-controls {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .year-indicator {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #f5576c;
+        margin-bottom: 20px;
+    }
+    
+    .events-log {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .event-item {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-left: 4px solid #f5576c;
+        background: white;
+        border-radius: 0 8px 8px 0;
+        animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .event-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .event-impact {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .feedback-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .allocation-warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔒 Checking authentication for portfolio diversifier...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+<script src="{{ url_for('static', filename='js/gameDatabase.js') }}"></script>
+<script>
+// Game data
+const gameData = {
+    assets: [
+        {
+            id: 'stocks',
+            name: 'Stocks',
+            icon: '📈',
+            description: 'High growth potential, higher risk',
+            minAllocation: 0,
+            maxAllocation: 100,
+            expectedReturn: 0.10,
+            volatility: 0.20,
+            riskLevel: 'High'
+        },
+        {
+            id: 'bonds',
+            name: 'Bonds',
+            icon: '📊',
+            description: 'Stable returns, lower risk',
+            minAllocation: 0,
+            maxAllocation: 100,
+            expectedReturn: 0.05,
+            volatility: 0.08,
+            riskLevel: 'Low'
+        },
+        {
+            id: 'crypto',
+            name: 'Cryptocurrency',
+            icon: '₿',
+            description: 'Very high growth potential, very high risk',
+            minAllocation: 0,
+            maxAllocation: 100,
+            expectedReturn: 0.25,
+            volatility: 0.50,
+            riskLevel: 'Very High'
+        },
+        {
+            id: 'realestate',
+            name: 'Real Estate',
+            icon: '🏠',
+            description: 'Moderate growth, inflation hedge',
+            minAllocation: 0,
+            maxAllocation: 100,
+            expectedReturn: 0.08,
+            volatility: 0.15,
+            riskLevel: 'Medium'
+        }
+    ],
+    marketScenarios: [
+        {
+            name: 'Bull Market',
+            description: 'Strong economic growth, rising markets',
+            probability: 0.25,
+            returns: {
+                stocks: 0.20,
+                bonds: 0.03,
+                crypto: 0.40,
+                realestate: 0.12
+            }
+        },
+        {
+            name: 'Normal Market',
+            description: 'Average market conditions',
+            probability: 0.50,
+            returns: {
+                stocks: 0.08,
+                bonds: 0.04,
+                crypto: 0.15,
+                realestate: 0.06
+            }
+        },
+        {
+            name: 'Bear Market',
+            description: 'Economic downturn, declining markets',
+            probability: 0.25,
+            returns: {
+                stocks: -0.15,
+                bonds: 0.02,
+                crypto: -0.30,
+                realestate: -0.05
+            }
+        }
+    ]
+};
+
+// Game state
+let currentStep = 0;
+let totalSteps = 4;
+let allocation = {};
+let simulationResults = [];
+let score = 0;
+let gameActive = false;
+    portfolioValue = 10000;
+    achievements = [];
+
+// Initialize game
+function initGame() {
+    renderStep();
+}
+
+function renderStep() {
+    const stepIndicator = document.getElementById('stepIndicator');
+    const stepTitle = document.getElementById('stepTitle');
+    const stepDescription = document.getElementById('stepDescription');
+    const allocationSection = document.getElementById('allocationSection');
+    
+    stepIndicator.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
+    
+    switch(currentStep) {
+        case 0:
+            stepTitle.textContent = 'Asset Allocation';
+            stepDescription.textContent = 'Distribute your $10,000 across different asset classes. Consider your risk tolerance and investment goals.';
+            renderAllocationStep();
+            break;
+        case 1:
+            stepTitle.textContent = 'Risk Assessment';
+            stepDescription.textContent = 'Review your portfolio\'s risk profile and expected returns.';
+            renderRiskAssessment();
+            break;
+        case 2:
+            stepTitle.textContent = 'Market Simulation';
+            stepDescription.textContent = 'See how your portfolio performs under different market conditions.';
+            renderSimulation();
+            break;
+        case 3:
+            stepTitle.textContent = 'Results & Analysis';
+            stepDescription.textContent = 'Review your performance and get feedback on your diversification strategy.';
+            renderResults();
+            break;
+    }
+}
+
+function renderAllocationStep() {
+    const allocationSection = document.getElementById('allocationSection');
+    allocationSection.innerHTML = `
+        <div class="allocation-grid">
+            ${gameData.assets.map(asset => `
+                <div class="asset-card">
+                    <div class="asset-header">
+                        <div class="asset-icon">${asset.icon}</div>
+                        <div class="asset-name">${asset.name}</div>
+                        <div class="asset-risk risk-${asset.riskLevel.toLowerCase().replace(' ', '-')}">${asset.riskLevel}</div>
+                    </div>
+                    <div class="asset-description">${asset.description}</div>
+                    <div class="asset-stats">
+                        <div class="stat">
+                            <span class="stat-label">Expected Return:</span>
+                            <span class="stat-value">${(asset.expectedReturn * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Volatility:</span>
+                            <span class="stat-value">${(asset.volatility * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    <div class="allocation-input">
+                        <label for="allocation-${asset.id}">Allocation %:</label>
+                        <div class="input-group">
+                            <input type="range" 
+                                   id="allocation-${asset.id}" 
+                                   min="${asset.minAllocation}" 
+                                   max="${asset.maxAllocation}" 
+                                   value="0" 
+                                   class="allocation-slider"
+                                   oninput="updateAllocation('${asset.id}', this.value)">
+                            <input type="number" 
+                                   id="allocation-value-${asset.id}" 
+                                   min="${asset.minAllocation}" 
+                                   max="${asset.maxAllocation}" 
+                                   value="0" 
+                                   class="allocation-number"
+                                   oninput="updateAllocation('${asset.id}', this.value)">
+                        </div>
+                        <div class="allocation-amount" id="amount-${asset.id}">$0</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="allocation-summary">
+            <div class="summary-item">
+                <span class="summary-label">Total Allocated:</span>
+                <span class="summary-value" id="totalAllocated">0%</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Remaining:</span>
+                <span class="summary-value" id="remaining">100%</span>
+            </div>
+            <div class="validation-message" id="validationMessage"></div>
+        </div>
+    `;
+    
+    // Initialize allocation
+    gameData.assets.forEach(asset => {
+        allocation[asset.id] = 0;
+    });
+    
+    updateAllocationDisplay();
+}
+
+function updateAllocation(assetId, value) {
+    const numValue = Math.max(0, Math.min(100, parseFloat(value) || 0));
+    allocation[assetId] = numValue;
+    
+    // Update both inputs
+    document.getElementById(`allocation-${assetId}`).value = numValue;
+    document.getElementById(`allocation-value-${assetId}`).value = numValue;
+    
+    updateAllocationDisplay();
+}
+
+function updateAllocationDisplay() {
+    let totalAllocated = 0;
+    
+    gameData.assets.forEach(asset => {
+        const amount = (allocation[asset.id] / 100) * portfolioValue;
+        document.getElementById(`amount-${asset.id}`).textContent = `$${amount.toFixed(0)}`;
+        totalAllocated += allocation[asset.id];
+    });
+    
+    const remaining = 100 - totalAllocated;
+    
+    document.getElementById('totalAllocated').textContent = `${totalAllocated.toFixed(1)}%`;
+    document.getElementById('remaining').textContent = `${remaining.toFixed(1)}%`;
+    
+    // Update validation message
+    const validationMessage = document.getElementById('validationMessage');
+    if (Math.abs(totalAllocated - 100) < 0.1) {
+        validationMessage.textContent = '✅ Allocation complete!';
+        validationMessage.className = 'validation-message success';
+        document.getElementById('nextStepBtn').disabled = false;
+    } else if (totalAllocated > 100) {
+        validationMessage.textContent = '❌ Over-allocated by ' + (totalAllocated - 100).toFixed(1) + '%';
+        validationMessage.className = 'validation-message error';
+        document.getElementById('nextStepBtn').disabled = true;
+    } else {
+        validationMessage.textContent = '⚠️ ' + remaining.toFixed(1) + '% remaining to allocate';
+        validationMessage.className = 'validation-message warning';
+        document.getElementById('nextStepBtn').disabled = true;
+    }
+}
+
+function renderRiskAssessment() {
+    const allocationSection = document.getElementById('allocationSection');
+    
+    // Calculate portfolio metrics
+    const expectedReturn = calculateExpectedReturn();
+    const portfolioVolatility = calculateVolatility();
+    const riskLevel = assessRiskLevel();
+    
+    allocationSection.innerHTML = `
+        <div class="risk-assessment">
+            <div class="portfolio-metrics">
+                <h3>Your Portfolio Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Expected Annual Return</div>
+                        <div class="metric-value">${(expectedReturn * 100).toFixed(2)}%</div>
+                        <div class="metric-description">${expectedReturn > 0.08 ? 'Above average' : 'Below average'}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Portfolio Volatility</div>
+                        <div class="metric-value">${(portfolioVolatility * 100).toFixed(2)}%</div>
+                        <div class="metric-description">${portfolioVolatility > 0.15 ? 'High risk' : 'Moderate risk'}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Risk Level</div>
+                        <div class="metric-value ${riskLevel.toLowerCase()}">${riskLevel}</div>
+                        <div class="metric-description">Based on your allocation</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Sharpe Ratio</div>
+                        <div class="metric-value">${calculateSharpeRatio().toFixed(2)}</div>
+                        <div class="metric-description">Risk-adjusted return</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="allocation-breakdown">
+                <h3>Asset Allocation Breakdown</h3>
+                <div class="breakdown-chart">
+                    ${gameData.assets.map(asset => `
+                        <div class="asset-breakdown">
+                            <div class="asset-info">
+                                <span class="asset-icon">${asset.icon}</span>
+                                <span class="asset-name">${asset.name}</span>
+                            </div>
+                            <div class="asset-allocation">
+                                <div class="allocation-bar">
+                                    <div class="allocation-fill" style="width: ${allocation[asset.id]}%"></div>
+                                </div>
+                                <span class="allocation-percentage">${allocation[asset.id].toFixed(1)}%</span>
+                            </div>
+                            <div class="asset-contribution">
+                                <div class="contribution-label">Return Contribution:</div>
+                                <div class="contribution-value">${((allocation[asset.id] / 100) * asset.expectedReturn * 100).toFixed(2)}%</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="risk-recommendations">
+                <h3>Diversification Analysis</h3>
+                <div class="recommendations">
+                    ${generateDiversificationRecommendations()}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('nextStepBtn').disabled = false;
+}
+
+function calculateExpectedReturn() {
+    let totalReturn = 0;
+    gameData.assets.forEach(asset => {
+        totalReturn += (allocation[asset.id] / 100) * asset.expectedReturn;
+    });
+    return totalReturn;
+}
+
+function calculateVolatility() {
+    let totalVariance = 0;
+    gameData.assets.forEach(asset => {
+        const weight = allocation[asset.id] / 100;
+        totalVariance += Math.pow(weight, 2) * Math.pow(asset.volatility, 2);
+    });
+    return Math.sqrt(totalVariance);
+}
+
+function assessRiskLevel() {
+    const volatility = calculateVolatility();
+    if (volatility < 0.10) return 'Low';
+    if (volatility < 0.20) return 'Medium';
+    return 'High';
+}
+
+function calculateSharpeRatio() {
+    const expectedReturn = calculateExpectedReturn();
+    const volatility = calculateVolatility();
+    const riskFreeRate = 0.02; // 2% risk-free rate
+    return volatility > 0 ? (expectedReturn - riskFreeRate) / volatility : 0;
+}
+
+function generateDiversificationRecommendations() {
+    const recommendations = [];
+    const maxAllocation = Math.max(...Object.values(allocation));
+    const maxAsset = Object.keys(allocation).find(key => allocation[key] === maxAllocation);
+    
+    if (maxAllocation > 60) {
+        const asset = gameData.assets.find(a => a.id === maxAsset);
+        recommendations.push(`⚠️ Consider reducing ${asset.name} allocation from ${maxAllocation.toFixed(1)}% to improve diversification.`);
+    }
+    
+    const stockAllocation = allocation.stocks || 0;
+    const bondAllocation = allocation.bonds || 0;
+    
+    if (stockAllocation > 80) {
+        recommendations.push(`⚠️ High stock concentration (${stockAllocation.toFixed(1)}%) may increase portfolio volatility.`);
+    }
+    
+    if (bondAllocation < 20 && stockAllocation > 50) {
+        recommendations.push(`💡 Consider adding bonds for stability during market downturns.`);
+    }
+    
+    if (Object.values(allocation).filter(a => a > 0).length < 3) {
+        recommendations.push(`💡 Consider diversifying across more asset classes to reduce risk.`);
+    }
+    
+    if (recommendations.length === 0) {
+        recommendations.push('✅ Well-diversified portfolio! Good balance of risk and return.');
+    }
+    
+    return recommendations.map(r => `<div class="recommendation">${r}</div>`).join('');
+}
+
+function renderSimulation() {
+    const allocationSection = document.getElementById('allocationSection');
+    
+    // Run simulations
+    simulationResults = runMonteCarloSimulation();
+    
+    allocationSection.innerHTML = `
+        <div class="simulation-results">
+            <h3>Market Scenario Analysis</h3>
+            <div class="scenarios-grid">
+                ${gameData.marketScenarios.map((scenario, index) => {
+                    const result = simulationResults[index];
+                    return `
+                        <div class="scenario-card ${scenario.name.toLowerCase().replace(' ', '-')}">
+                            <div class="scenario-header">
+                                <h4>${scenario.name}</h4>
+                                <div class="scenario-probability">${(scenario.probability * 100).toFixed(0)}% chance</div>
+                            </div>
+                            <div class="scenario-description">${scenario.description}</div>
+                            <div class="scenario-results">
+                                <div class="result-item">
+                                    <span class="result-label">Portfolio Value:</span>
+                                    <span class="result-value ${result.finalValue >= portfolioValue ? 'positive' : 'negative'}">
+                                        $${result.finalValue.toFixed(0)}
+                                    </span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Return:</span>
+                                    <span class="result-value ${result.totalReturn >= 0 ? 'positive' : 'negative'}">
+                                        ${(result.totalReturn * 100).toFixed(2)}%
+                                    </span>
+                                </div>
+                                <div class="result-breakdown">
+                                    ${gameData.assets.map(asset => `
+                                        <div class="asset-result">
+                                            <span class="asset-name">${asset.icon} ${asset.name}:</span>
+                                            <span class="asset-return ${result.assetReturns[asset.id] >= 0 ? 'positive' : 'negative'}">
+                                                ${(result.assetReturns[asset.id] * 100).toFixed(2)}%
+                                            </span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <div class="expected-outcomes">
+                <h3>Expected Portfolio Performance</h3>
+                <div class="outcomes-grid">
+                    <div class="outcome-card">
+                        <div class="outcome-title">Expected Annual Return</div>
+                        <div class="outcome-value">${(calculateExpectedReturn() * 100).toFixed(2)}%</div>
+                    </div>
+                    <div class="outcome-card">
+                        <div class="outcome-title">Best Case (25%)</div>
+                        <div class="outcome-value positive">
+                            $${simulationResults[0].finalValue.toFixed(0)}
+                        </div>
+                    </div>
+                    <div class="outcome-card">
+                        <div class="outcome-title">Expected Case (50%)</div>
+                        <div class="outcome-value">
+                            $${simulationResults[1].finalValue.toFixed(0)}
+                        </div>
+                    </div>
+                    <div class="outcome-card">
+                        <div class="outcome-title">Worst Case (25%)</div>
+                        <div class="outcome-value negative">
+                            $${simulationResults[2].finalValue.toFixed(0)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('nextStepBtn').disabled = false;
+}
+
+function runMonteCarloSimulation() {
+    return gameData.marketScenarios.map(scenario => {
+        let finalValue = portfolioValue;
+        const assetReturns = {};
+        
+        gameData.assets.forEach(asset => {
+            const assetValue = (allocation[asset.id] / 100) * portfolioValue;
+            const scenarioReturn = scenario.returns[asset.id];
+            const finalAssetValue = assetValue * (1 + scenarioReturn);
+            assetReturns[asset.id] = scenarioReturn;
+            finalValue += (finalAssetValue - assetValue);
+        });
+        
+        return {
+            finalValue: finalValue,
+            totalReturn: (finalValue - portfolioValue) / portfolioValue,
+            assetReturns: assetReturns
+        };
+    });
+}
+
+function renderResults() {
+    const allocationSection = document.getElementById('allocationSection');
+    
+    // Calculate final score
+    const expectedReturn = calculateExpectedReturn();
+    const volatility = calculateVolatility();
+    const sharpeRatio = calculateSharpeRatio();
+    
+    // Score based on risk-adjusted returns and diversification
+    score = Math.round(sharpeRatio * 100 + calculateDiversificationScore());
+    
+    allocationSection.innerHTML = `
+        <div class="final-results">
+            <h3>Portfolio Performance Analysis</h3>
+            
+            <div class="performance-summary">
+                <div class="summary-card">
+                    <h4>Overall Score</h4>
+                    <div class="score-display">${score}/100</div>
+                    <div class="score-description">${getScoreDescription(score)}</div>
+                </div>
+                
+                <div class="metrics-summary">
+                    <div class="metric-row">
+                        <span class="metric-label">Expected Annual Return:</span>
+                        <span class="metric-value">${(expectedReturn * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Portfolio Volatility:</span>
+                        <span class="metric-value">${(volatility * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Sharpe Ratio:</span>
+                        <span class="metric-value">${sharpeRatio.toFixed(2)}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Diversification Score:</span>
+                        <span class="metric-value">${calculateDiversificationScore()}/100</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="achievements-section">
+                <h4>Achievements Earned</h4>
+                <div class="achievements-list">
+                    ${getAchievements().map(a => `
+                        <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}">
+                            <div class="achievement-icon">${a.icon}</div>
+                            <div class="achievement-name">${a.name}</div>
+                            <div class="achievement-description">${a.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="recommendations-final">
+                <h4>Investment Recommendations</h4>
+                <div class="final-recommendations">
+                    ${generateFinalRecommendations()}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('nextStepBtn').style.display = 'none';
+    document.getElementById('finishBtn').style.display = 'inline-block';
+}
+
+function calculateDiversificationScore() {
+    let score = 0;
+    const nonZeroAssets = Object.values(allocation).filter(a => a > 0).length;
+    
+    // Score for number of assets
+    score += Math.min(40, nonZeroAssets * 10);
+    
+    // Score for balanced allocation
+    const maxAllocation = Math.max(...Object.values(allocation));
+    if (maxAllocation <= 40) score += 30;
+    else if (maxAllocation <= 60) score += 20;
+    else if (maxAllocation <= 80) score += 10;
+    
+    // Score for risk balance
+    const volatility = calculateVolatility();
+    if (volatility >= 0.10 && volatility <= 0.20) score += 30;
+    else if (volatility >= 0.05 && volatility <= 0.25) score += 20;
+    else if (volatility >= 0.01 && volatility <= 0.30) score += 10;
+    
+    return Math.min(100, score);
+}
+
+function getScoreDescription(score) {
+    if (score >= 90) return 'Excellent! Outstanding portfolio strategy.';
+    if (score >= 80) return 'Great job! Well-balanced portfolio.';
+    if (score >= 70) return 'Good! Solid diversification strategy.';
+    if (score >= 60) return 'Fair! Some room for improvement.';
+    return 'Keep learning! Consider rebalancing.';
+}
+
+function getAchievements() {
+    const achievementsList = [
+        {
+            id: 'diversified',
+            name: 'Diversified Investor',
+            description: 'Allocated across 3+ asset classes',
+            icon: '🎯',
+            earned: Object.values(allocation).filter(a => a > 0).length >= 3
+        },
+        {
+            id: 'balanced',
+            name: 'Balanced Portfolio',
+            description: 'No single asset over 60%',
+            icon: '⚖️',
+            earned: Math.max(...Object.values(allocation)) <= 60
+        },
+        {
+            id: 'risk_manager',
+            name: 'Risk Manager',
+            description: 'Portfolio volatility between 10-20%',
+            icon: '🛡️',
+            earned: calculateVolatility() >= 0.10 && calculateVolatility() <= 0.20
+        },
+        {
+            id: 'high_return',
+            name: 'Return Seeker',
+            description: 'Expected return above 8%',
+            icon: '📈',
+            earned: calculateExpectedReturn() > 0.08
+        }
+    ];
+    
+    return achievementsList;
+}
+
+function generateFinalRecommendations() {
+    const recommendations = [];
+    const expectedReturn = calculateExpectedReturn();
+    const volatility = calculateVolatility();
+    
+    if (expectedReturn < 0.05) {
+        recommendations.push('💡 Consider increasing allocation to growth assets like stocks for higher returns.');
+    }
+    
+    if (volatility > 0.25) {
+        recommendations.push('⚠️ High volatility detected. Consider adding bonds or reducing crypto allocation.');
+    }
+    
+    if (volatility < 0.08) {
+        recommendations.push('💡 Very conservative portfolio. Consider adding growth assets for better long-term returns.');
+    }
+    
+    const sharpeRatio = calculateSharpeRatio();
+    if (sharpeRatio < 0.5) {
+        recommendations.push('📊 Low risk-adjusted returns. Rebalance to improve risk-return profile.');
+    }
+    
+    if (recommendations.length === 0) {
+        recommendations.push('✅ Excellent portfolio construction! Maintain regular rebalancing.');
+    }
+    
+    return recommendations.map(r => `<div class="recommendation">${r}</div>`).join('');
+}
+
+function nextStep() {
+    if (currentStep < totalSteps - 1) {
+        currentStep++;
+        renderStep();
+    } else {
+        finishGame();
+    }
+}
+
+function previousStep() {
+    if (currentStep > 0) {
+        currentStep--;
+        renderStep();
+    }
+}
+
+function finishGame() {
+    gameActive = false;
+    showFeedback(`Game Complete! Final Score: ${score}/100`, 'success');
+}
+
+function restartGame() {
+    currentStep = 0;
+    allocation = {};
+    simulationResults = [];
+    score = 0;
+    gameActive = false;
+    portfolioValue = 10000;
+    achievements = [];
+    
+    // Reset UI
+    document.getElementById('finishBtn').style.display = 'none';
+    document.getElementById('nextStepBtn').style.display = 'inline-block';
+    document.getElementById('previousStepBtn').style.display = 'none';
+    
+    renderStep();
+    
+    showFeedback('Game reset! Start diversifying your portfolio.', 'info');
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+    }, 4000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>📊 Portfolio Diversifier</h1>
+        <p>Allocate your investment across different asset classes. Balance risk and return for optimal performance!</p>
+    </div>
+    
+    <div class="allocation-section">
+        <div class="allocation-header">
+            <h3>Asset Allocation</h3>
+        </div>
+        
+        <div class="investment-amount">
+            <div class="amount-display">$10,000</div>
+            <div style="color: #666;">Initial Investment</div>
+        </div>
+        
+        <div id="allocationWarning" class="allocation-warning" style="display: none;">
+            Allocation must total 100%
+        </div>
+        
+        <div class="asset-classes">
+            <div class="asset-card">
+                <div class="asset-icon">📈</div>
+                <div class="asset-name">Stocks</div>
+                <div class="asset-description">High growth potential, higher risk</div>
+                <input type="range" class="allocation-slider" id="stocksSlider" 
+                       min="0" max="100" value="40" step="5"
+                       oninput="updateAllocation('stocks', this.value)">
+                <div class="allocation-display">
+                    <span class="allocation-percentage" id="stocksPercentage">40%</span>
+                    <span class="allocation-amount" id="stocksAmount">$4,000</span>
+                </div>
+            </div>
+            
+            <div class="asset-card">
+                <div class="asset-icon">🏦</div>
+                <div class="asset-name">Bonds</div>
+                <div class="asset-description">Stable income, lower risk</div>
+                <input type="range" class="allocation-slider" id="bondsSlider" 
+                       min="0" max="100" value="30" step="5"
+                       oninput="updateAllocation('bonds', this.value)">
+                <div class="allocation-display">
+                    <span class="allocation-percentage" id="bondsPercentage">30%</span>
+                    <span class="allocation-amount" id="bondsAmount">$3,000</span>
+                </div>
+            </div>
+            
+            <div class="asset-card">
+                <div class="asset-icon">₿</div>
+                <div class="asset-name">Crypto</div>
+                <div class="asset-description">Very high risk, high potential returns</div>
+                <input type="range" class="allocation-slider" id="cryptoSlider" 
+                       min="0" max="100" value="10" step="5"
+                       oninput="updateAllocation('crypto', this.value)">
+                <div class="allocation-display">
+                    <span class="allocation-percentage" id="cryptoPercentage">10%</span>
+                    <span class="allocation-amount" id="cryptoAmount">$1,000</span>
+                </div>
+            </div>
+            
+            <div class="asset-card">
+                <div class="asset-icon">🏠</div>
+                <div class="asset-name">Real Estate</div>
+                <div class="asset-description">Moderate risk, inflation hedge</div>
+                <input type="range" class="allocation-slider" id="realestateSlider" 
+                       min="0" max="100" value="20" step="5"
+                       oninput="updateAllocation('realestate', this.value)">
+                <div class="allocation-display">
+                    <span class="allocation-percentage" id="realestatePercentage">20%</span>
+                    <span class="allocation-amount" id="realestateAmount">$2,000</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Portfolio Allocation</h3>
+            </div>
+            <div class="pie-chart">
+                <svg id="pieChart" width="100%" height="100%"></svg>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Risk vs Return Profile</h3>
+            </div>
+            <div class="risk-return-grid">
+                <div class="metric-box">
+                    <div class="metric-value" id="expectedReturn">8.5%</div>
+                    <div class="metric-label">Expected Annual Return</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="riskLevel">Medium</div>
+                    <div class="metric-label">Risk Level</div>
+                </div>
+            </div>
+            <div class="risk-meter">
+                <div class="risk-indicator" id="riskIndicator">50%</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="simulation-section" id="simulationSection">
+        <div class="simulation-header">
+            <h3>Market Simulation</h3>
+        </div>
+        <div class="simulation-controls">
+            <div class="year-indicator" id="yearIndicator">Year 0</div>
+        </div>
+        <div class="performance-chart">
+            <svg id="performanceChart" width="100%" height="100%"></svg>
+        </div>
+        <div class="events-log" id="eventsLog">
+            <!-- Events will be dynamically added -->
+        </div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="simulateBtn" onclick="startSimulation()">Run Simulation</button>
+        <button class="btn-game" id="finishBtn" onclick="finishGame()" style="display: none;">Finish Game</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+{% endblock %}

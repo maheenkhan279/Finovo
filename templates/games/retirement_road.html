@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Retirement Road - Finovo{% endblock %}
+{% block extra_css %}
+<style>
+.wrap { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+.card {
+    background: var(--bg-primary);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); margin: 1.5rem 0; }
+.grid label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
+.grid input { padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); }
+.out { margin-top: 1.5rem; padding: var(--spacing-xl); background: var(--info-light); border-left: 4px solid var(--primary-blue); border-radius: var(--radius-md); }
+.goal-ok { border-left-color: var(--success-color) !important; background: rgba(34,197,94,0.08) !important; }
+.goal-warn { border-left-color: #f59e0b !important; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0.75rem; }
+th, td { padding: 0.5rem; border-bottom: 1px solid var(--gray-200); text-align: left; }
+#bal-canvas { width: 100%; max-width: 100%; height: 180px; margin-top: 1rem; border-radius: 8px; background: #fafafa; }
+</style>
+{% endblock %}
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Retirement Road</h1>
+        <p>Yearly contributions with compound growth—simple projection for learning.</p>
+    </div>
+</section>
+<div class="wrap">
+    <div class="card">
+        <h2 style="color:var(--primary-blue)">Inputs</h2>
+        <div class="grid">
+            <label>Starting balance ($)<input type="number" id="sb" value="{{ game.starting_balance }}" min="0" step="100"></label>
+            <label>Annual contribution ($)<input type="number" id="ac" value="{{ game.annual_contribution }}" min="0" step="100"></label>
+            <label>Years<input type="number" id="yr" value="{{ game.years }}" min="1" max="80" step="1"></label>
+            <label>Annual return (%)<input type="number" id="rp" value="{{ game.annual_return_pct }}" min="-20" max="30" step="0.5"></label>
+            <label>Retirement goal ($, optional)<input type="number" id="goal" value="{% if game.goal is not none %}{{ game.goal }}{% endif %}" min="0" step="1000" placeholder="e.g. 500000"></label>
+        </div>
+        <p style="font-size:0.9rem;color:var(--text-secondary);margin:0.5rem 0 1rem;">Adjust inputs and run again—results update here without a full page reload.</p>
+        <button type="button" class="module-btn" onclick="run()">Run simulation</button>
+        <div class="out" id="out" style="{% if game.final_balance is none %}display:none{% endif %}">
+            <h3 id="out-title">Estimated balance after <span id="out-yrs">{{ game.years }}</span> years</h3>
+            <p id="out-goal-line" style="display:none;font-weight:600;margin:0.25rem 0;"></p>
+            <p style="font-size:1.75rem;font-weight:700;color:var(--primary-blue)"><span id="out-bal">{% if game.final_balance is not none %}${{ "{:,.0f}".format(game.final_balance) }}{% endif %}</span></p>
+            <p id="out-sample-label" style="display:none;margin-top:0.75rem;"><strong>Sample (recent years)</strong></p>
+            <table id="out-table" style="{% if not game.sample_years %}display:none{% endif %}"><thead><tr><th>Year</th><th>Balance</th></tr></thead><tbody id="out-tbody">
+            {% if game.sample_years %}{% for r in game.sample_years %}<tr><td>{{ r.year }}</td><td>${{ "{:,.2f}".format(r.balance) }}</td></tr>{% endfor %}{% endif %}
+            </tbody></table>
+            <canvas id="bal-canvas" width="640" height="200"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+function fmtMoney(n) {
+    return '$' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
+function drawRetirementChart(rows) {
+    var c = document.getElementById('bal-canvas');
+    if (!c || !rows || !rows.length) return;
+    var ctx = c.getContext('2d');
+    var w = c.width, h = c.height;
+    ctx.clearRect(0, 0, w, h);
+    var bals = rows.map(function (r) { return r.balance; });
+    var minB = Math.min.apply(null, bals);
+    var maxB = Math.max.apply(null, bals);
+    var pad = 24;
+    if (maxB <= minB) maxB = minB + 1;
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.beginPath();
+    ctx.moveTo(pad, h - pad);
+    ctx.lineTo(w - pad, h - pad);
+    ctx.stroke();
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    rows.forEach(function (r, i) {
+        var x = pad + (i / Math.max(1, rows.length - 1)) * (w - 2 * pad);
+        var y = pad + (1 - (r.balance - minB) / (maxB - minB)) * (h - 2 * pad);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.fillText('Balance path (all years)', pad, 14);
+}
+
+function run() {
+    var payload = {
+        starting_balance: document.getElementById('sb').value,
+        annual_contribution: document.getElementById('ac').value,
+        years: document.getElementById('yr').value,
+        annual_return_pct: document.getElementById('rp').value
+    };
+    var gv = document.getElementById('goal').value;
+    if (gv) payload.retirement_goal = gv;
+    fetch("{{ url_for('advanced_retirement_road_bp.simulate') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); }).then(async function (d) {
+        if (d.error) { if (typeof showNotification === 'function') showNotification(d.error, 'error'); return; }
+        renderRetirement(d);
+        if (d.final_balance != null && typeof window.saveScore === 'function') {
+            var finalScore = Math.max(0, Math.round(Number(d.final_balance) || 0));
+            console.log("GAME SAVE TRIGGERED");
+            console.log("FINAL SCORE:", finalScore);
+            await window.saveScore(finalScore, "Retirement Road", "Advanced");
+        }
+    });
+}
+
+function renderRetirement(d) {
+    var out = document.getElementById('out');
+    out.style.display = 'block';
+    document.getElementById('out-yrs').textContent = d.years;
+    document.getElementById('out-bal').textContent = fmtMoney(d.final_balance);
+    var goal = d.goal != null && d.goal !== '' ? Number(d.goal) : null;
+    var gl = document.getElementById('out-goal-line');
+    out.classList.remove('goal-ok', 'goal-warn');
+    if (goal && !isNaN(goal)) {
+        gl.style.display = 'block';
+        if (d.final_balance >= goal) {
+            gl.textContent = 'Goal: ' + fmtMoney(goal) + ' — you are at or above target.';
+            out.classList.add('goal-ok');
+        } else {
+            gl.textContent = 'Goal: ' + fmtMoney(goal) + ' — projected balance is below target.';
+            out.classList.add('goal-warn');
+        }
+    } else {
+        gl.style.display = 'none';
+    }
+    var rows = d.sample_years || [];
+    var tb = document.getElementById('out-tbody');
+    var tbl = document.getElementById('out-table');
+    var lbl = document.getElementById('out-sample-label');
+    if (rows.length) {
+        lbl.style.display = 'block';
+        tbl.style.display = 'table';
+        tb.innerHTML = rows.map(function (r) {
+            return '<tr><td>' + r.year + '</td><td>$' + Number(r.balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td></tr>';
+        }).join('');
+    } else {
+        lbl.style.display = 'none';
+        tbl.style.display = 'none';
+        tb.innerHTML = '';
+    }
+    var path = (d.all_years && d.all_years.length) ? d.all_years : (rows.length ? rows : [{ year: 0, balance: d.starting_balance }, { year: d.years, balance: d.final_balance }]);
+    drawRetirementChart(path);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    var g = {{ game|tojson }};
+    if (g && g.final_balance != null && g.all_years && g.all_years.length) {
+        drawRetirementChart(g.all_years);
+    } else if (g && g.final_balance != null && g.sample_years && g.sample_years.length) {
+        drawRetirementChart(g.sample_years);
+    }
+});
+</script>
+{% endblock %}

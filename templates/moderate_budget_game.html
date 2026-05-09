@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Budgeting Game - Finovo{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Advanced Budgeting</h1>
+        <p>Complex budget management! Handle multiple income sources, variable expenses, and unexpected financial challenges.</p>
+    </div>
+</section>
+
+<section class="game-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="game-container">
+                    <div class="game-header">
+                        <h2>Advanced Budgeting Challenge</h2>
+                        <p>Manage complex financial scenarios with multiple income streams and variable expenses.</p>
+                    </div>
+                    
+                    <div class="game-content">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Coming Soon!</strong> This advanced budgeting game is currently under development.
+                        </div>
+                        
+                        <div class="coming-soon-features">
+                            <h3>Features to Expect:</h3>
+                            <ul>
+                                <li>Multiple income sources management</li>
+                                <li>Variable expense tracking</li>
+                                <li>Unexpected financial events</li>
+                                <li>Investment portfolio integration</li>
+                                <li>Advanced financial analytics</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('games') }}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left"></i> Back to Games
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

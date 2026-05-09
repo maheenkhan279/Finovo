@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Games - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --gp-navy: #0f2537;
+        --gp-navy-2: #1e3a5f;
+        --gp-teal: #16a085;
+        --gp-teal-2: #2d7d7d;
+        --gp-coral: #ff7a5c;
+        --gp-amber: #f59e0b;
+        --gp-rose: #ef4444;
+        --gp-line: #e5e7eb;
+        --gp-bg-soft: #f7fafc;
+    }
+
+    .games-hero {
+        position: relative;
+        padding: clamp(2.5rem, 6vw, 5rem) 1.25rem clamp(2.5rem, 5vw, 4rem);
+        background: radial-gradient(1100px 400px at 10% -10%, rgba(22,160,133,0.18), transparent 60%),
+                    radial-gradient(900px 400px at 100% 0%, rgba(30,58,95,0.18), transparent 55%),
+                    linear-gradient(135deg, #0f2537 0%, #1e3a5f 60%, #2d7d7d 100%);
+        color: #fff;
+        text-align: center;
+        overflow: hidden;
+    }
+    .games-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 36px 36px;
+        opacity: 0.4;
+        pointer-events: none;
+    }
+    .games-hero h1 {
+        font-size: clamp(1.85rem, 3.6vw, 3rem);
+        margin: 0 0 0.6rem;
+        letter-spacing: -0.02em;
+        font-weight: 800;
+    }
+    .games-hero p {
+        margin: 0 auto;
+        max-width: 680px;
+        font-size: clamp(1rem, 1.5vw, 1.15rem);
+        opacity: 0.92;
+    }
+    .games-hero .pill-row {
+        display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-top: 1.25rem;
+    }
+    .games-hero .pill {
+        padding: 0.4rem 0.85rem; border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.22);
+        font-size: 0.85rem;
+    }
+
+    .games-section {
+        padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3rem);
+        background: var(--gp-bg-soft);
+    }
+    .games-section + .games-section { border-top: 1px solid var(--gp-line); }
+
+    .level-header {
+        display: flex; align-items: center; gap: 0.85rem;
+        max-width: 1200px; margin: 0 auto 1.5rem;
+        padding-bottom: 0.85rem; border-bottom: 1px solid var(--gp-line);
+    }
+    .level-header .lvl-icon {
+        width: 44px; height: 44px; display: inline-flex;
+        align-items: center; justify-content: center;
+        border-radius: 12px; color: #fff; font-size: 1.1rem;
+        box-shadow: 0 8px 18px rgba(15,37,55,0.12);
+    }
+    .level-header .lvl-icon.beginner { background: linear-gradient(135deg, #16a085, #2d7d7d); }
+    .level-header .lvl-icon.moderate { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .level-header .lvl-icon.advanced { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .level-header h2 {
+        margin: 0; color: var(--gp-navy-2);
+        font-weight: 800; letter-spacing: -0.01em;
+        font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+    }
+    .level-header p {
+        margin: 0; color: var(--gray-600, #6b7280); font-size: 0.95rem;
+    }
+
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .game-card {
+        position: relative;
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--gp-line);
+        padding: 1.5rem 1.5rem 1.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        overflow: hidden;
+    }
+    .game-card::before {
+        content: "";
+        position: absolute; left: 0; right: 0; top: 0; height: 4px;
+        background: linear-gradient(90deg, var(--gp-teal), var(--gp-navy-2));
+        opacity: 0.85;
+    }
+    .game-card.moderate::before { background: linear-gradient(90deg, var(--gp-amber), #d97706); }
+    .game-card.advanced::before { background: linear-gradient(90deg, var(--gp-rose), #b91c1c); }
+    .game-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 22px 40px rgba(15,37,55,0.12);
+        border-color: rgba(30,58,95,0.25);
+    }
+
+    .game-card-head {
+        display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;
+    }
+    .game-icon {
+        width: 56px; height: 56px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #eef2ff, #ecfdf5);
+        color: var(--gp-navy-2);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    .game-card.moderate .game-icon {
+        background: linear-gradient(135deg, #fff7ed, #fef3c7); color: #b45309;
+    }
+    .game-card.advanced .game-icon {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2); color: #991b1b;
+    }
+    .game-card h3 {
+        margin: 0; color: var(--gp-navy-2); font-weight: 800;
+        font-size: 1.2rem; letter-spacing: -0.01em;
+    }
+    .badge-level {
+        display: inline-block;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #fff;
+    }
+    .badge-level.beginner { background: linear-gradient(135deg, #16a085, #2d7d7d); }
+    .badge-level.moderate { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .badge-level.advanced { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+    .game-desc {
+        color: var(--text-secondary, #5a6c7d);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .info-block {
+        background: var(--gp-bg-soft);
+        border-radius: 12px;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid var(--gp-line);
+    }
+    .info-block .info-title {
+        display: flex; align-items: center; gap: 0.45rem;
+        font-size: 0.78rem; text-transform: uppercase;
+        letter-spacing: 0.07em; font-weight: 700;
+        color: var(--gp-navy-2); margin-bottom: 0.2rem;
+    }
+    .info-block .info-title i { color: var(--gp-teal); }
+    .game-card.moderate .info-block .info-title i { color: #d97706; }
+    .game-card.advanced .info-block .info-title i { color: #b91c1c; }
+    .info-block p { margin: 0; font-size: 0.9rem; color: var(--text-secondary, #5a6c7d); line-height: 1.45; }
+
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.15rem; }
+    .skill-tag {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(22,160,133,0.10);
+        color: var(--gp-teal-2);
+        border: 1px solid rgba(22,160,133,0.25);
+    }
+    .game-card.moderate .skill-tag { background: rgba(245,158,11,0.10); color: #b45309; border-color: rgba(245,158,11,0.25); }
+    .game-card.advanced .skill-tag { background: rgba(239,68,68,0.10); color: #991b1b; border-color: rgba(239,68,68,0.25); }
+
+    .play-btn {
+        margin-top: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: var(--gp-navy-2);
+        color: #fff;
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .play-btn:hover {
+        background: #2d4a6f; transform: translateY(-2px);
+        box-shadow: 0 12px 22px rgba(30,58,95,0.25);
+        color: #fff;
+    }
+    .game-card.moderate .play-btn { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .game-card.moderate .play-btn:hover { box-shadow: 0 12px 22px rgba(217,119,6,0.28); }
+    .game-card.advanced .play-btn { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .game-card.advanced .play-btn:hover { box-shadow: 0 12px 22px rgba(185,28,28,0.28); }
+
+    @media (max-width: 480px) {
+        .games-section { padding: 1.5rem 0.9rem; }
+        .game-card { padding: 1.25rem; }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Games page loaded');
+});
+window.addEventListener("pageshow", function (ev) {
+    if (ev.persisted) window.location.reload();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+{# Game catalog data — keeps the markup tidy and consistent #}
+{% set beginner_games = [
+    {
+        'title': 'Needs vs Wants',
+        'href': '/games/beginner/',
+        'icon': 'fas fa-hand-pointer',
+        'desc': 'Drag and drop everyday spending items into Needs or Wants and watch your streak grow.',
+        'how': 'Drag each card into the correct bucket — Needs (essentials) or Wants (optional). Build a streak for bonus points.',
+        'benefit': 'Trains the instinct to prioritize essentials before discretionary spending — the foundation of every budget.',
+        'skills': ['Budgeting', 'Self-control', 'Priorities']
+    },
+    {
+        'title': 'Budget Balancer',
+        'href': '/games/beginner/budget-balancer/',
+        'icon': 'fas fa-sliders-h',
+        'desc': 'Allocate a monthly income across categories, weather random events, and finish the year with savings.',
+        'how': 'Use sliders to split your income, then play through 12 months. React to random events that test your plan.',
+        'benefit': 'Builds practical budgeting muscle: planning income, capping spend categories, and adapting to surprises.',
+        'skills': ['Budgeting', 'Cash flow', 'Resilience']
+    },
+    {
+        'title': 'Savings Challenge',
+        'href': '/games/beginner/savings-challenge/',
+        'icon': 'fas fa-piggy-bank',
+        'desc': 'Set a savings goal and decide how to save, spend, or invest each turn to reach it.',
+        'how': 'Choose a goal, then save / spend / invest each round. Keep a streak going for consistency bonuses.',
+        'benefit': 'Reinforces the habit of paying yourself first and the power of consistent monthly saving.',
+        'skills': ['Saving', 'Goal-setting', 'Consistency']
+    }
+] %}
+
+{% set moderate_games = [
+    {
+        'title': 'Loan Repayment',
+        'href': '/games/moderate/loan/',
+        'icon': 'fas fa-hand-holding-usd',
+        'desc': 'Manage different loan types and pick a repayment strategy that minimizes total interest paid.',
+        'how': 'Review the loan offer, then choose how aggressively to repay each month — extra payments shrink interest.',
+        'benefit': 'Teaches how interest, term length, and extra payments interact — the heart of debt management.',
+        'skills': ['Debt', 'Interest', 'Strategy']
+    },
+    {
+        'title': 'Credit Score Challenge',
+        'href': '/games/moderate/credit-score/',
+        'icon': 'fas fa-calculator',
+        'desc': 'Make life choices that move a simulated credit score up or down across multiple scenarios.',
+        'how': 'Pick the best option for each scenario. Watch the credit-meter respond to good and bad financial habits.',
+        'benefit': 'Connects everyday decisions (paying on time, utilization, applications) to long-term creditworthiness.',
+        'skills': ['Credit', 'Discipline', 'Decision-making']
+    },
+    {
+        'title': 'Insurance Decisions',
+        'href': '/games/moderate/insurance/',
+        'icon': 'fas fa-shield-alt',
+        'desc': 'Evaluate scenarios and pick the right coverage to protect against the right risks.',
+        'how': 'Read each life event, weigh the trade-offs, and choose the coverage that best protects your finances.',
+        'benefit': 'Develops risk-aware thinking: what to insure, what to self-fund, and how to avoid over-insuring.',
+        'skills': ['Risk', 'Coverage', 'Trade-offs']
+    }
+] %}
+
+{% set advanced_games = [
+    {
+        'title': 'Stock Simulator',
+        'href': '/games/advanced/',
+        'icon': 'fas fa-chart-line',
+        'desc': 'Buy and sell stocks in a simulated market with realistic volatility and news events.',
+        'how': 'Research the stocks, place buy and sell orders, and aim to grow your portfolio across market cycles.',
+        'benefit': 'Builds intuition for valuation, volatility, and emotional discipline — without risking real money.',
+        'skills': ['Investing', 'Volatility', 'Discipline']
+    },
+    {
+        'title': 'Portfolio Diversifier',
+        'href': '/games/advanced/portfolio/',
+        'icon': 'fas fa-briefcase',
+        'desc': 'Allocate across asset classes and watch how diversification dampens losses during market shocks.',
+        'how': 'Set weights for stocks, bonds, cash and alternatives. Run market scenarios and review the diversification score.',
+        'benefit': 'Demonstrates how spreading risk across uncorrelated assets smooths returns over time.',
+        'skills': ['Allocation', 'Risk', 'Long-term']
+    },
+    {
+        'title': 'Retirement Road',
+        'href': '/games/advanced/retirement-road/',
+        'icon': 'fas fa-umbrella-beach',
+        'desc': 'Plan a multi-decade journey: contributions, growth, and withdrawals, all under your control.',
+        'how': 'Choose a contribution rate, asset mix, and retirement age. The simulator projects your nest egg.',
+        'benefit': 'Shows the compounding effect of starting early and the trade-off between saving more and retiring later.',
+        'skills': ['Compounding', 'Planning', 'Long-horizon']
+    }
+] %}
+
+<section class="games-hero">
+    <h1>Financial Learning Games</h1>
+    <p>Sharpen real-world money skills through hands-on simulations. Progress from beginner basics to advanced investing.</p>
+    <div class="pill-row">
+        <span class="pill"><i class="fas fa-seedling"></i> Beginner</span>
+        <span class="pill"><i class="fas fa-chart-bar"></i> Moderate</span>
+        <span class="pill"><i class="fas fa-rocket"></i> Advanced</span>
+    </div>
+</section>
+
+{% macro game_card(game, level) %}
+<article class="game-card {{ level }}">
+    <div class="game-card-head">
+        <div class="game-icon"><i class="{{ game.icon }}"></i></div>
+        <span class="badge-level {{ level }}">{{ level | capitalize }}</span>
+    </div>
+    <h3>{{ game.title }}</h3>
+    <p class="game-desc">{{ game.desc }}</p>
+
+    <div class="info-block">
+        <div class="info-title"><i class="fas fa-gamepad"></i> How to play</div>
+        <p>{{ game.how }}</p>
+    </div>
+
+    <div class="info-block">
+        <div class="info-title"><i class="fas fa-bullseye"></i> Why it helps</div>
+        <p>{{ game.benefit }}</p>
+        <div class="skill-tags">
+            {% for s in game.skills %}<span class="skill-tag">{{ s }}</span>{% endfor %}
+        </div>
+    </div>
+
+    <a href="{{ game.href }}" class="play-btn" data-requires-auth="true">
+        <i class="fas fa-play"></i> Play Now
+    </a>
+</article>
+{% endmacro %}
+
+<section class="games-section">
+    <div class="level-header">
+        <span class="lvl-icon beginner"><i class="fas fa-seedling"></i></span>
+        <div>
+            <h2>Beginner Games</h2>
+            <p>Build the everyday habits that keep your finances healthy.</p>
+        </div>
+    </div>
+    <div class="games-grid">
+        {% for g in beginner_games %}{{ game_card(g, 'beginner') }}{% endfor %}
+    </div>
+</section>
+
+<section class="games-section">
+    <div class="level-header">
+        <span class="lvl-icon moderate"><i class="fas fa-chart-bar"></i></span>
+        <div>
+            <h2>Moderate Games</h2>
+            <p>Take on credit, loans, and risk-aware decisions.</p>
+        </div>
+    </div>
+    <div class="games-grid">
+        {% for g in moderate_games %}{{ game_card(g, 'moderate') }}{% endfor %}
+    </div>
+</section>
+
+<section class="games-section">
+    <div class="level-header">
+        <span class="lvl-icon advanced"><i class="fas fa-rocket"></i></span>
+        <div>
+            <h2>Advanced Games</h2>
+            <p>Investing, portfolio construction, and long-horizon planning.</p>
+        </div>
+    </div>
+    <div class="games-grid">
+        {% for g in advanced_games %}{{ game_card(g, 'advanced') }}{% endfor %}
+    </div>
+</section>
+{% endblock %}

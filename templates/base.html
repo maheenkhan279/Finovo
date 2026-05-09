@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Finovo - Gamified Financial Education{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/finovo-feedback.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style id="global-branding">
+        .logo {
+            height: 48px;
+            width: 48px;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            border-radius: 12px;
+            background: #ffffff;
+        }
+        .site-footer .logo {
+            height: 44px;
+            width: 44px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        }
+        .site-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .site-header .navbar {
+            width: 100%;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .site-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .site-footer .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+        .site-footer .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader"></div>
+    </div>
+
+    <div class="notification-container"></div>
+
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container nav-container">
+                <!-- Logo Section -->
+                <div class="nav-logo">
+                    <a href="{{ url_for('home') }}" class="logo-link d-flex align-items-center gap-2" title="FINOVO - Financial Education Platform">
+                        <img src="{{ url_for('static', filename='images/finovo-logo.jpg') }}" alt="Finovo Logo" class="logo">
+                        <span class="logo-text d-none d-sm-inline fw-bold text-primary-emphasis">Finovo</span>
+                    </a>
+                </div>
+
+                <button class="navbar-toggler mobile-menu-toggle"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <!-- Navigation Links -->
+                    <ul class="navbar-nav nav-menu me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">Home</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ url_for('games') }}" class="nav-link {% if request.endpoint == 'games' %}active{% endif %}">Games</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.endpoint == 'ai_insights' or request.endpoint == 'simulations' %}active{% endif %}"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Features
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('ai_insights') }}">AI Insights</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('simulations') }}">Simulations</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('contact') }}" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
+                        </li>
+                    </ul>
+
+                    <!-- Auth Section -->
+                    <div class="nav-auth ms-auto">
+                        <div id="guest-menu" class="d-flex gap-2 flex-wrap align-items-center">
+                            <a href="/login" class="btn btn-outline">Login</a>
+                            <a href="/register" class="btn btn-primary">Sign Up</a>
+                        </div>
+
+                        <div id="user-menu" class="d-none align-items-center gap-2 flex-wrap">
+                            <span id="nav-username" class="btn btn-outline mb-0"></span>
+                            <button id="logout-btn" class="btn btn-primary" type="button">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="notification show">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="chat-widget">
+        <button class="chat-toggle">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3>Chat Support</h3>
+                <button class="close-chat"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message...">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-brand">
+                    <img src="{{ url_for('static', filename='images/finovo-logo.jpg') }}" alt="Finovo Logo" class="logo">
+                    <h3 class="mb-0">Finovo</h3>
+                </div>
+                <p>Making financial education accessible and engaging for everyone.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('games') }}">Financial Games</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('ai_insights') }}">Features</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: info@finovo.com</p>
+                <p>Phone: (123) 456-7890</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Finovo. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts in correct order -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/static/js/supabase-config.js"></script>
+    <script src="/static/js/auth-simple.js"></script>
+    <script src="{{ url_for('static', filename='js/protected-routes.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sim-core.js') }}"></script>
+    <!-- Game Data Saving -->
+    <script src="{{ url_for('static', filename='js/game-data-save.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/finovo-feedback.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+    <!-- Main Application Script -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- Universal slider polish + auto-init -->
+    <script defer src="{{ url_for('static', filename='js/theme-slider.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Loading Screen Management -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const loader = document.getElementById("loading-screen");
+        if (loader) {
+            loader.style.display = "none";
+        }
+        console.log("Page loaded successfully");
+    });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+    /**
+     * Logout flow that fully resets per-user client + server state so the
+     * next user to log in on this browser cannot see the previous user's
+     * data. Runs every step defensively — failures don't block the rest.
+     *
+     *   1. Sign out of Supabase (clears its own auth tokens in localStorage).
+     *   2. Clear sessionStorage + localStorage (Supabase signOut already removed
+     *      auth tokens; this clears any remaining app keys).
+     *   3. GET /logout clears the Flask session (server-side game/sim caches).
+     *   4. Redirect to / so the next document load starts with no in-memory UI state.
+     */
+    document.addEventListener("DOMContentLoaded", function () {
+        var btn = document.getElementById("logout-btn");
+        if (!btn) return;
+        btn.addEventListener("click", async function (e) {
+            e.preventDefault();
+            try {
+                if (window.supabaseClient && window.supabaseClient.auth) {
+                    await window.supabaseClient.auth.signOut();
+                }
+            } catch (err) {
+                console.error("Logout: Supabase signOut error:", err);
+            }
+            try {
+                if (typeof window.finovoDestroyDashboardState === "function") {
+                    window.finovoDestroyDashboardState();
+                }
+            } catch (e) { /* ignore */ }
+            try { sessionStorage.clear(); } catch (e) { /* ignore */ }
+            try {
+                await fetch("/logout", { method: "GET", credentials: "same-origin" });
+            } catch (e) { /* non-fatal */ }
+            try { localStorage.clear(); } catch (e) { /* ignore */ }
+            window.location.href = "/";
+        });
+    });
+    </script>
+</body>
+</html>

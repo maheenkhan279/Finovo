@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}How to Use FINOVO - Demo & Instructions{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>How to Use FINOVO</h1>
+    <p>Learn how to play and master our financial education games</p>
+</div>
+
+<section class="modules-section">
+    <div class="game-container">
+        <!-- What is FINOVO -->
+        <div class="game-card">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-info-circle" style="color: var(--primary-blue);"></i>
+                What is FINOVO?
+            </h2>
+            <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-md);">
+                FINOVO is an interactive financial literacy platform that teaches personal finance through engaging, game-based learning. Our platform offers three progressive game levels designed to build your financial knowledge from the ground up.
+            </p>
+            <p style="color: var(--text-secondary); line-height: 1.8;">
+                Whether you're a complete beginner or looking to enhance your financial skills, FINOVO provides a safe, risk-free environment to practice financial decision-making and learn essential money management concepts.
+            </p>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-rocket" style="color: var(--primary-blue);"></i>
+                Getting Started
+            </h2>
+            <ol style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl);">
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Create an Account:</strong> Sign up for a free FINOVO account using your email and a secure password.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Login:</strong> Access your account and navigate to the Financial Games section.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Choose Your Level:</strong> Start with the Beginner level game, then progress to Moderate and Advanced as you master each concept.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Track Progress:</strong> Monitor your scores and completion rates to see your financial literacy improve over time.</li>
+            </ol>
+        </div>
+
+        <!-- Beginner Game Instructions -->
+        <div class="game-card" style="margin-top: var(--spacing-xl); border-left: 5px solid var(--success-color);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                <div style="background: var(--success-color); color: var(--white); width: 50px; height: 50px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xl); font-weight: bold; flex-shrink: 0;">
+                    1
+                </div>
+                <div>
+                    <h2 style="color: var(--primary-blue); margin: 0;">Beginner Level: Needs vs Wants Quiz</h2>
+                    <p style="color: var(--success-color); font-weight: 600; margin: 0;">Perfect for Financial Beginners</p>
+                </div>
+            </div>
+            
+            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">How to Play:</h3>
+            <ol style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl); margin-bottom: var(--spacing-lg);">
+                <li style="margin-bottom: var(--spacing-sm);">Click "Play Game" to start the Needs vs Wants quiz.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Read each scenario carefully and determine if it's a <strong style="color: var(--text-primary);">Need</strong> (essential) or <strong style="color: var(--text-primary);">Want</strong> (optional).</li>
+                <li style="margin-bottom: var(--spacing-sm);">Select your answer and click "Submit".</li>
+                <li style="margin-bottom: var(--spacing-sm);">Review the explanation to understand why each item is classified as a need or want.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Complete all questions to see your final score and progress to the next level.</li>
+            </ol>
+            
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-top: var(--spacing-lg);">
+                <strong style="color: var(--text-primary);">Learning Goal:</strong>
+                <p style="color: var(--text-secondary); margin: var(--spacing-xs) 0 0 0;">Master the fundamental skill of distinguishing between essential expenses (needs) and discretionary spending (wants), which is crucial for effective budgeting.</p>
+            </div>
+        </div>
+
+        <!-- Moderate Game Instructions -->
+        <div class="game-card" style="margin-top: var(--spacing-xl); border-left: 5px solid var(--warning-color);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                <div style="background: var(--warning-color); color: var(--white); width: 50px; height: 50px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xl); font-weight: bold; flex-shrink: 0;">
+                    2
+                </div>
+                <div>
+                    <h2 style="color: var(--primary-blue); margin: 0;">Moderate Level: Budget Balancer Game</h2>
+                    <p style="color: var(--warning-color); font-weight: 600; margin: 0;">Build Practical Budgeting Skills</p>
+                </div>
+            </div>
+            
+            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">How to Play:</h3>
+            <ol style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl); margin-bottom: var(--spacing-lg);">
+                <li style="margin-bottom: var(--spacing-sm);">Start the Budget Balancer game from the Games page.</li>
+                <li style="margin-bottom: var(--spacing-sm);">You'll receive a monthly income and a list of expenses.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Allocate your income across different expense categories (Housing, Food, Transportation, etc.).</li>
+                <li style="margin-bottom: var(--spacing-sm);">Prioritize essential expenses and try to save at least 20% of your income.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Balance your budget across multiple months while handling unexpected events.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Monitor your remaining balance - it should never go negative!</li>
+                <li style="margin-bottom: var(--spacing-sm);">Click "Next Month" to progress and "Reset" to start over if needed.</li>
+            </ol>
+            
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-top: var(--spacing-lg);">
+                <strong style="color: var(--text-primary);">Learning Goal:</strong>
+                <p style="color: var(--text-secondary); margin: var(--spacing-xs) 0 0 0;">Learn to create and maintain a balanced budget, prioritize expenses, build emergency savings, and make financial decisions that support long-term financial health.</p>
+            </div>
+        </div>
+
+        <!-- Advanced Game Instructions -->
+        <div class="game-card" style="margin-top: var(--spacing-xl); border-left: 5px solid var(--error-color);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                <div style="background: var(--error-color); color: var(--white); width: 50px; height: 50px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xl); font-weight: bold; flex-shrink: 0;">
+                    3
+                </div>
+                <div>
+                    <h2 style="color: var(--primary-blue); margin: 0;">Advanced Level: Stock Market Mini Simulator</h2>
+                    <p style="color: var(--error-color); font-weight: 600; margin: 0;">Master Investment Concepts</p>
+                </div>
+            </div>
+            
+            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">How to Play:</h3>
+            <ol style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl); margin-bottom: var(--spacing-lg);">
+                <li style="margin-bottom: var(--spacing-sm);">Launch the Stock Market Mini Simulator from the Games page.</li>
+                <li style="margin-bottom: var(--spacing-sm);">You start with a virtual cash balance (e.g., $10,000) to invest.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Browse available stocks and their current prices.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Click "Buy" to purchase stocks - enter the quantity you want to buy.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Monitor your portfolio value as stock prices change.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Click "Sell" to sell stocks from your portfolio when you want to realize gains or cut losses.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Track your profit/loss and total portfolio value.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Use "Next Day" to advance time and see how market changes affect your investments.</li>
+                <li style="margin-bottom: var(--spacing-sm);">Click "Reset" to start a new simulation with fresh capital.</li>
+            </ol>
+            
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-top: var(--spacing-lg);">
+                <strong style="color: var(--text-primary);">Learning Goal:</strong>
+                <p style="color: var(--text-secondary); margin: var(--spacing-xs) 0 0 0;">Understand stock market basics, learn about buying and selling stocks, experience market volatility, practice portfolio management, and develop risk awareness - all without risking real money.</p>
+            </div>
+        </div>
+
+        <!-- Tips for Success -->
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-lightbulb" style="color: var(--primary-blue);"></i>
+                Tips for Success
+            </h2>
+            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl);">
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Start at Beginner:</strong> Even if you have some financial knowledge, the beginner game reinforces fundamental concepts.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Read Explanations:</strong> Pay attention to feedback and explanations - they teach valuable financial principles.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Practice Regularly:</strong> Replay games to improve your scores and deepen your understanding.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Learn from Mistakes:</strong> Don't be afraid to make errors - that's how you learn in a risk-free environment.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Progress Gradually:</strong> Master each level before moving to the next for the best learning experience.</li>
+            </ul>
+        </div>
+
+        <!-- Call to Action -->
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            {% if g.user %}
+                <a href="{{ url_for('games') }}" class="btn btn-primary" style="margin-right: var(--spacing-md);">
+                    <i class="fas fa-gamepad"></i> Start Playing Now
+                </a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary" style="margin-right: var(--spacing-md);">
+                    <i class="fas fa-user-plus"></i> Create Free Account
+                </a>
+            {% endif %}
+            <a href="{{ url_for('home') }}" class="btn btn-outline">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

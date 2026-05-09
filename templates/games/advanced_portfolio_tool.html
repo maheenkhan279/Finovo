@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio Diversification Tool - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+.game-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.game-card {
+    background: var(--bg-primary);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--gray-200);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    text-align: center;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.stocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stock-card {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.stock-symbol {
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--primary-blue);
+}
+
+.stock-price {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stock-details {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.buy-sell-form {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.buy-sell-form input {
+    flex: 1;
+    padding: var(--spacing-sm);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+}
+
+.portfolio-section {
+    margin-top: var(--spacing-2xl);
+}
+
+.portfolio-item {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.portfolio-info {
+    flex: 1;
+}
+
+.portfolio-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-card">
+        <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+            <h1 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">Portfolio Diversification Tool</h1>
+            <p style="color: var(--text-secondary);">Build and manage a diversified investment portfolio</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Available Capital</div>
+                <div class="stat-value">${{ "%.2f"|format(game_state.remaining_capital) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Portfolio Value</div>
+                <div class="stat-value">${{ "%.2f"|format(game_state.total_value) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Diversification Score</div>
+                <div class="stat-value">{{ game_state.diversification_score }}/100</div>
+            </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:var(--spacing-2xl);margin-bottom:var(--spacing-xl);align-items:flex-start;">
+            <div style="flex:1;min-width:280px;">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">
+                    <i class="fas fa-chart-pie"></i> Allocation by sector
+                </h3>
+                <canvas id="alloc-pie" width="360" height="240" style="max-width:100%;height:auto;background:var(--bg-secondary);border-radius:var(--radius-md);"></canvas>
+            </div>
+            <div style="flex:1;min-width:280px;">
+                <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">
+                    <i class="fas fa-balance-scale"></i> Modeled risk vs. return
+                </h3>
+                <canvas id="risk-scatter" width="360" height="260" style="max-width:100%;height:auto;background:var(--bg-secondary);border-radius:var(--radius-md);"></canvas>
+                <p id="risk-caption" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-sm); line-height:1.5;"></p>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-lg);">
+                <i class="fas fa-chart-line"></i> Available Stocks
+            </h3>
+            <div class="stocks-grid">
+                {% for stock in available_stocks %}
+                <div class="stock-card">
+                    <div class="stock-header">
+                        <div>
+                            <div class="stock-symbol">{{ stock.symbol }}</div>
+                            <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">{{ stock.name }}</div>
+                        </div>
+                        <div class="stock-price">${{ "%.2f"|format(game_state.current_prices[stock.symbol]) }}</div>
+                    </div>
+                    <div class="stock-details">
+                        <div><strong>Sector:</strong> {{ stock.sector }}</div>
+                        <div><strong>Volatility:</strong> {{ stock.volatility }}</div>
+                    </div>
+                    <div class="buy-sell-form">
+                        <input type="number" id="buy-{{ stock.symbol }}" placeholder="Shares" min="1" value="1">
+                        <button class="btn btn-primary" onclick="buyStock('{{ stock.symbol }}')" style="padding: var(--spacing-sm) var(--spacing-md);">
+                            <i class="fas fa-arrow-up"></i> Buy
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if game_state.portfolio %}
+        <div class="portfolio-section">
+            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-lg);">
+                <i class="fas fa-briefcase"></i> Your Portfolio
+            </h3>
+            {% for stock in game_state.portfolio %}
+            <div class="portfolio-item">
+                <div class="portfolio-info">
+                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-xs);">
+                        {{ stock.symbol }} - {{ stock.name }}
+                    </div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                        Shares: {{ stock.shares }} | Current Price: ${{ "%.2f"|format(stock.current_price) }} | 
+                        Value: ${{ "%.2f"|format(stock.shares * stock.current_price) }} | 
+                        Sector: {{ stock.sector }}
+                    </div>
+                </div>
+                <div class="portfolio-actions">
+                    <input type="number" id="sell-{{ stock.symbol }}" placeholder="Shares" min="1" max="{{ stock.shares }}" value="1" style="width: 80px; padding: var(--spacing-sm);">
+                    <button class="btn btn-outline" onclick="sellStock('{{ stock.symbol }}')" style="padding: var(--spacing-sm) var(--spacing-md);">
+                        <i class="fas fa-arrow-down"></i> Sell
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: var(--spacing-2xl); background: var(--bg-secondary); border-radius: var(--radius-md); margin-top: var(--spacing-xl);">
+            <i class="fas fa-briefcase" style="font-size: 3rem; color: var(--gray-400); margin-bottom: var(--spacing-md);"></i>
+            <p style="color: var(--text-secondary);">Your portfolio is empty. Start buying stocks to build your portfolio!</p>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: var(--spacing-2xl); padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md);">
+            <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">
+                <i class="fas fa-lightbulb"></i> Diversification Tips
+            </h4>
+            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl);">
+                <li>Spread investments across different sectors (Technology, Finance, Healthcare, etc.)</li>
+                <li>Aim for 4+ different sectors in your portfolio</li>
+                <li>Don't put more than 40% of your capital in a single sector</li>
+                <li>Balance high and low volatility stocks</li>
+                <li>Monitor your diversification score - aim for 80+ for optimal diversification</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <button class="btn btn-primary" onclick="simulateMarket()" style="margin-right: var(--spacing-md);">
+                <i class="fas fa-sync"></i> Simulate Market Changes
+            </button>
+            <button class="btn btn-outline" onclick="resetGame()" style="margin-right: var(--spacing-md);">
+                <i class="fas fa-redo"></i> Reset Portfolio
+            </button>
+            <a href="{{ url_for('games') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Games
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+var __portGame = {{ game_state|tojson }};
+var __VOL = { 'High': 0.22, 'Medium': 0.14, 'Low': 0.08 };
+
+function sectorTotals(portfolio) {
+    var m = {};
+    (portfolio || []).forEach(function (row) {
+        var v = row.shares * row.current_price;
+        m[row.sector] = (m[row.sector] || 0) + v;
+    });
+    return m;
+}
+
+function drawPortfolioViz() {
+    var pie = document.getElementById('alloc-pie');
+    var sc = document.getElementById('risk-scatter');
+    var cap = document.getElementById('risk-caption');
+    if (!pie || !sc || !__portGame) return;
+    var pctx = pie.getContext('2d');
+    var sctx = sc.getContext('2d');
+    var pw = pie.width, ph = pie.height;
+    var sw = sc.width, sh = sc.height;
+    pctx.clearRect(0, 0, pw, ph);
+    sctx.clearRect(0, 0, sw, sh);
+    var port = __portGame.portfolio || [];
+    var sectors = sectorTotals(port);
+    var total = Object.keys(sectors).reduce(function (a, k) { return a + sectors[k]; }, 0);
+    if (!total) {
+        pctx.fillStyle = '#94a3b8';
+        pctx.font = '14px sans-serif';
+        pctx.fillText('Buy shares to see sector mix', 24, ph / 2);
+        sctx.fillStyle = '#94a3b8';
+        sctx.font = '14px sans-serif';
+        sctx.fillText('Portfolio empty — add holdings', 24, sh / 2);
+        cap.textContent = '';
+        return;
+    }
+    var cx = pw / 2, cy = ph / 2, r = Math.min(pw, ph) * 0.32;
+    var ang = -Math.PI / 2;
+    var palette = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'];
+    var i = 0;
+    Object.keys(sectors).forEach(function (sec) {
+        var slice = (sectors[sec] / total) * Math.PI * 2;
+        pctx.beginPath();
+        pctx.moveTo(cx, cy);
+        pctx.arc(cx, cy, r, ang, ang + slice);
+        pctx.closePath();
+        pctx.fillStyle = palette[i % palette.length];
+        pctx.fill();
+        ang += slice;
+        i++;
+    });
+    pctx.fillStyle = '#0f172a';
+    pctx.font = '12px sans-serif';
+    pctx.fillText('By dollar value', 12, 18);
+
+    var expRet = 0, risk = 0;
+    port.forEach(function (row) {
+        var w = (row.shares * row.current_price) / total;
+        var base = row.sector === 'Technology' ? 0.11 : row.sector === 'Finance' ? 0.08 : row.sector === 'Energy' ? 0.09 : row.sector === 'Healthcare' ? 0.075 : row.sector === 'Real Estate' ? 0.06 : 0.07;
+        expRet += w * base;
+        risk += w * (__VOL[row.volatility] || 0.12);
+    });
+    sctx.strokeStyle = '#e2e8f0';
+    for (var t = 0; t <= 4; t++) {
+        var y = 20 + t * ((sh - 40) / 4);
+        sctx.beginPath();
+        sctx.moveTo(40, y);
+        sctx.lineTo(sw - 20, y);
+        sctx.stroke();
+    }
+    sctx.fillStyle = '#2563eb';
+    var px = 40 + Math.min(0.18, risk) / 0.18 * (sw - 80);
+    var py = sh - 30 - Math.min(0.12, expRet) / 0.12 * (sh - 60);
+    sctx.beginPath();
+    sctx.arc(px, py, 10, 0, Math.PI * 2);
+    sctx.fill();
+    sctx.fillStyle = '#64748b';
+    sctx.font = '11px sans-serif';
+    sctx.fillText('Left = lower modeled vol', 40, sh - 10);
+    sctx.fillText('Top = higher modeled expected return (illustrative)', 40, 14);
+    cap.innerHTML = 'Weighted expected return (classroom model): <strong>' + (expRet * 100).toFixed(1) + '%</strong> / yr · Modeled volatility blend: <strong>' + (risk * 100).toFixed(1) + '%</strong>. Diversification score: <strong>' + (__portGame.diversification_score || 0) + '</strong>.';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    drawPortfolioViz();
+});
+
+function buyStock(symbol) {
+    const sharesInput = document.getElementById('buy-' + symbol);
+    const shares = parseInt(sharesInput.value);
+    
+    if (!shares || shares <= 0) {
+        if (window.showNotification) {
+            showNotification('Please enter a valid number of shares.', 'error');
+        }
+        return;
+    }
+
+    fetch('{{ url_for("advanced_portfolio_bp.buy_stock") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            symbol: symbol,
+            shares: shares
+        })
+    })
+    .then(response => response.json())
+    .then(async data => {
+        if (data.error) {
+            if (window.showNotification) {
+                showNotification(data.error, 'error');
+            }
+        } else {
+            if (window.showNotification) {
+                showNotification(`Successfully bought ${shares} shares of ${symbol}!`, 'success');
+            }
+            sharesInput.value = 1;
+            if (typeof window.saveScore === 'function') {
+                var finalScore = Math.max(0, Math.min(100, Math.round(Number(data.diversification_score) || 0)));
+                console.log("GAME SAVE TRIGGERED");
+                console.log("FINAL SCORE:", finalScore);
+                await window.saveScore(finalScore, "Portfolio Diversifier", "Advanced");
+            }
+            setTimeout(() => location.reload(), 500);
+        }
+    })
+    .catch(error => {
+        if (window.showNotification) {
+            showNotification('Error buying stock. Please try again.', 'error');
+        }
+    });
+}
+
+function sellStock(symbol) {
+    const sharesInput = document.getElementById('sell-' + symbol);
+    const shares = parseInt(sharesInput.value);
+    
+    if (!shares || shares <= 0) {
+        if (window.showNotification) {
+            showNotification('Please enter a valid number of shares.', 'error');
+        }
+        return;
+    }
+
+    fetch('{{ url_for("advanced_portfolio_bp.sell_stock") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            symbol: symbol,
+            shares: shares
+        })
+    })
+    .then(response => response.json())
+    .then(async data => {
+        if (data.error) {
+            if (window.showNotification) {
+                showNotification(data.error, 'error');
+            }
+        } else {
+            if (window.showNotification) {
+                showNotification(`Successfully sold ${shares} shares of ${symbol}!`, 'success');
+            }
+            if (typeof window.saveScore === 'function') {
+                var finalScore = Math.max(0, Math.min(100, Math.round(Number(data.diversification_score) || 0)));
+                console.log("GAME SAVE TRIGGERED");
+                console.log("FINAL SCORE:", finalScore);
+                await window.saveScore(finalScore, "Portfolio Diversifier", "Advanced");
+            }
+            setTimeout(() => location.reload(), 500);
+        }
+    })
+    .catch(error => {
+        if (window.showNotification) {
+            showNotification('Error selling stock. Please try again.', 'error');
+        }
+    });
+}
+
+function simulateMarket() {
+    if (window.showNotification) {
+        showNotification('Simulating market changes...', 'info');
+    }
+    
+    fetch('{{ url_for("advanced_portfolio_bp.simulate_market") }}', {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            if (window.showNotification) {
+                showNotification('Market simulation complete! Stock prices have changed.', 'success');
+            }
+            setTimeout(() => location.reload(), 500);
+        })
+        .catch(error => {
+            if (window.showNotification) {
+                showNotification('Error simulating market. Please try again.', 'error');
+            }
+        });
+}
+
+function resetGame() {
+    if (window.showConfirm) {
+        showConfirm(
+            'Are you sure you want to reset your portfolio? All holdings will be cleared.',
+            () => {
+                fetch('{{ url_for("advanced_portfolio_bp.reset_game") }}', {method: 'POST'})
+                    .then(response => response.json())
+                    .then(data => {
+                        if (window.showNotification) {
+                            showNotification('Portfolio reset successfully!', 'success');
+                        }
+                        setTimeout(() => location.reload(), 500);
+                    });
+            }
+        );
+    } else {
+        if (confirm('Are you sure you want to reset?')) {
+            fetch('{{ url_for("advanced_portfolio_bp.reset_game") }}', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    location.reload();
+                });
+        }
+    }
+}
+</script>
+{% endblock %}
+

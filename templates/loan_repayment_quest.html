@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Repayment Quest - Interactive Simulation Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .game-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff6b6b;
+    }
+    
+    .stat-label {
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .loans-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .loans-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .loan-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .loan-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .loan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .loan-card.paid-off {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-color: #28a745;
+    }
+    
+    .loan-card.danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border-color: #dc3545;
+    }
+    
+    .loan-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .loan-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .loan-status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .status-active {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .status-paid {
+        background: #28a745;
+        color: white;
+    }
+    
+    .loan-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .loan-detail {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+    
+    .loan-detail-label {
+        color: #666;
+    }
+    
+    .loan-detail-value {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .payment-section {
+        margin-top: 15px;
+    }
+    
+    .payment-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+    }
+    
+    .payment-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #ff6b6b;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .payment-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #ff6b6b;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .payment-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+    
+    .payment-amount {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #ff6b6b;
+    }
+    
+    .payment-impact {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .monthly-overview {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .overview-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .overview-item {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .overview-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .overview-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .events-panel {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .event-card {
+        background: #f8f9fa;
+        border-left: 4px solid #ff6b6b;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .event-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .event-description {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .event-impact {
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    
+    .impact-positive {
+        color: #28a745;
+    }
+    
+    .impact-negative {
+        color: #dc3545;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .month-indicator {
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #ff6b6b;
+        margin-bottom: 20px;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .feedback-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .refinance-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .refinance-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+    }
+    
+    .refinance-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .refinance-options {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .refinance-option {
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .refinance-option:hover {
+        border-color: #ff6b6b;
+        background: #f8f9fa;
+    }
+    
+    .refinance-option.selected {
+        border-color: #ff6b6b;
+        background: #fff3cd;
+    }
+    
+    .bankruptcy-warning {
+        background: #f8d7da;
+        border: 2px solid #dc3545;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔒 Checking authentication for loan repayment quest...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>💸 Loan Repayment Quest</h1>
+        <p>Manage multiple loans, make strategic payments, and avoid bankruptcy. Can you pay off all your loans?</p>
+    </div>
+    
+    <div class="month-indicator" id="monthIndicator">Month 1 of 60</div>
+    
+    <div class="game-stats">
+        <div class="stat-box">
+            <div class="stat-value" id="totalDebt">$0</div>
+            <div>Total Debt</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="monthlyIncome">$5,000</div>
+            <div>Monthly Income</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="monthlyExpenses">$0</div>
+            <div>Monthly Expenses</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="score">0</div>
+            <div>Score</div>
+        </div>
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="monthly-overview">
+        <div class="overview-header">
+            <h3>Monthly Overview</h3>
+        </div>
+        <div class="overview-grid">
+            <div class="overview-item">
+                <div class="overview-value" id="availableFunds">$5,000</div>
+                <div class="overview-label">Available Funds</div>
+            </div>
+            <div class="overview-item">
+                <div class="overview-value" id="totalPayment">$0</div>
+                <div class="overview-label">Total Payment</div>
+            </div>
+            <div class="overview-item">
+                <div class="overview-value" id="remainingFunds">$5,000</div>
+                <div class="overview-label">Remaining Funds</div>
+            </div>
+            <div class="overview-item">
+                <div class="overview-value" id="loansPaid">0/3</div>
+                <div class="overview-label">Loans Paid</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loans-section">
+        <div class="loans-header">
+            <h3>Your Loans</h3>
+        </div>
+        <div class="loan-cards" id="loanCards">
+            <!-- Loan cards will be dynamically generated -->
+        </div>
+    </div>
+    
+    <div class="events-panel" id="eventsPanel">
+        <h3 style="margin-bottom: 20px; color: #333;">📅 Recent Events</h3>
+        <div id="eventsList"></div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="startBtn" onclick="startGame()">Start Quest</button>
+        <button class="btn-game" id="nextMonthBtn" onclick="nextMonth()" style="display: none;">Next Month</button>
+        <button class="btn-game" id="refinanceBtn" onclick="showRefinanceModal()" style="display: none;">Refinance</button>
+        <button class="btn-game" id="finishBtn" onclick="finishGame()" style="display: none;">Finish Game</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+
+<div class="refinance-modal" id="refinanceModal">
+    <div class="refinance-content">
+        <div class="refinance-header">
+            <h3>Refinance Options</h3>
+            <p>Choose a refinancing option to improve your loan terms</p>
+        </div>
+        <div class="refinance-options" id="refinanceOptions">
+            <!-- Refinance options will be dynamically generated -->
+        </div>
+        <div style="text-align: center;">
+            <button class="btn-game" onclick="applyRefinance()">Apply Refinance</button>
+            <button class="btn-game" onclick="closeRefinanceModal()" style="background: #6c757d;">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

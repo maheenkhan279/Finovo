@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}AI Insights - Finovo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>AI Insights</h1>
+    <p>Personalized financial insights powered by artificial intelligence</p>
+</div>
+
+<section class="modules-section">
+    <div class="game-container">
+        <div class="game-card">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-robot" style="color: var(--primary-blue);"></i>
+                What are AI Insights?
+            </h2>
+            <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-md);">
+                FINOVO's AI Insights feature analyzes your learning patterns, game performance, and financial knowledge to provide personalized recommendations and insights. Our intelligent system helps you identify areas for improvement and suggests the best learning path for your financial education journey.
+            </p>
+            <p style="color: var(--text-secondary); line-height: 1.8;">
+                By tracking your progress across different games and topics, our AI can offer tailored advice to help you master financial concepts more effectively.
+            </p>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg);">Your progress summary</h2>
+            <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--spacing-xl);">
+                Estimates below use your recent <strong>game session</strong> activity (rule-based, no external AI). Play more modules to refine this snapshot.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--spacing-lg);">
+                <div class="card">
+                    <div style="text-align: center; margin-bottom: var(--spacing-md);">
+                        <i class="fas fa-chart-pie" style="font-size: 2.5rem; color: var(--primary-blue);"></i>
+                    </div>
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm); text-align: center;">Games engaged</h3>
+                    <div class="progress-bar" style="margin-top: var(--spacing-md);">
+                        <div class="progress" style="width: {{ ai_progress_pct }}%;"></div>
+                    </div>
+                    <p style="text-align: center; color: var(--text-muted); font-size: var(--font-size-sm); margin-top: var(--spacing-xs);">~{{ ai_progress_pct }}% footprint ({{ ai_completed_games }} / 9 areas)</p>
+                </div>
+                <div class="card">
+                    <div style="text-align: center; margin-bottom: var(--spacing-md);">
+                        <i class="fas fa-star" style="font-size: 2.5rem; color: var(--primary-blue);"></i>
+                    </div>
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm); text-align: center;">Composite score</h3>
+                    <div style="text-align: center; margin-top: var(--spacing-md);">
+                        <span style="font-size: var(--font-size-3xl); font-weight: 700; color: var(--primary-blue);">{{ ai_total_score }}</span>
+                        <span style="color: var(--text-muted);">/100</span>
+                    </div>
+                    <p style="color: var(--text-secondary); text-align: center; font-size: var(--font-size-sm); margin-top: var(--spacing-sm);">Blended from quizzes, budgets, savings, credit, investing, and more.</p>
+                </div>
+                <div class="card">
+                    <div style="text-align: center; margin-bottom: var(--spacing-md);">
+                        <i class="fas fa-layer-group" style="font-size: 2.5rem; color: var(--primary-blue);"></i>
+                    </div>
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm); text-align: center;">Suggested track</h3>
+                    <p style="text-align: center; font-size: var(--font-size-xl); font-weight: 700; color: var(--primary-blue); margin: var(--spacing-md) 0 0 0;">{{ ai_user_level }}</p>
+                    <p style="color: var(--text-secondary); text-align: center; font-size: var(--font-size-sm); margin-top: var(--spacing-sm);">Beginner · Moderate · Advanced (heuristic)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg);">Smart advisor (rule-based)</h2>
+            <div style="display: grid; gap: var(--spacing-lg);">
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-blue);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i class="fas fa-trophy" style="color: var(--primary-blue);"></i>
+                        Strengths
+                    </h3>
+                    <ul style="color: var(--text-secondary); line-height: 1.8; margin: 0; padding-left: var(--spacing-xl);">
+                        {% for s in ai_strengths %}
+                        <li style="margin-bottom: var(--spacing-xs);">{{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i class="fas fa-exclamation-circle" style="color: var(--warning-color);"></i>
+                        Weaknesses / gaps
+                    </h3>
+                    <ul style="color: var(--text-secondary); line-height: 1.8; margin: 0; padding-left: var(--spacing-xl);">
+                        {% for w in ai_weaknesses %}
+                        <li style="margin-bottom: var(--spacing-xs);">{{ w }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--success-color);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i class="fas fa-gamepad" style="color: var(--success-color);"></i>
+                        Recommended games
+                    </h3>
+                    {% if ai_recommendations %}
+                    <ul style="line-height: 1.9; margin: 0; padding-left: var(--spacing-xl);">
+                        {% for r in ai_recommendations %}
+                        <li><a href="{{ r.url }}" style="color: var(--primary-blue); font-weight: 600;">{{ r.label }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p style="color: var(--text-secondary); margin: 0;">You are in good shape—explore <a href="{{ url_for('games') }}">all games</a> to go deeper.</p>
+                    {% endif %}
+                </div>
+                <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--secondary-teal);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i class="fas fa-lightbulb" style="color: var(--secondary-teal);"></i>
+                        Financial tips (auto-generated rules)
+                    </h3>
+                    {% if ai_tips %}
+                    <ul style="color: var(--text-secondary); line-height: 1.8; margin: 0; padding-left: var(--spacing-xl);">
+                        {% for t in ai_tips %}
+                        <li style="margin-bottom: var(--spacing-xs);">{{ t }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p style="color: var(--text-secondary); margin: 0;">Keep playing—tips appear when we spot savings, spending, or investing gaps.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <a href="{{ url_for('games') }}" class="btn btn-primary" style="margin-right: var(--spacing-md);">
+                <i class="fas fa-gamepad"></i> Play Games
+            </a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

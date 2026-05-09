@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Repayment Challenge - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .loan-dashboard {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .loan-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .loan-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .loan-card.selected {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    }
+    
+    .payment-simulator {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .slider-container {
+        margin: 20px 0;
+    }
+    
+    .payment-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+    }
+    
+    .payment-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #28a745;
+        cursor: pointer;
+    }
+    
+    .payment-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #28a745;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .results-panel {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 30px;
+    }
+    
+    .score-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .btn-action {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 10px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔒 Checking authentication for loan repayment game...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Loan Repayment Challenge</h1>
+        <p>Strategic loan management! Choose repayment strategies and optimize your financial future.</p>
+    </div>
+</section>
+
+<section class="game-section">
+    <div class="container">
+        <div class="game-container">
+            <div class="game-header">
+                <h2>🏦 Loan Repayment Simulator</h2>
+                <p>Make smart decisions to pay off loans efficiently and improve your credit score!</p>
+            </div>
+            
+            <div class="loan-dashboard">
+                <div class="loan-card" data-loan="student">
+                    <h3>🎓 Student Loan</h3>
+                    <div class="loan-details">
+                        <p><strong>Amount:</strong> $25,000</p>
+                        <p><strong>Interest:</strong> 4.5% APR</p>
+                        <p><strong>Term:</strong> 10 years</p>
+                        <p><strong>Monthly Payment:</strong> $260</p>
+                    </div>
+                    <button class="btn-action" onclick="selectLoan('student')">Select This Loan</button>
+                </div>
+                
+                <div class="loan-card" data-loan="personal">
+                    <h3>💳 Personal Loan</h3>
+                    <div class="loan-details">
+                        <p><strong>Amount:</strong> $15,000</p>
+                        <p><strong>Interest:</strong> 8.2% APR</p>
+                        <p><strong>Term:</strong> 5 years</p>
+                        <p><strong>Monthly Payment:</strong> $305</p>
+                    </div>
+                    <button class="btn-action" onclick="selectLoan('personal')">Select This Loan</button>
+                </div>
+            </div>
+            
+            <div class="payment-simulator">
+                <h3>💰 Repayment Strategy</h3>
+                <div class="slider-container">
+                    <label><strong>Extra Monthly Payment:</strong> $<span id="extraPayment">0</span></label>
+                    <input type="range" class="payment-slider" id="paymentSlider" min="0" max="500" value="0" oninput="updatePayment(this.value)">
+                </div>
+                
+                <div class="slider-container">
+                    <label><strong>Payment Frequency:</strong></label>
+                    <select id="paymentFrequency" onchange="updateStrategy()" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="monthly">Monthly</option>
+                        <option value="biweekly">Bi-weekly</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+                
+                <button class="btn-action" onclick="calculateSavings()">Calculate Savings</button>
+                <button class="btn-action" onclick="makePayment()">Make Payment</button>
+            </div>
+            
+            <div class="results-panel" id="resultsPanel" style="display: none;">
+                <h3>📊 Repayment Analysis</h3>
+                <div class="score-display">Score: <span id="scoreValue">0</span></div>
+                <div id="analysisResults"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+let selectedLoan = null;
+let score = 0;
+let currentBalance = 0;
+let totalInterest = 0;
+
+const loanData = {
+    student: {
+        amount: 25000,
+        rate: 0.045,
+        term: 120,
+        monthlyPayment: 260
+    },
+    personal: {
+        amount: 15000,
+        rate: 0.082,
+        term: 60,
+        monthlyPayment: 305
+    }
+};
+
+function selectLoan(loanType) {
+    selectedLoan = loanType;
+    currentBalance = loanData[loanType].amount;
+    
+    // Update UI
+    document.querySelectorAll('.loan-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelector(`[data-loan="${loanType}"]`).classList.add('selected');
+    
+    console.log(`✅ Selected ${loanType} loan`);
+    updateDisplay();
+}
+
+function updatePayment(value) {
+    document.getElementById('extraPayment').textContent = value;
+}
+
+function updateStrategy() {
+    if (!selectedLoan) return;
+    
+    const frequency = document.getElementById('paymentFrequency').value;
+    const extraPayment = parseInt(document.getElementById('paymentSlider').value);
+    
+    // Calculate based on frequency
+    let multiplier = 1;
+    if (frequency === 'biweekly') multiplier = 2.17;
+    if (frequency === 'weekly') multiplier = 4.33;
+    
+    console.log(`📊 Strategy updated: ${frequency}, extra: $${extraPayment}`);
+}
+
+function calculateSavings() {
+    if (!selectedLoan) {
+        alert('Please select a loan first!');
+        return;
+    }
+    
+    const extraPayment = parseInt(document.getElementById('paymentSlider').value);
+    const frequency = document.getElementById('paymentFrequency').value;
+    const loan = loanData[selectedLoan];
+    
+    // Calculate time saved and interest saved
+    const totalMonthly = loan.monthlyPayment + extraPayment;
+    const monthsToPayoff = Math.ceil(loan.amount / totalMonthly);
+    const originalMonths = loan.term;
+    const monthsSaved = originalMonths - monthsToPayoff;
+    
+    // Calculate score
+    let points = 0;
+    if (extraPayment > 0) points += 20;
+    if (frequency !== 'monthly') points += 15;
+    if (monthsSaved > 0) points += 25;
+    
+    score += points;
+    
+    // Show results
+    const resultsPanel = document.getElementById('resultsPanel');
+    const analysisResults = document.getElementById('analysisResults');
+    
+    resultsPanel.style.display = 'block';
+    document.getElementById('scoreValue').textContent = score;
+    
+    analysisResults.innerHTML = `
+        <div style="margin: 20px 0;">
+            <p><strong>📈 Time Saved:</strong> ${monthsSaved} months</p>
+            <p><strong>💰 Extra Payment:</strong> $${extraPayment}/month</p>
+            <p><strong>⚡ Payment Strategy:</strong> ${frequency}</p>
+            <p><strong>🎯 Points Earned:</strong> ${points}</p>
+        </div>
+    `;
+    
+    console.log(`💰 Calculated savings: ${monthsSaved} months, ${points} points`);
+}
+
+function makePayment() {
+    if (!selectedLoan) {
+        alert('Please select a loan first!');
+        return;
+    }
+    
+    const extraPayment = parseInt(document.getElementById('paymentSlider').value);
+    const loan = loanData[selectedLoan];
+    const totalPayment = loan.monthlyPayment + extraPayment;
+    
+    // Update balance
+    currentBalance = Math.max(0, currentBalance - totalPayment);
+    
+    // Add score for making payment
+    score += 10;
+    
+    updateDisplay();
+    
+    if (currentBalance <= 0) {
+        alert(`🎉 Congratulations! You've paid off your ${selectedLoan} loan! Final Score: ${score}`);
+        score = 0;
+        currentBalance = loan.amount;
+    }
+    
+    console.log(`💳 Payment made: $${totalPayment}, remaining balance: $${currentBalance}`);
+}
+
+function updateDisplay() {
+    if (selectedLoan) {
+        const loan = loanData[selectedLoan];
+        // You could update UI elements here to show current balance, etc.
+    }
+}
+
+function initGame() {
+    console.log('🎮 Loan Repayment game initialized');
+    score = 0;
+    currentBalance = 0;
+    selectedLoan = null;
+}
+</script>
+{% endblock %}

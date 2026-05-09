@@ -1,0 +1,1353 @@
+{% extends "base.html" %}
+
+{% block title %}Savings Challenge - Interactive Decision Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #6f42c1 0%, #5a2d91 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(111, 66, 193, 0.3);
+    }
+    
+    .goal-selection {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .goal-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .goal-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .goal-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #6f42c1;
+    }
+    
+    .goal-card.selected {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        transform: scale(1.05);
+    }
+    
+    .goal-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .goal-name {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .goal-price {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #6f42c1;
+        margin-bottom: 10px;
+    }
+    
+    .goal-time {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .goal-description {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .goal-card.selected .goal-description {
+        color: #e9ecef;
+    }
+    
+    .gameplay-area {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .progress-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .progress-bar-container {
+        background: #e9ecef;
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.5s ease;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-bar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(255,255,255,0.3), transparent);
+        animation: progressShine 2s ease-in-out infinite;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 20px;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
+        animation: progressGlow 1.5s ease-in-out infinite alternate;
+    }
+    
+    @keyframes progressShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    @keyframes progressGlow {
+        0% { opacity: 0.3; }
+        100% { opacity: 0.8; }
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #333;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .weekly-choice {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 2px solid #ffc107;
+    }
+    
+    .choice-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .choice-card {
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .choice-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #ffc107;
+        animation: choiceCardPulse 0.6s ease-in-out;
+    }
+    
+    .choice-card.selected {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-color: #28a745;
+        animation: choiceCardSelected 0.8s ease;
+    }
+    
+    .choice-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: scale(0.95);
+        filter: grayscale(0.8);
+    }
+    
+    @keyframes choiceCardPulse {
+        0% { transform: translateY(-5px) scale(1); }
+        50% { transform: translateY(-6px) scale(1.03); }
+        100% { transform: translateY(-5px) scale(1.02); }
+    }
+    
+    @keyframes choiceCardSelected {
+        0% { transform: translateY(-3px) scale(1.05); }
+        50% { transform: translateY(-4px) scale(1.08); box-shadow: 0 15px 40px rgba(40, 167, 69, 0.4); }
+        100% { transform: translateY(-3px) scale(1.05); }
+    }
+    
+    .choice-card.save {
+        border-left: 5px solid #28a745;
+    }
+    
+    .choice-card.spend {
+        border-left: 5px solid #dc3545;
+    }
+    
+    .choice-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .choice-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .choice-amount {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .choice-amount.spend {
+        color: #dc3545;
+    }
+    
+    .events-panel {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 2px solid #ffc107;
+        display: none;
+    }
+    
+    .event-item {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-left: 4px solid #ffc107;
+        animation: slideIn 0.5s ease;
+    }
+    
+    .event-item.positive {
+        border-left-color: #28a745;
+    }
+    
+    .event-item.negative {
+        border-left-color: #dc3545;
+    }
+    
+    .stats-display {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-box {
+        text-align: center;
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #6f42c1;
+    }
+    
+    .stat-label {
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .btn-action {
+        background: linear-gradient(135deg, #6f42c1, #5a2d91);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(111, 66, 193, 0.4);
+    }
+    
+    .btn-action:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .result-panel {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        text-align: center;
+        display: none;
+    }
+    
+    .result-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: 2px solid #28a745;
+        color: #155724;
+    }
+    
+    .result-failure {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border: 2px solid #dc3545;
+        color: #721c24;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('💰 Checking authentication for savings challenge game...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Savings Challenge</h1>
+        <p>Strategic savings! Choose goals, make weekly decisions, and build your savings habit.</p>
+    </div>
+</section>
+
+<section class="game-section">
+    <div class="game-container">
+        <div class="game-header">
+            <h2>💰 Savings Challenge</h2>
+            <p>Choose your savings goal and make smart weekly decisions to reach it!</p>
+        </div>
+        
+        <div class="goal-selection" id="goalSelection">
+            <h3>🎯 Choose Your Savings Goal</h3>
+            <div class="goal-cards">
+                <div class="goal-card" onclick="selectGoal('bike')">
+                    <div class="goal-icon">🚴</div>
+                    <div class="goal-name">Bike</div>
+                    <div class="goal-price">$500</div>
+                    <div class="goal-time">8 weeks</div>
+                </div>
+                
+                <div class="goal-card" onclick="selectGoal('phone')">
+                    <div class="goal-icon">📱</div>
+                    <div class="goal-name">Smartphone</div>
+                    <div class="goal-price">$800</div>
+                    <div class="goal-time">12 weeks</div>
+                </div>
+                
+                <div class="goal-card" onclick="selectGoal('laptop')">
+                    <div class="goal-icon">💻</div>
+                    <div class="goal-name">Laptop</div>
+                    <div class="goal-price">$1200</div>
+                    <div class="goal-time">16 weeks</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="gameplay-area" id="gameplayArea">
+            <div class="progress-section">
+                <h3>📊 Savings Progress</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%;">
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-text" id="progressText">$0 / $0</div>
+                </div>
+            </div>
+            
+            <div class="stats-display">
+                <div class="stat-box">
+                    <div class="stat-value" id="currentWeek">1</div>
+                    <div class="stat-label">Current Week</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="totalWeeks">8</div>
+                    <div class="stat-label">Total Weeks</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="currentSavings">$0</div>
+                    <div class="stat-label">Current Savings</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">Score</div>
+                </div>
+            </div>
+            
+            <div class="weekly-choice" id="weeklyChoice">
+                <h3>📅 Week <span id="weekNumber">1</span> Decision</h3>
+                <div class="choice-cards">
+                    <div class="choice-card save" onclick="makeChoice('save')">
+                        <div class="choice-icon">💰</div>
+                        <div class="choice-title">Save Money</div>
+                        <div class="choice-amount">+$50</div>
+                    </div>
+                    <div class="choice-card spend" onclick="makeChoice('spend')">
+                        <div class="choice-icon">☕</div>
+                        <div class="choice-title">Buy Coffee</div>
+                        <div class="choice-amount spend">-$15</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="events-panel" id="eventsPanel">
+                <h3>📅 Random Events</h3>
+                <div id="eventsList"></div>
+            </div>
+        </div>
+        
+        <div class="result-panel" id="resultPanel">
+            <!-- Results will be displayed here -->
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn-action" onclick="startGame()" id="startBtn">Start Challenge</button>
+            <button class="btn-action" onclick="nextWeek()" id="nextBtn" style="display: none;">Next Week</button>
+            <button class="btn-action" onclick="finishGame()" id="finishBtn" style="display: none;">Finish Game</button>
+        </div>
+    </div>
+</section>
+
+<script>
+let gameActive = false;
+let selectedGoal = null;
+let currentWeek = 1;
+let totalWeeks = 8;
+let goalAmount = 500;
+let currentSavings = 0;
+let score = 0;
+
+const goals = {
+    bike: { price: 500, weeks: 8, icon: '🚴', name: 'Bike' },
+    phone: { price: 800, weeks: 12, icon: '📱', name: 'Smartphone' },
+    laptop: { price: 1200, weeks: 16, icon: '💻', name: 'Laptop' }
+};
+
+const weeklyChoices = {
+    save: { amount: 50, title: 'Save Money', icon: '💰' },
+    spend: { amount: -15, title: 'Buy Coffee', icon: '☕' }
+};
+
+const randomEvents = [
+    { title: "Bonus Income", description: "Extra freelance work!", impact: 100, type: "positive" },
+    { title: "Unexpected Expense", description: "Phone bill increase", impact: -30, type: "negative" },
+    { title: "Gift Money", description: "Birthday gift from family!", impact: 75, type: "positive" },
+    { title: "Emergency Cost", description: "Car maintenance", impact: -50, type: "negative" }
+];
+
+function initGame() {
+    console.log('💰 Savings Challenge game initialized');
+    gameActive = false;
+    currentWeek = 1;
+    currentSavings = 0;
+    score = 0;
+    updateDisplay();
+}
+
+function selectGoal(goalType) {
+    selectedGoal = goalType;
+    const goal = goals[goalType];
+    goalAmount = goal.price;
+    totalWeeks = goal.weeks;
+    
+    // Update UI
+    document.querySelectorAll('.goal-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelector(`[onclick="selectGoal('${goalType}')"]`).classList.add('selected');
+    
+    console.log(`🎯 Selected goal: ${goal.name} ($${goal.price})`);
+}
+
+function startGame() {
+    if (!selectedGoal) {
+        alert('Please select a savings goal first!');
+        return;
+    }
+    
+    gameActive = true;
+    score = 0;
+    currentWeek = 1;
+    currentSavings = 0;
+    
+    // Update UI
+    document.getElementById('goalSelection').style.display = 'none';
+    document.getElementById('gameplayArea').style.display = 'block';
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'inline-block';
+    document.getElementById('finishBtn').style.display = 'inline-block';
+    
+    updateDisplay();
+    generateRandomEvent();
+    
+    console.log(`🎮 Started savings challenge for ${goals[selectedGoal].name}`);
+}
+
+function makeChoice(choiceType) {
+    if (!gameActive) return;
+    
+    const choice = weeklyChoices[choiceType];
+    currentSavings += choice.amount;
+    
+    // Update score
+    if (choiceType === 'save') {
+        score += 10;
+    } else {
+        score = Math.max(0, score - 5);
+    }
+    
+    updateDisplay();
+    
+    // Disable choice buttons for this week
+    document.querySelectorAll('.choice-card').forEach(card => {
+        card.style.pointerEvents = 'none';
+        card.style.opacity = '0.6';
+    });
+    
+    console.log(`💰 Week ${currentWeek}: ${choice.title} (${choice.amount > 0 ? '+' : ''}$${choice.amount})`);
+}
+
+function nextWeek() {
+    if (!gameActive) return;
+    
+    currentWeek++;
+    
+    // Check if goal is reached
+    if (currentSavings >= goalAmount) {
+        finishGame(true);
+        return;
+    }
+    
+    // Check if game is over
+    if (currentWeek > totalWeeks) {
+        finishGame(false);
+        return;
+    }
+    
+    // Reset choice cards for new week
+    document.querySelectorAll('.choice-card').forEach(card => {
+        card.style.pointerEvents = 'auto';
+        card.style.opacity = '1';
+    });
+    
+    updateDisplay();
+    generateRandomEvent();
+    
+    console.log(`📅 Advanced to week ${currentWeek}`);
+}
+
+function generateRandomEvent() {
+    // 30% chance of random event
+    if (Math.random() < 0.3) {
+        const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+        addEvent(event.title, event.description, event.impact, event.type);
+        
+        currentSavings += event.impact;
+        
+        if (event.type === 'positive') {
+            score += 5;
+        } else {
+            score = Math.max(0, score - 3);
+        }
+        
+        updateDisplay();
+    }
+}
+
+function addEvent(title, description, impact, type) {
+    const eventsPanel = document.getElementById('eventsPanel');
+    const eventsList = document.getElementById('eventsList');
+    
+    eventsPanel.style.display = 'block';
+    
+    const eventItem = document.createElement('div');
+    eventItem.className = `event-item ${type}`;
+    
+    const impactText = impact > 0 ? `+$${impact}` : `-$${Math.abs(impact)}`;
+    
+    eventItem.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
+        <div style="color: #666; margin-bottom: 10px;">${description}</div>
+        <div style="font-weight: bold; color: ${type === 'positive' ? '#28a745' : '#dc3545'};">${impactText}</div>
+    `;
+    
+    eventsList.insertBefore(eventItem, eventsList.firstChild);
+    
+    // Keep only last 3 events visible
+    while (eventsList.children.length > 3) {
+        eventsList.removeChild(eventsList.lastChild);
+    }
+}
+
+function updateDisplay() {
+    const progressPercent = Math.min(100, (currentSavings / goalAmount) * 100);
+    
+    // Update progress bar
+    document.getElementById('progressBar').style.width = `${progressPercent}%`;
+    document.getElementById('progressPercent').textContent = `${Math.round(progressPercent)}%`;
+    document.getElementById('progressText').textContent = `$${currentSavings} / $${goalAmount}`;
+    
+    // Update stats
+    document.getElementById('currentWeek').textContent = currentWeek;
+    document.getElementById('totalWeeks').textContent = totalWeeks;
+    document.getElementById('currentSavings').textContent = `$${currentSavings}`;
+    document.getElementById('score').textContent = score;
+    document.getElementById('weekNumber').textContent = currentWeek;
+}
+
+function finishGame(success) {
+    gameActive = false;
+    
+    const resultPanel = document.getElementById('resultPanel');
+    const goal = goals[selectedGoal];
+    
+    // Calculate final score
+    let finalScore = score;
+    
+    if (success) {
+        finalScore += 50; // Bonus for reaching goal
+        resultPanel.className = 'result-panel result-success';
+        resultPanel.innerHTML = `
+            <h2>🎉 Goal Achieved!</h2>
+            <h3>Congratulations! You saved enough for your ${goal.name}!</h3>
+            <div style="font-size: 1.5rem; margin: 20px 0;">${goal.icon}</div>
+            <p><strong>Final Savings:</strong> $${currentSavings}</p>
+            <p><strong>Goal Amount:</strong> $${goalAmount}</p>
+            <p><strong>Weeks Taken:</strong> ${currentWeek - 1} / ${totalWeeks}</p>
+            <p><strong>Final Score:</strong> ${finalScore}</p>
+        `;
+    } else {
+        resultPanel.className = 'result-panel result-failure';
+        resultPanel.innerHTML = `
+            <h2>⏰ Time's Up!</h2>
+            <h3>Almost there! Keep practicing your savings habits.</h3>
+            <div style="font-size: 1.5rem; margin: 20px 0;">${goal.icon}</div>
+            <p><strong>Final Savings:</strong> $${currentSavings}</p>
+            <p><strong>Goal Amount:</strong> $${goalAmount}</p>
+            <p><strong>Progress:</strong> ${Math.round((currentSavings / goalAmount) * 100)}%</p>
+            <p><strong>Final Score:</strong> ${finalScore}</p>
+        `;
+    }
+    
+    // Hide game elements
+    document.getElementById('weeklyChoice').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('finishBtn').style.display = 'none';
+    
+    // Show result panel
+    resultPanel.style.display = 'block';
+    
+    console.log(`🏁 Game finished: ${success ? 'Success' : 'Time up'}, Score: ${finalScore}`);
+}
+</script>
+        {
+            id: 'car',
+            name: 'New Car',
+            description: 'Reliable used vehicle',
+            targetAmount: 20000,
+            timeFrame: 24,
+            icon: '🚗',
+            difficulty: 'medium'
+        },
+        {
+            id: 'house_down_payment',
+            name: 'House Down Payment',
+            description: '20% down payment on first home',
+            targetAmount: 60000,
+            timeFrame: 60,
+            icon: '🏠',
+            difficulty: 'hard'
+        }
+    ],
+    monthlyExpenses: {
+        housing: 1500,
+        food: 600,
+        transportation: 400,
+        utilities: 200,
+        healthcare: 300,
+        entertainment: 200,
+        other: 300
+    },
+    income: 4000,
+    lifeEvents: [
+        {
+            id: 'salary_raise',
+            name: 'Salary Raise',
+            description: 'You got a 10% salary raise!',
+            probability: 0.2,
+            impact: { income: 0.1 }
+        },
+        {
+            id: 'job_loss',
+            name: 'Job Loss',
+            description: 'You lost your job temporarily',
+            probability: 0.1,
+            impact: { income: -0.8, duration: 3 }
+        },
+        {
+            id: 'medical_emergency',
+            name: 'Medical Emergency',
+            description: 'Unexpected medical expenses',
+            probability: 0.15,
+            impact: { expenses: 2000 }
+        },
+        {
+            id: 'car_repair',
+            name: 'Car Repair',
+            description: 'Your car needs expensive repairs',
+            probability: 0.25,
+            impact: { expenses: 1500 }
+        },
+        {
+            id: 'bonus',
+            name: 'Work Bonus',
+            description: 'You received a work bonus!',
+            probability: 0.3,
+            impact: { income: 2000 }
+        },
+        {
+            id: 'rent_increase',
+            name: 'Rent Increase',
+            description: 'Your rent increased by 15%',
+            probability: 0.4,
+            impact: { expenses: { housing: 0.15 } }
+        }
+    ],
+    savingsOpportunities: [
+        {
+            id: 'reduce_entertainment',
+            name: 'Cut Entertainment Spending',
+            description: 'Reduce entertainment budget by 50%',
+            savings: 100,
+            difficulty: 'easy',
+            impact: 'happiness'
+        },
+        {
+            id: 'cook_more',
+            name: 'Cook at Home',
+            description: 'Reduce dining out expenses',
+            savings: 200,
+            difficulty: 'medium',
+            impact: 'time'
+        },
+        {
+            id: 'cancel_subscriptions',
+            name: 'Cancel Unused Subscriptions',
+            description: 'Review and cancel unused services',
+            savings: 150,
+            difficulty: 'easy',
+            impact: 'convenience'
+        },
+        {
+            id: 'side_hustle',
+            name: 'Start Side Hustle',
+            description: 'Earn extra income on weekends',
+            savings: 300,
+            difficulty: 'hard',
+            impact: 'time'
+        },
+        {
+            id: 'downgrade_housing',
+            name: 'Move to Cheaper Housing',
+            description: 'Find more affordable living situation',
+            savings: 500,
+            difficulty: 'hard',
+            impact: 'lifestyle'
+        }
+    ]
+};
+
+// Game state
+let currentMonth = 0;
+let totalMonths = 24;
+let selectedGoal = null;
+let currentSavings = 0;
+let monthlyIncome = gameData.income;
+let monthlyExpenses = { ...gameData.monthlyExpenses };
+let score = 0;
+let gameActive = false;
+let events = [];
+let decisions = [];
+let achievements = [];
+let savingsRate = 0;
+
+// Initialize game
+function initGame() {
+    renderGoalSelection();
+}
+
+function renderGoalSelection() {
+    const goalSelection = document.getElementById('goalSelection');
+    goalSelection.innerHTML = `
+        <div class="goal-selection">
+            <h3>Choose Your Savings Goal</h3>
+            <div class="goals-grid">
+                ${gameData.savingsGoals.map(goal => `
+                    <div class="goal-card" onclick="selectGoal('${goal.id}')">
+                        <div class="goal-header">
+                            <div class="goal-icon">${goal.icon}</div>
+                            <div class="goal-name">${goal.name}</div>
+                            <div class="goal-difficulty ${goal.difficulty}">${goal.difficulty.toUpperCase()}</div>
+                        </div>
+                        <div class="goal-description">${goal.description}</div>
+                        <div class="goal-details">
+                            <div class="goal-detail">
+                                <span class="detail-label">Target:</span>
+                                <span class="detail-value">$${goal.targetAmount.toLocaleString()}</span>
+                            </div>
+                            <div class="goal-detail">
+                                <span class="detail-label">Time Frame:</span>
+                                <span class="detail-value">${goal.timeFrame} months</span>
+                            </div>
+                            <div class="goal-detail">
+                                <span class="detail-label">Monthly Needed:</span>
+                                <span class="detail-value">$${Math.round(goal.targetAmount / goal.timeFrame).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function selectGoal(goalId) {
+    selectedGoal = gameData.savingsGoals.find(g => g.id === goalId);
+    totalMonths = selectedGoal.timeFrame;
+    
+    // Update UI
+    document.getElementById('goalSelection').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+    
+    startGame();
+}
+
+function startGame() {
+    currentMonth = 0;
+    currentSavings = 0;
+    monthlyIncome = gameData.income;
+    monthlyExpenses = { ...gameData.monthlyExpenses };
+    score = 0;
+    gameActive = true;
+    events = [];
+    decisions = [];
+    achievements = [];
+    
+    renderMonth();
+}
+
+function renderMonth() {
+    if (currentMonth >= totalMonths) {
+        finishGame();
+        return;
+    }
+    
+    currentMonth++;
+    document.getElementById('monthIndicator').textContent = `Month ${currentMonth} of ${totalMonths}`;
+    
+    // Generate life events
+    generateLifeEvents();
+    
+    // Calculate monthly savings
+    calculateMonthlySavings();
+    
+    // Render savings opportunities
+    renderSavingsOpportunities();
+    
+    // Update dashboard
+    updateDashboard();
+}
+
+function generateLifeEvents() {
+    events = [];
+    
+    gameData.lifeEvents.forEach(event => {
+        if (Math.random() < event.probability) {
+            events.push({ ...event });
+        }
+    });
+    
+    // Apply life events
+    events.forEach(event => {
+        if (event.impact.income) {
+            if (event.impact.duration) {
+                // Temporary income change
+                monthlyIncome *= (1 + event.impact.income);
+            } else {
+                // Permanent income change
+                monthlyIncome += event.impact.income;
+            }
+        }
+        
+        if (event.impact.expenses) {
+            if (typeof event.impact.expenses === 'object') {
+                Object.entries(event.impact.expenses).forEach(([category, change]) => {
+                    monthlyExpenses[category] *= (1 + change);
+                });
+            } else {
+                // One-time expense
+                currentSavings = Math.max(0, currentSavings - event.impact.expenses);
+            }
+        }
+    });
+}
+
+function calculateMonthlySavings() {
+    const totalExpenses = Object.values(monthlyExpenses).reduce((sum, expense) => sum + expense, 0);
+    const monthlySavings = monthlyIncome - totalExpenses;
+    savingsRate = monthlyIncome > 0 ? (monthlySavings / monthlyIncome) * 100 : 0;
+    
+    // Add to current savings
+    currentSavings += Math.max(0, monthlySavings);
+}
+
+function renderSavingsOpportunities() {
+    const opportunitiesContainer = document.getElementById('opportunitiesContainer');
+    opportunitiesContainer.innerHTML = `
+        <h3>Savings Opportunities</h3>
+        <div class="opportunities-grid">
+            ${gameData.savingsOpportunities.map(opportunity => `
+                <div class="opportunity-card ${opportunity.difficulty}" onclick="selectOpportunity('${opportunity.id}')">
+                    <div class="opportunity-header">
+                        <div class="opportunity-name">${opportunity.name}</div>
+                        <div class="opportunity-savings">+$${opportunity.savings}/month</div>
+                    </div>
+                    <div class="opportunity-description">${opportunity.description}</div>
+                    <div class="opportunity-impact">
+                        <span class="impact-tag ${opportunity.impact}">${opportunity.impact}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function selectOpportunity(opportunityId) {
+    const opportunity = gameData.savingsOpportunities.find(o => o.id === opportunityId);
+    
+    // Apply opportunity
+    if (opportunity.id === 'reduce_entertainment') {
+        monthlyExpenses.entertainment *= 0.5;
+    } else if (opportunity.id === 'cook_more') {
+        monthlyExpenses.food *= 0.7;
+    } else if (opportunity.id === 'cancel_subscriptions') {
+        monthlyExpenses.other -= 150;
+    } else if (opportunity.id === 'side_hustle') {
+        monthlyIncome += 300;
+    } else if (opportunity.id === 'downgrade_housing') {
+        monthlyExpenses.housing *= 0.8;
+    }
+    
+    // Store decision
+    decisions.push({
+        month: currentMonth,
+        opportunity: opportunity,
+        impact: opportunity.savings
+    });
+    
+    // Calculate score
+    score += opportunity.savings;
+    
+    // Show feedback
+    showFeedback(`Great choice! You're saving $${opportunity.savings} per month.`, 'success');
+    
+    // Recalculate and update
+    calculateMonthlySavings();
+    updateDashboard();
+    
+    // Hide opportunities and show next button
+    document.getElementById('opportunitiesContainer').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+function updateDashboard() {
+    const totalExpenses = Object.values(monthlyExpenses).reduce((sum, expense) => sum + expense, 0);
+    const monthlySavings = monthlyIncome - totalExpenses;
+    const progress = (currentSavings / selectedGoal.targetAmount) * 100;
+    
+    document.getElementById('currentIncome').textContent = `$${monthlyIncome.toLocaleString()}`;
+    document.getElementById('currentExpenses').textContent = `$${totalExpenses.toLocaleString()}`;
+    document.getElementById('currentSavings').textContent = `$${currentSavings.toLocaleString()}`;
+    document.getElementById('monthlySavings').textContent = `$${monthlySavings.toLocaleString()}`;
+    document.getElementById('savingsRate').textContent = `${savingsRate.toFixed(1)}%`;
+    document.getElementById('goalProgress').textContent = `${progress.toFixed(1)}%`;
+    
+    // Update progress bar
+    document.getElementById('progressBar').style.width = `${Math.min(100, progress)}%`;
+    
+    // Show events
+    renderEvents();
+}
+
+function renderEvents() {
+    const eventsContainer = document.getElementById('eventsContainer');
+    if (events.length === 0) {
+        eventsContainer.innerHTML = '<div class="no-events">No major events this month.</div>';
+        return;
+    }
+    
+    eventsContainer.innerHTML = `
+        <h4>Life Events This Month</h4>
+        ${events.map(event => `
+            <div class="event-card">
+                <div class="event-header">
+                    <span class="event-name">${event.name}</span>
+                </div>
+                <div class="event-description">${event.description}</div>
+            </div>
+        `).join('')}
+    `;
+}
+
+function nextMonth() {
+    document.getElementById('opportunitiesContainer').style.display = 'block';
+    document.getElementById('nextBtn').style.display = 'none';
+    renderMonth();
+}
+
+function finishGame() {
+    gameActive = false;
+    
+    // Calculate final results
+    const progress = (currentSavings / selectedGoal.targetAmount) * 100;
+    const goalMet = currentSavings >= selectedGoal.targetAmount;
+    const averageSavingsRate = decisions.reduce((sum, d) => sum + d.impact, 0) / totalMonths;
+    
+    // Check achievements
+    checkAchievements();
+
+    void goalMet; void averageSavingsRate;
+
+    showFinalResults();
+}
+
+function checkAchievements() {
+    if (currentSavings >= selectedGoal.targetAmount && !achievements.includes('goal_achiever')) {
+        achievements.push('goal_achiever');
+        showAchievement('Goal Achiever', 'Reached your savings goal!');
+    }
+    
+    if (savingsRate >= 20 && !achievements.includes('super_saver')) {
+        achievements.push('super_saver');
+        showAchievement('Super Saver', 'Maintained 20%+ savings rate!');
+    }
+    
+    if (decisions.length >= 10 && !achievements.includes('consistent_saver')) {
+        achievements.push('consistent_saver');
+        showAchievement('Consistent Saver', 'Made 10+ savings decisions!');
+    }
+}
+
+function showAchievement(title, text) {
+    showFeedback(`🏆 ${title}: ${text}`, 'success');
+}
+
+function showFinalResults() {
+    const progress = (currentSavings / selectedGoal.targetAmount) * 100;
+    const goalMet = currentSavings >= selectedGoal.targetAmount;
+    
+    const resultsContainer = document.getElementById('resultsContainer');
+    resultsContainer.innerHTML = `
+        <h3>🎉 Savings Challenge Complete!</h3>
+        <div class="final-results">
+            <div class="result-summary">
+                <h4>Final Results</h4>
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <span class="stat-label">Goal:</span>
+                        <span class="stat-value">${selectedGoal.name}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Target Amount:</span>
+                        <span class="stat-value">$${selectedGoal.targetAmount.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Final Savings:</span>
+                        <span class="stat-value">$${currentSavings.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Progress:</span>
+                        <span class="stat-value ${goalMet ? 'success' : 'warning'}">${progress.toFixed(1)}%</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Status:</span>
+                        <span class="stat-value ${goalMet ? 'success' : 'warning'}">${goalMet ? '✅ Goal Achieved!' : '⚠️ Goal Not Met'}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Total Score:</span>
+                        <span class="stat-value">${Math.round(score)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="achievements-summary">
+                <h4>Achievements Earned</h4>
+                <div class="achievements-list">
+                    ${achievements.length > 0 ? 
+                        achievements.map(a => `<div class="achievement-badge">🏆 ${a.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>`).join('') :
+                        '<div class="no-achievements">No achievements earned this time</div>'
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Update UI
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('resultsContainer').style.display = 'block';
+    document.getElementById('restartBtn').style.display = 'inline-block';
+}
+
+function restartGame() {
+    // Reset everything
+    currentMonth = 0;
+    currentSavings = 0;
+    monthlyIncome = gameData.income;
+    monthlyExpenses = { ...gameData.monthlyExpenses };
+    score = 0;
+    gameActive = false;
+    events = [];
+    decisions = [];
+    achievements = [];
+    
+    // Update UI
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('goalSelection').style.display = 'block';
+    
+    renderGoalSelection();
+    
+    showFeedback('Game reset! Choose a new savings goal to play again.', 'info');
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+    }, 4000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>💰 Savings Challenge</h1>
+        <p>Choose a savings goal and make smart financial decisions. Will you save for your goal or spend on wants?</p>
+    </div>
+    
+    <div class="round-indicator" id="roundIndicator">Select Your Goal</div>
+    
+    <div class="goal-selection" id="goalSelection">
+        <h2 style="margin-bottom: 20px; color: #333;">Choose Your Savings Goal</h2>
+        <div class="goal-cards">
+            <div class="goal-card" onclick="selectGoal('bike')" data-goal="bike">
+                <div class="goal-icon">🚲</div>
+                <div class="goal-name">New Bicycle</div>
+                <div class="goal-cost">$500</div>
+                <div class="goal-description">A reliable bike for commuting and exercise</div>
+            </div>
+            
+            <div class="goal-card" onclick="selectGoal('phone')" data-goal="phone">
+                <div class="goal-icon">📱</div>
+                <div class="goal-name">Smartphone</div>
+                <div class="goal-cost">$800</div>
+                <div class="goal-description">Latest smartphone with great features</div>
+            </div>
+            
+            <div class="goal-card" onclick="selectGoal('laptop')" data-goal="laptop">
+                <div class="goal-icon">💻</div>
+                <div class="goal-name">Laptop</div>
+                <div class="goal-cost">$1200</div>
+                <div class="goal-description">Powerful laptop for work and gaming</div>
+            </div>
+            
+            <div class="goal-card" onclick="selectGoal('vacation')" data-goal="vacation">
+                <div class="goal-icon">✈️</div>
+                <div class="goal-name">Vacation</div>
+                <div class="goal-cost">$2000</div>
+                <div class="goal-description">Amazing vacation to your dream destination</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-stats">
+        <div class="stat-box">
+            <div class="stat-value" id="currentSavings">$0</div>
+            <div>Current Savings</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="goalAmount">$0</div>
+            <div>Goal Amount</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="roundNumber">0</div>
+            <div>Round</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="score">0</div>
+            <div>Score</div>
+        </div>
+    </div>
+    
+    <div class="progress-section" id="progressSection" style="display: none;">
+        <div class="progress-header">
+            <div class="progress-title">Savings Progress</div>
+            <div class="progress-amount" id="progressAmount">$0 / $0</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">
+                0%
+            </div>
+        </div>
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="decision-section" id="decisionSection" style="display: none;">
+        <div class="scenario">
+            <div class="scenario-icon" id="scenarioIcon">💭</div>
+            <div class="scenario-text" id="scenarioText">
+                Select your goal to start the challenge!
+            </div>
+        </div>
+        
+        <div class="decision-buttons" id="decisionButtons" style="display: none;">
+            <button class="decision-btn save-btn" onclick="makeDecision('save')" id="saveBtn">
+                <div style="font-size: 1.5rem; margin-bottom: 5px;">💰</div>
+                <div>Save Money</div>
+                <div style="font-size: 0.9rem; margin-top: 5px;">Add to your goal</div>
+            </button>
+            
+            <button class="decision-btn spend-btn" onclick="makeDecision('spend')" id="spendBtn">
+                <div style="font-size: 1.5rem; margin-bottom: 5px;">🛍️</div>
+                <div>Spend Money</div>
+                <div style="font-size: 0.9rem; margin-top: 5px;">Buy something nice</div>
+            </button>
+        </div>
+    </div>
+    
+    <div class="events-panel" id="eventsPanel">
+        <h3 style="margin-bottom: 20px; color: #333;">📅 Recent Events</h3>
+        <div id="eventsList"></div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="startBtn" onclick="startGame()" style="display: none;">Start Challenge</button>
+        <button class="btn-game" id="nextBtn" onclick="nextRound()" style="display: none;">Next Round</button>
+        <button class="btn-game" id="finishBtn" onclick="finishGame()" style="display: none;">Finish Game</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+
+<div class="achievement-popup" id="achievementPopup">
+    <h4 style="color: #ffc107; margin-bottom: 10px;">🏆 Achievement!</h4>
+    <div id="achievementText"></div>
+</div>
+{% endblock %}

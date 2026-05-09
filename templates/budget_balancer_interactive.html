@@ -1,0 +1,1490 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Balancer - Interactive Financial Planning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+    }
+    
+    .salary-display {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 30px;
+        border: 2px solid #ffc107;
+    }
+    
+    .salary-amount {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #856404;
+    }
+    
+    .budget-overview {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        position: relative;
+    }
+    
+    .balance-bar-container {
+        background: #e9ecef;
+        height: 40px;
+        border-radius: 20px;
+        overflow: hidden;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .balance-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.5s ease, background 0.3s ease;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .balance-bar.warning {
+        background: linear-gradient(90deg, #ffc107, #fd7e14);
+    }
+    
+    .balance-bar.danger {
+        background: linear-gradient(90deg, #dc3545, #c82333);
+    }
+    
+    .budget-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .category-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #28a745;
+    }
+    
+    .category-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .category-icon {
+        font-size: 2rem;
+        margin-right: 15px;
+    }
+    
+    .category-name {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .category-amount {
+        margin-left: auto;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .budget-slider {
+        width: 100%;
+        height: 10px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        -ms-appearance: none;
+        appearance: none;
+        margin: 15px 0;
+    }
+    
+    .budget-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #28a745;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .budget-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        background: #20c997;
+    }
+    
+    .budget-slider::-moz-range-thumb {
+        -moz-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #28a745;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+    }
+    
+    .budget-slider::-ms-thumb {
+        -ms-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #28a745;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+    }
+    
+    .events-panel {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 2px solid #ffc107;
+        display: none;
+    }
+    
+    .event-item {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-left: 4px solid #ffc107;
+        animation: slideIn 0.5s ease;
+    }
+    
+    .event-item.positive {
+        border-left-color: #28a745;
+    }
+    
+    .event-item.negative {
+        border-left-color: #dc3545;
+    }
+    
+    .financial-health {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .health-meter {
+        width: 200px;
+        height: 200px;
+        margin: 20px auto;
+        position: relative;
+    }
+    
+    .health-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(
+            #28a745 0deg var(--health-percent),
+            #e9ecef var(--health-percent) 360deg
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .health-inner {
+        width: 80%;
+        height: 80%;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    
+    .health-score {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .health-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .btn-action {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-action:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .warning-message {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border: 2px solid #dc3545;
+        animation: pulse 2s infinite;
+    }
+    
+    .success-message {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border: 2px solid #28a745;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+    
+    .score-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .score-value {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+</style>
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .slider-container {
+        margin-bottom: 15px;
+    }
+    
+    .budget-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #e9ecef;
+        outline: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
+    }
+    
+    .budget-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+    
+    .budget-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.5);
+        background: linear-gradient(135deg, #20c997, #198754);
+    }
+    
+    .budget-slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+    
+    .budget-slider::-moz-range-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.5);
+        background: linear-gradient(135deg, #20c997, #198754);
+    }
+    
+    .budget-slider:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+    }
+    
+    .amount-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+    
+    .amount-value {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #17a2b8;
+    }
+    
+    .amount-percentage {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 30px;
+        background: #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .progress-good {
+        background: linear-gradient(90deg, #28a745, #20c997);
+    }
+    
+    .progress-warning {
+        background: linear-gradient(90deg, #ffc107, #ff9800);
+    }
+    
+    .progress-danger {
+        background: linear-gradient(90deg, #dc3545, #c82333);
+    }
+    
+    .events-panel {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: none;
+    }
+    
+    .event-card {
+        background: #f8f9fa;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .event-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .event-description {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .event-impact {
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    
+    .impact-positive {
+        color: #28a745;
+    }
+    
+    .impact-negative {
+        color: #dc3545;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .month-indicator {
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #17a2b8;
+        margin-bottom: 20px;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .achievement-popup {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        z-index: 1000;
+        max-width: 300px;
+        display: none;
+    }
+    
+    .achievement-popup.show {
+        display: block;
+        animation: slideInRight 0.5s ease;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .tips-panel {
+        background: #e7f3ff;
+        border-left: 4px solid #17a2b8;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+    
+    .tips-title {
+        font-weight: bold;
+        color: #17a2b8;
+        margin-bottom: 10px;
+    }
+    
+    .tips-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .tips-list li {
+        padding: 5px 0;
+        color: #666;
+    }
+    
+    .tips-list li:before {
+        content: "💡 ";
+        margin-right: 5px;
+    }
+    
+    .budget-chart {
+        margin-top: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .chart-bar {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .chart-label {
+        width: 120px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .chart-progress {
+        flex: 1;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 0 10px;
+    }
+    
+    .chart-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+    
+    .chart-value {
+        width: 80px;
+        text-align: right;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Protect this page - require authentication
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🔧 Initializing budget balancer game...');
+    
+    function checkAuth() {
+        if (window.auth && window.auth.isReady) {
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            console.log('✅ User authenticated, game accessible');
+            initGame();
+        } else {
+            setTimeout(checkAuth, 100);
+        }
+    }
+    
+    checkAuth();
+});
+
+async function endGame() {
+    console.log('🎮 Ending game...');
+}
+</script>
+<script src="{{ url_for('static', filename='js/gameDatabase.js') }}"></script>
+<script>
+// Game data
+const gameData = {
+    incomeCategories: [
+        { id: 'salary', name: 'Salary', icon: '💼', typical: 3000 },
+        { id: 'freelance', name: 'Freelance', icon: '💻', typical: 1500 },
+        { id: 'investments', name: 'Investments', icon: '📈', typical: 500 },
+        { id: 'other', name: 'Other', icon: '💰', typical: 200 }
+    ],
+    expenseCategories: [
+        { id: 'housing', name: 'Housing', icon: '🏠', typical: 1200, essential: true },
+        { id: 'food', name: 'Food', icon: '🍔', typical: 400, essential: true },
+        { id: 'transportation', name: 'Transportation', icon: '🚗', typical: 300, essential: true },
+        { id: 'utilities', name: 'Utilities', icon: '💡', typical: 150, essential: true },
+        { id: 'healthcare', name: 'Healthcare', icon: '🏥', typical: 200, essential: true },
+        { id: 'entertainment', name: 'Entertainment', icon: '🎮', typical: 150, essential: false },
+        { id: 'shopping', name: 'Shopping', icon: '🛍️', typical: 200, essential: false },
+        { id: 'savings', name: 'Savings', icon: '💎', typical: 500, essential: false }
+    ],
+    lifeEvents: [
+        {
+            id: 'salary_raise',
+            name: 'Salary Raise',
+            description: 'You got a 10% salary raise!',
+            probability: 0.2,
+            impact: { salary: 0.1 }
+        },
+        {
+            id: 'car_breakdown',
+            name: 'Car Breakdown',
+            description: 'Your car needs expensive repairs',
+            probability: 0.15,
+            impact: { transportation: 500 }
+        },
+        {
+            id: 'medical_emergency',
+            name: 'Medical Emergency',
+            description: 'Unexpected medical expenses',
+            probability: 0.1,
+            impact: { healthcare: 1000 }
+        },
+        {
+            id: 'bonus',
+            name: 'Work Bonus',
+            description: 'You received a work bonus!',
+            probability: 0.25,
+            impact: { salary: 1000 }
+        },
+        {
+            id: 'rent_increase',
+            name: 'Rent Increase',
+            description: 'Your landlord increased the rent',
+            probability: 0.3,
+            impact: { housing: 200 }
+        }
+    ]
+};
+
+// Game state
+let currentMonth = 0;
+let totalMonths = 12;
+let budget = {};
+let monthlyIncome = 0;
+let monthlyExpenses = 0;
+let savings = 0;
+let score = 0;
+let gameActive = false;
+    events = [];
+    achievements = [];
+
+// Initialize game
+function initGame() {
+    initializeBudget();
+    renderBudgetSetup();
+}
+
+function initializeBudget() {
+    // Initialize budget with default values
+    gameData.incomeCategories.forEach(category => {
+        budget[category.id] = category.typical;
+    });
+    
+    gameData.expenseCategories.forEach(category => {
+        budget[category.id] = -category.typical;
+    });
+    
+    calculateTotals();
+}
+
+function calculateTotals() {
+    monthlyIncome = 0;
+    monthlyExpenses = 0;
+    
+    gameData.incomeCategories.forEach(category => {
+        monthlyIncome += budget[category.id] || 0;
+    });
+    
+    gameData.expenseCategories.forEach(category => {
+        monthlyExpenses += Math.abs(budget[category.id] || 0);
+    });
+    
+    savings = monthlyIncome - monthlyExpenses;
+}
+
+function renderBudgetSetup() {
+    const budgetSetup = document.getElementById('budgetSetup');
+    budgetSetup.innerHTML = `
+        <div class="budget-setup">
+            <h3>Set Up Your Monthly Budget</h3>
+            <div class="budget-categories">
+                <div class="category-section">
+                    <h4>Income</h4>
+                    ${gameData.incomeCategories.map(category => `
+                        <div class="budget-item">
+                            <div class="item-header">
+                                <span class="item-icon">${category.icon}</span>
+                                <span class="item-name">${category.name}</span>
+                            </div>
+                            <div class="item-input">
+                                <span class="currency">$</span>
+                                <input type="number" 
+                                       id="budget-${category.id}" 
+                                       value="${budget[category.id] || 0}" 
+                                       min="0" 
+                                       step="50"
+                                       oninput="updateBudgetItem('${category.id}', this.value)">
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="category-section">
+                    <h4>Expenses</h4>
+                    ${gameData.expenseCategories.map(category => `
+                        <div class="budget-item ${category.essential ? 'essential' : 'discretionary'}">
+                            <div class="item-header">
+                                <span class="item-icon">${category.icon}</span>
+                                <span class="item-name">${category.name}</span>
+                                <span class="essential-tag">${category.essential ? 'Essential' : 'Discretionary'}</span>
+                            </div>
+                            <div class="item-input">
+                                <span class="currency">$</span>
+                                <input type="number" 
+                                       id="budget-${category.id}" 
+                                       value="${Math.abs(budget[category.id] || 0)}" 
+                                       min="0" 
+                                       step="50"
+                                       oninput="updateBudgetItem('${category.id}', -this.value)">
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="budget-summary">
+                <div class="summary-item ${savings >= 0 ? 'positive' : 'negative'}">
+                    <span class="summary-label">Monthly Income:</span>
+                    <span class="summary-value">$${monthlyIncome.toLocaleString()}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Monthly Expenses:</span>
+                    <span class="summary-value">$${monthlyExpenses.toLocaleString()}</span>
+                </div>
+                <div class="summary-item ${savings >= 0 ? 'positive' : 'negative'}">
+                    <span class="summary-label">Monthly Savings:</span>
+                    <span class="summary-value">$${savings.toLocaleString()}</span>
+                </div>
+                <div class="validation-message" id="budgetValidation"></div>
+            </div>
+        </div>
+    `;
+    
+    updateBudgetValidation();
+}
+
+function updateBudgetItem(categoryId, value) {
+    budget[categoryId] = parseFloat(value) || 0;
+    calculateTotals();
+    updateBudgetSummary();
+}
+
+function updateBudgetSummary() {
+    // Update summary values
+    const incomeElement = document.querySelector('.summary-item:nth-child(1) .summary-value');
+    const expensesElement = document.querySelector('.summary-item:nth-child(2) .summary-value');
+    const savingsElement = document.querySelector('.summary-item:nth-child(3) .summary-value');
+    
+    if (incomeElement) incomeElement.textContent = `$${monthlyIncome.toLocaleString()}`;
+    if (expensesElement) expensesElement.textContent = `$${monthlyExpenses.toLocaleString()}`;
+    if (savingsElement) savingsElement.textContent = `$${savings.toLocaleString()}`;
+    
+    updateBudgetValidation();
+}
+
+function updateBudgetValidation() {
+    const validationMessage = document.getElementById('budgetValidation');
+    if (!validationMessage) return;
+    
+    if (savings >= 500) {
+        validationMessage.textContent = '✅ Great budget! You have positive savings.';
+        validationMessage.className = 'validation-message success';
+        document.getElementById('startBtn').disabled = false;
+    } else if (savings >= 0) {
+        validationMessage.textContent = '⚠️ Budget is balanced, but savings could be higher.';
+        validationMessage.className = 'validation-message warning';
+        document.getElementById('startBtn').disabled = false;
+    } else {
+        validationMessage.textContent = '❌ Budget is unbalanced. Reduce expenses or increase income.';
+        validationMessage.className = 'validation-message error';
+        document.getElementById('startBtn').disabled = true;
+    }
+}
+
+function startGame() {
+    currentMonth = 0;
+    score = 0;
+    gameActive = true;
+    events = [];
+    achievements = [];
+    
+    // Update UI
+    document.getElementById('budgetSetup').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+    
+    renderMonth();
+}
+
+function renderMonth() {
+    if (currentMonth >= totalMonths) {
+        finishGame();
+        return;
+    }
+    
+    currentMonth++;
+    document.getElementById('monthIndicator').textContent = `Month ${currentMonth} of ${totalMonths}`;
+    
+    // Generate life events
+    generateLifeEvents();
+    
+    // Update budget with events
+    applyLifeEvents();
+    
+    // Calculate score
+    calculateMonthScore();
+    
+    // Render month summary
+    renderMonthSummary();
+}
+
+function generateLifeEvents() {
+    events = [];
+    
+    gameData.lifeEvents.forEach(event => {
+        if (Math.random() < event.probability) {
+            events.push(event);
+        }
+    });
+}
+
+function applyLifeEvents() {
+    events.forEach(event => {
+        Object.entries(event.impact).forEach(([categoryId, amount]) => {
+            budget[categoryId] += amount;
+        });
+    });
+    
+    calculateTotals();
+}
+
+function calculateMonthScore() {
+    let monthScore = 0;
+    
+    // Base score for positive savings
+    if (savings >= 500) {
+        monthScore += 50;
+    } else if (savings >= 0) {
+        monthScore += 25;
+    }
+    
+    // Bonus for handling events well
+    events.forEach(event => {
+        if (savings >= 0) {
+            monthScore += 10;
+        }
+    });
+    
+    score += monthScore;
+}
+
+function renderMonthSummary() {
+    const monthSummary = document.getElementById('monthSummary');
+    monthSummary.innerHTML = `
+        <h3>Month ${currentMonth} Summary</h3>
+        
+        ${events.length > 0 ? `
+            <div class="life-events">
+                <h4>Life Events This Month</h4>
+                ${events.map(event => `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <span class="event-name">${event.name}</span>
+                        </div>
+                        <div class="event-description">${event.description}</div>
+                        <div class="event-impact">
+                            ${Object.entries(event.impact).map(([categoryId, amount]) => {
+                                const category = [...gameData.incomeCategories, ...gameData.expenseCategories].find(c => c.id === categoryId);
+                                return `
+                                    <div class="impact-item">
+                                        <span>${category.icon} ${category.name}:</span>
+                                        <span class="${amount >= 0 ? 'positive' : 'negative'}">
+                                            ${amount >= 0 ? '+' : ''}$${Math.abs(amount).toLocaleString()}
+                                        </span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '<div class="no-events">No major life events this month.</div>'}
+        
+        <div class="budget-overview">
+            <h4>Budget Overview</h4>
+            <div class="overview-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Income:</span>
+                    <span class="stat-value">$${monthlyIncome.toLocaleString()}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Expenses:</span>
+                    <span class="stat-value">$${monthlyExpenses.toLocaleString()}</span>
+                </div>
+                <div class="stat-item ${savings >= 0 ? 'positive' : 'negative'}">
+                    <span class="stat-label">Savings:</span>
+                    <span class="stat-value">$${savings.toLocaleString()}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Month Score:</span>
+                    <span class="stat-value">${Math.round(score / currentMonth)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Update UI
+    document.getElementById('nextMonthBtn').style.display = 'inline-block';
+}
+
+function nextMonth() {
+    document.getElementById('nextMonthBtn').style.display = 'none';
+    renderMonth();
+}
+
+async function finishGame() {
+    gameActive = false;
+
+    if (window.GameDataHandler) {
+        try {
+            await window.GameDataHandler.onGameComplete(
+                'budget_balancer_interactive',
+                Math.round(score),
+                'beginner'
+            );
+        } catch (e) {
+            console.warn('GameDataHandler.onGameComplete threw (continuing):', e);
+        }
+    }
+
+    showFinalResults();
+}
+
+function showFinalResults() {
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = `
+        <h3>🎉 Budget Game Complete!</h3>
+        <div class="final-results">
+            <div class="result-summary">
+                <h4>Final Budget Performance</h4>
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <span class="stat-label">Final Score:</span>
+                        <span class="stat-value">${Math.round(score)}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Monthly Income:</span>
+                        <span class="stat-value">$${monthlyIncome.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Monthly Expenses:</span>
+                        <span class="stat-value">$${monthlyExpenses.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat ${savings >= 0 ? 'positive' : 'negative'}">
+                        <span class="stat-label">Monthly Savings:</span>
+                        <span class="stat-value">$${savings.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Average Score:</span>
+                        <span class="stat-value">${Math.round(score / totalMonths)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="achievements-summary">
+                <h4>Achievements Earned</h4>
+                <div class="achievements-list">
+                    ${achievements.length > 0 ? 
+                        achievements.map(a => `<div class="achievement-badge">🏆 ${a.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>`).join('') :
+                        '<div class="no-achievements">No achievements earned this time</div>'
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Update UI
+    document.getElementById('monthSummary').style.display = 'none';
+    document.getElementById('nextMonthBtn').style.display = 'none';
+    document.getElementById('finishBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'inline-block';
+    document.getElementById('resultsSection').style.display = 'block';
+}
+
+function restartGame() {
+    // Reset everything
+    currentMonth = 0;
+    budget = {};
+    monthlyIncome = 0;
+    monthlyExpenses = 0;
+    savings = 0;
+    score = 0;
+    gameActive = false;
+    events = [];
+    achievements = [];
+    
+    // Update UI
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('startBtn').style.display = 'inline-block';
+    document.getElementById('budgetSetup').style.display = 'block';
+    
+    initializeBudget();
+    renderBudgetSetup();
+    
+    showFeedback('Game reset! Set up your budget to play again.', 'info');
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Budget Balancer Challenge</h1>
+        <p>Master your finances! Allocate your salary wisely and handle unexpected events.</p>
+    </div>
+</section>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="score">0</div>
+            <div class="stat-label">Score</div>
+        </div>
+    </div>
+    
+    <div class="budget-overview">
+        <div class="income-display">Annual Salary: $50,000 | Monthly: $<span id="incomeAmount">4,167</span></div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill progress-good" id="budgetProgress" style="width: 0%">
+                Budget: $0 / $4,167
+            </div>
+        </div>
+        
+        <div class="tips-panel">
+            <div class="tips-title">💡 Budgeting Tips</div>
+            <ul class="tips-list">
+                <li>Aim to save at least 20% of your income</li>
+                <li>Keep housing costs under 30% of income</li>
+                <li>Build an emergency fund of 3-6 months expenses</li>
+                <li>Review and adjust your budget monthly</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="budget-categories">
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🏠</div>
+                <div class="category-name">Housing</div>
+            </div>
+            <div class="category-description">Rent, mortgage, utilities, and maintenance</div>
+            <div class="slider-container">
+                <input type="range" class="budget-slider" id="housingSlider" min="0" max="3000" value="1250" step="50">
+                <div class="amount-display">
+                    <span class="amount-value" id="housingAmount">$1,250</span>
+                    <span class="amount-percentage" id="housingPercentage">30%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🥬</div>
+                <div class="category-name">Food</div>
+            </div>
+            <div class="category-description">Groceries, dining out, and food supplies</div>
+            <div class="slider-container">
+                <input type="range" class="budget-slider" id="foodSlider" min="0" max="1500" value="600" step="25">
+                <div class="amount-display">
+                    <span class="amount-value" id="foodAmount">$600</span>
+                    <span class="amount-percentage" id="foodPercentage">14%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🚗</div>
+                <div class="category-name">Transportation</div>
+            </div>
+            <div class="category-description">Car payments, gas, insurance, and public transport</div>
+            <div class="slider-container">
+                <input type="range" class="budget-slider" id="transportSlider" min="0" max="1000" value="400" step="25">
+                <div class="amount-display">
+                    <span class="amount-value" id="transportAmount">$400</span>
+                    <span class="amount-percentage" id="transportPercentage">10%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🎮</div>
+                <div class="category-name">Entertainment</div>
+            </div>
+            <div class="category-description">Movies, games, hobbies, and leisure activities</div>
+            <div class="slider-container">
+                <input type="range" class="budget-slider" id="entertainmentSlider" min="0" max="800" value="200" step="25">
+                <div class="amount-display">
+                    <span class="amount-value" id="entertainmentAmount">$200</span>
+                    <span class="amount-percentage" id="entertainmentPercentage">5%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">💊</div>
+                <div class="category-name">Healthcare</div>
+            </div>
+            <div class="category-description">Insurance, prescriptions, and medical expenses</div>
+            <div class="slider-container">
+                <input type="range" class="budget-slider" id="healthcareSlider" min="0" max="800" value="300" step="25">
+                <div class="amount-display">
+                    <span class="amount-value" id="healthcareAmount">$300</span>
+                    <span class="amount-percentage" id="healthcarePercentage">7%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">💰</div>
+                <div class="category-name">Savings</div>
+            </div>
+            <div class="category-description">Emergency fund, retirement, and financial goals</div>
+            <div class="slider-container">
+                <input type="range" class="budget-slider" id="savingsSlider" min="0" max="2000" value="1417" step="50">
+                <div class="amount-display">
+                    <span class="amount-value" id="savingsAmount">$1,417</span>
+                    <span class="amount-percentage" id="savingsPercentage">34%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+<script>
+let gameActive = false;
+let score = 0;
+let salary = 50000;
+let budget = {
+    rent: 0,
+    food: 0,
+    utilities: 0,
+    entertainment: 0,
+    savings: 0
+};
+
+const randomEvents = [
+    { title: "Car Repair", description: "Your car needs urgent repairs", impact: -5000, type: "negative" },
+    { title: "Medical Emergency", description: "Unexpected medical bills", impact: -3000, type: "negative" },
+    { title: "Bonus Salary", description: "Excellent performance bonus!", impact: 3000, type: "positive" },
+    { title: "Tax Refund", description: "Unexpected tax refund", impact: 2000, type: "positive" },
+    { title: "Home Repair", description: "Roof leak needs fixing", impact: -4000, type: "negative" },
+    { title: "Investment Return", description: "Investment paid off", impact: 1500, type: "positive" },
+    { title: "Utility Bill Increase", description: "Higher electricity rates", impact: -500, type: "negative" },
+    { title: "Side Income", description: "Freelance project completed", impact: 2500, type: "positive" }
+];
+
+function initGame() {
+    console.log('💰 Budget Balancer game initialized');
+    score = 0;
+    gameActive = false;
+    updateScore();
+}
+
+function updateBudget(category, value) {
+    budget[category] = parseInt(value);
+    
+    // Update display
+    document.getElementById(`${category}Amount`).textContent = parseInt(value).toLocaleString();
+    document.getElementById(`${category}Value`).textContent = parseInt(value).toLocaleString();
+    
+    // Update balance bar
+    updateBalanceBar();
+    
+    // Update financial health
+    updateFinancialHealth();
+}
+
+function updateBalanceBar() {
+    const totalAllocated = Object.values(budget).reduce((sum, val) => sum + val, 0);
+    const percentage = Math.min(100, (totalAllocated / salary) * 100);
+    const remaining = salary - totalAllocated;
+    
+    const balanceBar = document.getElementById('balanceBar');
+    const balanceText = document.getElementById('balanceText');
+    const warningMessage = document.getElementById('warningMessage');
+    
+    balanceBar.style.width = `${percentage}%`;
+    balanceText.textContent = `$${totalAllocated.toLocaleString()} allocated`;
+    
+    // Update bar color based on allocation
+    balanceBar.className = 'balance-bar';
+    if (percentage > 100) {
+        balanceBar.classList.add('danger');
+        warningMessage.innerHTML = `<div class="warning-message">⚠️ Overspending! You've exceeded your budget by $${Math.abs(remaining).toLocaleString()}</div>`;
+    } else if (percentage > 90) {
+        balanceBar.classList.add('warning');
+        warningMessage.innerHTML = `<div class="warning-message">⚠️ Warning: Only $${remaining.toLocaleString()} remaining!</div>`;
+    } else {
+        warningMessage.innerHTML = '';
+    }
+}
+
+function updateFinancialHealth() {
+    const totalExpenses = budget.rent + budget.food + budget.utilities + budget.entertainment;
+    const savingsRate = budget.savings / salary;
+    const needsCovered = budget.rent >= 10000 && budget.food >= 5000 && budget.utilities >= 1000;
+    
+    let healthScore = 0;
+    
+    // Points for covering needs (50 points max)
+    if (needsCovered) healthScore += 50;
+    
+    // Points for savings rate (50 points max)
+    healthScore += Math.min(50, savingsRate * 100);
+    
+    // Update health meter
+    const healthCircle = document.getElementById('healthCircle');
+    const healthScoreElement = document.getElementById('healthScore');
+    
+    healthCircle.style.setProperty('--health-percent', `${(healthScore / 100) * 360}deg`);
+    healthScoreElement.textContent = Math.round(healthScore);
+    
+    // Update score
+    if (gameActive) {
+        score += Math.round(healthScore / 10);
+        updateScore();
+    }
+}
+
+function updateScore() {
+    document.getElementById('currentScore').textContent = score;
+}
+
+function startSimulation() {
+    gameActive = true;
+    score = 0;
+    updateScore();
+    
+    document.getElementById('eventBtn').style.display = 'inline-block';
+    document.getElementById('finishBtn').style.display = 'inline-block';
+    document.querySelector('.btn-action[onclick="startSimulation()"]').style.display = 'none';
+    
+    document.getElementById('eventsPanel').style.display = 'block';
+    
+    // Add initial event
+    addEvent("Game Started", "Begin allocating your budget wisely!", 0, "positive");
+    
+    console.log('🎮 Budget simulation started');
+}
+
+function triggerRandomEvent() {
+    if (!gameActive) return;
+    
+    const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+    addEvent(event.title, event.description, event.impact, event.type);
+    
+    // Adjust salary based on event
+    salary += event.impact;
+    document.getElementById('salaryValue').textContent = salary.toLocaleString();
+    
+    // Update balance bar
+    updateBalanceBar();
+    
+    // Add/subtract score based on event
+    if (event.type === 'positive') {
+        score += 10;
+    } else {
+        score = Math.max(0, score - 5);
+    }
+    updateScore();
+    
+    console.log(`📅 Random event: ${event.title} (${event.impact > 0 ? '+' : ''}$${event.impact})`);
+}
+
+function addEvent(title, description, impact, type) {
+    const eventsList = document.getElementById('eventsList');
+    const eventItem = document.createElement('div');
+    eventItem.className = `event-item ${type}`;
+    
+    const impactText = impact > 0 ? `+$${impact.toLocaleString()}` : `-$${Math.abs(impact).toLocaleString()}`;
+    const impactClass = impact > 0 ? 'impact-positive' : 'impact-negative';
+    
+    eventItem.innerHTML = `
+        <div class="event-title">${title}</div>
+        <div class="event-description">${description}</div>
+        <div class="event-impact ${impactClass}">${impactText}</div>
+    `;
+    
+    eventsList.insertBefore(eventItem, eventsList.firstChild);
+    
+    // Keep only last 5 events visible
+    while (eventsList.children.length > 5) {
+        eventsList.removeChild(eventsList.lastChild);
+    }
+}
+
+function finishGame() {
+    gameActive = false;
+    
+    const totalAllocated = Object.values(budget).reduce((sum, val) => sum + val, 0);
+    const remaining = salary - totalAllocated;
+    const savingsRate = budget.savings / salary;
+    
+    // Calculate final score
+    let finalScore = score;
+    
+    // Bonus for staying within budget
+    if (remaining >= 0) {
+        finalScore += 50;
+    }
+    
+    // Bonus for good savings rate
+    if (savingsRate >= 0.2) {
+        finalScore += 30;
+    }
+    
+    // Bonus for covering needs
+    const needsCovered = budget.rent >= 10000 && budget.food >= 5000 && budget.utilities >= 1000;
+    if (needsCovered) {
+        finalScore += 20;
+    }
+    
+    // Show final results
+    const resultsPanel = document.getElementById('eventsPanel');
+    resultsPanel.innerHTML = `
+        <h3>🎉 Game Complete!</h3>
+        <div class="success-message">
+            <h4>Final Score: ${finalScore}</h4>
+            <p><strong>Monthly Salary:</strong> $${salary.toLocaleString()}</p>
+            <p><strong>Total Allocated:</strong> $${totalAllocated.toLocaleString()}</p>
+            <p><strong>Remaining:</strong> $${remaining.toLocaleString()}</p>
+            <p><strong>Savings Rate:</strong> ${(savingsRate * 100).toFixed(1)}%</p>
+            <p><strong>Needs Covered:</strong> ${needsCovered ? '✅ Yes' : '❌ No'}</p>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-action" onclick="location.reload()">Play Again</button>
+        </div>
+    `;
+    
+    console.log(`🏁 Game finished with score: ${finalScore}`);
+}
+}
+</script>
+{% endblock %}

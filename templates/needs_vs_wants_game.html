@@ -1,0 +1,719 @@
+{% extends "base.html" %}
+
+{% block title %}Needs vs Wants - Interactive Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .game-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .game-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 30px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .game-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .game-area {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .items-container, .drops-container {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 15px;
+        min-height: 400px;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+    
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .draggable-item {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        cursor: grab;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    
+    .draggable-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .draggable-item.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+    
+    .draggable-item.correct {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+    
+    .draggable-item.incorrect {
+        border-color: #dc3545;
+        background: #f8d7da;
+    }
+    
+    .item-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .item-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .item-price {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .drop-zone {
+        background: white;
+        border: 3px dashed #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 150px;
+        text-align: center;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .drop-zone.drag-over {
+        border-color: #28a745;
+        background: #f0fff4;
+    }
+    
+    .drop-zone.needs {
+        border-color: #007bff;
+    }
+    
+    .drop-zone.wants {
+        border-color: #ffc107;
+    }
+    
+    .dropped-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .dropped-item {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .timer {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #dc3545;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .feedback-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: bold;
+    }
+    
+    .feedback-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .feedback-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .game-controls {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-game {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-game:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-game:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .combo-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ffc107;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .combo-indicator.show {
+        opacity: 1;
+    }
+    
+    .explanation-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #28a745;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        max-width: 400px;
+        display: none;
+    }
+    
+    .explanation-popup.show {
+        display: block;
+    }
+    
+    .streak-meter {
+        width: 100%;
+        height: 30px;
+        background: #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .streak-fill {
+        background: linear-gradient(90deg, #ffc107, #ff6b6b);
+        height: 100%;
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <h1>🎯 Needs vs Wants Challenge</h1>
+        <p>Drag items to classify them as Needs or Wants. Test your financial decision-making skills!</p>
+    </div>
+    
+    <div class="game-stats">
+        <div class="stat-box">
+            <div class="stat-value" id="score">0</div>
+            <div>Score</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="accuracy">100%</div>
+            <div>Accuracy</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="streak">0</div>
+            <div>Streak</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="timer">0:00</div>
+            <div>Time</div>
+        </div>
+    </div>
+    
+    <div class="streak-meter">
+        <div class="streak-fill" id="streakFill" style="width: 0%">
+            Streak: 0
+        </div>
+    </div>
+    
+    <div class="timer" id="gameTimer">⏱️ Time: 0:00</div>
+    
+    <div id="feedbackMessage"></div>
+    
+    <div class="game-area">
+        <div class="items-container">
+            <div class="section-title">📦 Items to Classify</div>
+            <div class="items-grid" id="itemsGrid">
+                <!-- Items will be dynamically generated -->
+            </div>
+        </div>
+        
+        <div class="drops-container">
+            <div class="section-title">🎯 Drop Zones</div>
+            
+            <div class="drop-zone needs" id="needsDropZone" data-category="needs">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">🏠</div>
+                <div style="font-weight: bold; color: #007bff;">NEEDS</div>
+                <div style="color: #666; font-size: 0.9rem;">Essential for living</div>
+                <div class="dropped-items" id="needsItems"></div>
+            </div>
+            
+            <div class="drop-zone wants" id="wantsDropZone" data-category="wants">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">🎮</div>
+                <div style="font-weight: bold; color: #ffc107;">WANTS</div>
+                <div style="color: #666; font-size: 0.9rem;">Nice to have</div>
+                <div class="dropped-items" id="wantsItems"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-controls">
+        <button class="btn-game" id="startBtn" onclick="startGame()">Start Game</button>
+        <button class="btn-game" id="checkBtn" onclick="checkAnswers()" style="display: none;">Check Answers</button>
+        <button class="btn-game" id="nextBtn" onclick="nextRound()" style="display: none;">Next Round</button>
+        <button class="btn-game" id="restartBtn" onclick="restartGame()" style="display: none;">Play Again</button>
+    </div>
+</div>
+
+<div class="combo-indicator" id="comboIndicator">COMBO!</div>
+<div class="explanation-popup" id="explanationPopup">
+    <h4 id="explanationTitle"></h4>
+    <p id="explanationText"></p>
+    <button onclick="closeExplanation()" style="margin-top: 10px; padding: 5px 15px;">Got it!</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/gameDatabase.js') }}"></script>
+<script>
+// Game data
+const gameData = {
+    rounds: [
+        {
+            items: [
+                { id: 1, name: "Groceries", price: "$150", icon: "🥬", category: "needs", explanation: "Food is essential for survival and health" },
+                { id: 2, name: "Netflix", price: "$15", icon: "📺", category: "wants", explanation: "Entertainment is nice to have but not essential" },
+                { id: 3, name: "Rent", price: "$1200", icon: "🏠", category: "needs", explanation: "Housing is a basic necessity for shelter" },
+                { id: 4, name: "Gaming Console", price: "$400", icon: "🎮", category: "wants", explanation: "Gaming is entertainment, not a necessity" },
+                { id: 5, name: "Utilities", price: "$200", icon: "💡", category: "needs", explanation: "Electricity and water are essential for modern living" },
+                { id: 6, name: "New Phone", price: "$800", icon: "📱", category: "wants", explanation: "A phone is useful but a new one is a luxury" },
+                { id: 7, name: "Health Insurance", price: "$300", icon: "🏥", category: "needs", explanation: "Healthcare is essential for wellbeing" },
+                { id: 8, name: "Pizza", price: "$25", icon: "🍕", category: "wants", explanation: "Eating out is a want, not a need" }
+            ]
+        },
+        {
+            items: [
+                { id: 9, name: "Car Payment", price: "$350", icon: "🚗", category: "needs", explanation: "Transportation to work is essential" },
+                { id: 10, name: "Concert Tickets", price: "$120", icon: "🎵", category: "wants", explanation: "Concerts are entertainment, not essential" },
+                { id: 11, name: "Medicine", price: "$50", icon: "💊", category: "needs", explanation: "Medication is essential for health" },
+                { id: 12, name: "Designer Clothes", price: "$200", icon: "👕", category: "wants", explanation: "Designer brands are luxury items" },
+                { id: 13, name: "Internet", price: "$60", icon: "🌐", category: "needs", explanation: "Internet is essential for work and communication" },
+                { id: 14, name: "Vacation", price: "$1500", icon: "🏖️", category: "wants", explanation: "Vacations are nice but not essential" },
+                { id: 15, name: "School Supplies", price: "$80", icon: "📚", category: "needs", explanation: "Education is essential for future opportunities" },
+                { id: 16, name: "Gym Membership", price: "$50", icon: "🏋️", category: "wants", explanation: "Exercise can be done at home for free" }
+            ]
+        },
+        {
+            items: [
+                { id: 17, name: "Child Care", price: "$800", icon: "👶", category: "needs", explanation: "Childcare is essential for working parents" },
+                { id: 18, name: "Smart Watch", price: "$300", icon: "⌚", category: "wants", explanation: "A smart watch is a luxury item" },
+                { id: 19, name: "Groceries", price: "$200", icon: "🥬", category: "needs", explanation: "Food is essential for survival" },
+                { id: 20, name: "Streaming Services", price: "$40", icon: "📺", category: "wants", explanation: "Multiple streaming services are entertainment" },
+                { id: 21, name: "Insurance", price: "$250", icon: "🛡️", category: "needs", explanation: "Insurance protects against financial disaster" },
+                { id: 22, name: "Coffee Shop", price: "$30", icon: "☕", category: "wants", explanation: "Coffee can be made at home for less" },
+                { id: 23, name: "Phone Bill", price: "$80", icon: "📱", category: "needs", explanation: "Communication is essential in modern life" },
+                { id: 24, name: "Video Games", price: "$60", icon: "🎮", category: "wants", explanation: "Video games are entertainment" }
+            ]
+        }
+    ]
+};
+
+// Game state
+let currentRound = 0;
+let score = 0;
+let streak = 0;
+let maxStreak = 0;
+let correctAnswers = 0;
+let totalAnswers = 0;
+let startTime = null;
+let timerInterval = null;
+let gameActive = false;
+let draggedItem = null;
+
+// Initialize game
+function initGame() {
+    setupDragAndDrop();
+    renderItems();
+}
+
+function setupDragAndDrop() {
+    // Setup drag events for items
+    document.addEventListener('dragstart', handleDragStart);
+    document.addEventListener('dragend', handleDragEnd);
+    
+    // Setup drop zones
+    const dropZones = document.querySelectorAll('.drop-zone');
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('drop', handleDrop);
+        zone.addEventListener('dragleave', handleDragLeave);
+    });
+}
+
+function handleDragStart(e) {
+    if (!gameActive) return;
+    
+    if (e.target.classList.contains('draggable-item')) {
+        draggedItem = e.target;
+        e.target.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    }
+}
+
+function handleDragEnd(e) {
+    if (e.target.classList.contains('draggable-item')) {
+        e.target.classList.remove('dragging');
+    }
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const dropZone = e.currentTarget;
+    if (dropZone.classList.contains('drop-zone')) {
+        dropZone.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    const dropZone = e.currentTarget;
+    if (dropZone.classList.contains('drop-zone')) {
+        dropZone.classList.remove('drag-over');
+    }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    
+    const dropZone = e.currentTarget;
+    dropZone.classList.remove('drag-over');
+    
+    if (!draggedItem || !gameActive) return;
+    
+    const category = dropZone.dataset.category;
+    const itemId = parseInt(draggedItem.dataset.itemId);
+    const item = gameData.rounds[currentRound].items.find(item => item.id === itemId);
+    
+    if (item) {
+        // Add to drop zone
+        const droppedItemsContainer = dropZone.querySelector('.dropped-items');
+        const droppedItem = document.createElement('div');
+        droppedItem.className = 'dropped-item';
+        droppedItem.innerHTML = `${item.icon} ${item.name}`;
+        droppedItem.dataset.itemId = itemId;
+        droppedItem.dataset.category = category;
+        droppedItemsContainer.appendChild(droppedItem);
+        
+        // Remove from items grid
+        draggedItem.style.display = 'none';
+        
+        // Check if correct
+        if (item.category === category) {
+            score += 10;
+            streak++;
+            correctAnswers++;
+            showFeedback(`✅ Correct! ${item.name} is a ${category}.`, 'success');
+            showExplanation(item.name, item.explanation);
+            
+            if (streak > maxStreak) {
+                maxStreak = streak;
+            }
+            
+            if (streak >= 3) {
+                showCombo();
+            }
+        } else {
+            score = Math.max(0, score - 5);
+            streak = 0;
+            showFeedback(`❌ Incorrect! ${item.name} is actually a ${item.category}.`, 'error');
+            showExplanation(item.name, item.explanation);
+        }
+        
+        totalAnswers++;
+        updateStats();
+        updateStreakMeter();
+        
+        // Check if all items are classified
+        if (totalAnswers === gameData.rounds[currentRound].items.length) {
+            endRound();
+        }
+    }
+    
+    draggedItem = null;
+}
+
+function renderItems() {
+    const itemsGrid = document.getElementById('itemsGrid');
+    itemsGrid.innerHTML = '';
+    
+    const round = gameData.rounds[currentRound];
+    round.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'draggable-item';
+        itemElement.draggable = true;
+        itemElement.dataset.itemId = item.id;
+        
+        itemElement.innerHTML = `
+            <div class="item-icon">${item.icon}</div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">${item.price}</div>
+        `;
+        
+        itemsGrid.appendChild(itemElement);
+    });
+}
+
+function startGame() {
+    currentRound = 0;
+    score = 0;
+    streak = 0;
+    maxStreak = 0;
+    correctAnswers = 0;
+    totalAnswers = 0;
+    gameActive = true;
+    startTime = Date.now();
+    
+    // Clear drop zones
+    document.getElementById('needsItems').innerHTML = '';
+    document.getElementById('wantsItems').innerHTML = '';
+    
+    // Start timer
+    timerInterval = setInterval(updateTimer, 1000);
+    
+    // Update UI
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    
+    renderItems();
+    updateStats();
+    updateStreakMeter();
+    
+    showFeedback('Game started! Drag items to the correct category.', 'info');
+}
+
+function updateTimer() {
+    if (!gameActive) return;
+    
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('gameTimer').textContent = `⏱️ Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function updateStats() {
+    const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 100;
+    
+    document.getElementById('score').textContent = score;
+    document.getElementById('accuracy').textContent = `${accuracy}%`;
+    document.getElementById('streak').textContent = streak;
+}
+
+function updateStreakMeter() {
+    const streakFill = document.getElementById('streakFill');
+    const percentage = Math.min((streak / 10) * 100, 100);
+    streakFill.style.width = `${percentage}%`;
+    streakFill.textContent = `Streak: ${streak}`;
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.innerHTML = `<div class="feedback-message feedback-${type}">${message}</div>`;
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        feedbackElement.innerHTML = '';
+    }, 3000);
+}
+
+function showExplanation(itemName, explanation) {
+    const popup = document.getElementById('explanationPopup');
+    document.getElementById('explanationTitle').textContent = itemName;
+    document.getElementById('explanationText').textContent = explanation;
+    
+    popup.classList.add('show');
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        popup.classList.remove('show');
+    }, 4000);
+}
+
+function closeExplanation() {
+    document.getElementById('explanationPopup').classList.remove('show');
+}
+
+function showCombo() {
+    const comboIndicator = document.getElementById('comboIndicator');
+    comboIndicator.textContent = `${streak}x COMBO!`;
+    comboIndicator.classList.add('show');
+    
+    setTimeout(() => {
+        comboIndicator.classList.remove('show');
+    }, 1000);
+}
+
+function endRound() {
+    gameActive = false;
+    clearInterval(timerInterval);
+    
+    const accuracy = Math.round((correctAnswers / totalAnswers) * 100);
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+    document.getElementById('checkBtn').style.display = 'none';
+    
+    if (currentRound < gameData.rounds.length - 1) {
+        document.getElementById('nextBtn').style.display = 'inline-block';
+        showFeedback(`Round ${currentRound + 1} complete! Score: ${score} | Accuracy: ${accuracy}%`, 'success');
+    } else {
+        document.getElementById('restartBtn').style.display = 'inline-block';
+        showFeedback(`Game Complete! Final Score: ${score} | Accuracy: ${accuracy}% | Time: ${timeTaken}s`, 'success');
+    }
+}
+
+function checkAnswers() {
+    endRound();
+}
+
+function nextRound() {
+    currentRound++;
+    
+    // Clear drop zones
+    document.getElementById('needsItems').innerHTML = '';
+    document.getElementById('wantsItems').innerHTML = '';
+    
+    // Reset game state for new round
+    gameActive = true;
+    startTime = Date.now();
+    
+    // Update UI
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    
+    // Restart timer
+    timerInterval = setInterval(updateTimer, 1000);
+    
+    renderItems();
+    showFeedback(`Round ${currentRound + 1} started!`, 'info');
+}
+
+function restartGame() {
+    // Clear drop zones
+    document.getElementById('needsItems').innerHTML = '';
+    document.getElementById('wantsItems').innerHTML = '';
+    
+    // Reset UI
+    document.getElementById('restartBtn').style.display = 'none';
+    document.getElementById('startBtn').style.display = 'inline-block';
+    
+    // Reset stats
+    score = 0;
+    streak = 0;
+    maxStreak = 0;
+    correctAnswers = 0;
+    totalAnswers = 0;
+    gameActive = false;
+    
+    updateStats();
+    updateStreakMeter();
+    
+    showFeedback('Game reset! Click Start Game to play again.', 'info');
+}
+
+// Initialize game when page loads
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+{% endblock %}

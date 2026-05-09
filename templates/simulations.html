@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Simulations - Finovo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Financial Simulations</h1>
+    <p>Practice financial decision-making with realistic scenarios and forecasting tools</p>
+</div>
+
+<section class="modules-section">
+    <div class="game-container">
+        <div class="game-card">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-chart-line" style="color: var(--primary-blue);"></i>
+                What are Financial Simulations?
+            </h2>
+            <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-md);">
+                Financial simulations allow you to practice real-world financial decision-making in a risk-free environment. Through interactive scenarios, you can explore different financial situations, test various strategies, and see the long-term consequences of your choices without any real financial risk.
+            </p>
+            <p style="color: var(--text-secondary); line-height: 1.8;">
+                FINOVO's simulation tools help you understand how budgeting, saving, investing, and spending decisions impact your financial future. These simulations are perfect for learning how to plan for different life scenarios and financial goals.
+            </p>
+        </div>
+
+        <!-- Interactive calculators (prototype; POST to this page, results in session) -->
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-calculator"></i>
+                Quick financial tools
+            </h2>
+            <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--spacing-xl);">
+                Enter numbers below and submit each form. Results stay on this page for your session (educational estimates only).
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-xl);">
+                <div class="card" style="margin: 0; border-left: 4px solid var(--primary-blue);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">Loan calculator</h3>
+                    <form method="post" action="{{ url_for('simulations') }}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <input type="hidden" name="sim_tool" value="loan">
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Loan amount ($)</span>
+                            <input type="number" name="loan_amount" step="100" min="0" value="{{ sim_results.get('loan', {}).get('principal', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Annual interest rate (%)</span>
+                            <input type="number" name="loan_rate" step="0.01" min="0" value="{{ sim_results.get('loan', {}).get('rate', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Term (years)</span>
+                            <input type="number" name="loan_years" step="0.5" min="0.5" value="{{ sim_results.get('loan', {}).get('years', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <button type="submit" class="btn btn-primary" style="align-self: flex-start;">Calculate payment</button>
+                    </form>
+                    {% if sim_results.get('loan') and sim_results['loan'].get('ok') %}
+                    <p style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--info-light); border-radius: var(--radius-md); margin-bottom: 0;">
+                        <strong>Monthly payment:</strong> ${{ "{:,.2f}".format(sim_results['loan']['payment']) }}
+                    </p>
+                    {% elif sim_results.get('loan') %}
+                    <p style="margin-top: var(--spacing-md); color: var(--error-color); font-size: var(--font-size-sm);">Check your inputs and try again.</p>
+                    {% endif %}
+                </div>
+
+                <div class="card" style="margin: 0; border-left: 4px solid var(--secondary-teal);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">Investment growth</h3>
+                    <p style="font-size: var(--font-size-sm); color: var(--text-muted); margin-bottom: var(--spacing-md);">Single lump sum, compounded yearly (default 7%).</p>
+                    <form method="post" action="{{ url_for('simulations') }}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <input type="hidden" name="sim_tool" value="invest">
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Initial amount ($)</span>
+                            <input type="number" name="invest_initial" step="100" min="0" value="{{ sim_results.get('invest', {}).get('initial', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Years</span>
+                            <input type="number" name="invest_years" step="1" min="1" max="80" value="{{ sim_results.get('invest', {}).get('years', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Annual return (%)</span>
+                            <input type="number" name="invest_rate" step="0.1" value="{{ sim_results.get('invest', {}).get('rate', 7) }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);"></label>
+                        <button type="submit" class="btn btn-primary" style="align-self: flex-start;">Project balance</button>
+                    </form>
+                    {% if sim_results.get('invest') and sim_results['invest'].get('ok') %}
+                    <p style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--info-light); border-radius: var(--radius-md); margin-bottom: 0;">
+                        <strong>Future value:</strong> ${{ "{:,.2f}".format(sim_results['invest']['fv']) }}
+                    </p>
+                    {% elif sim_results.get('invest') %}
+                    <p style="margin-top: var(--spacing-md); color: var(--error-color); font-size: var(--font-size-sm);">Check your inputs.</p>
+                    {% endif %}
+                </div>
+
+                <div class="card" style="margin: 0; border-left: 4px solid var(--accent-green);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">Budget health check</h3>
+                    <form method="post" action="{{ url_for('simulations') }}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <input type="hidden" name="sim_tool" value="budget">
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Monthly income ($)</span>
+                            <input type="number" name="budget_income" step="50" min="0" value="{{ sim_results.get('budget', {}).get('income', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Monthly expenses ($)</span>
+                            <input type="number" name="budget_expenses" step="50" min="0" value="{{ sim_results.get('budget', {}).get('expenses', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <button type="submit" class="btn btn-primary" style="align-self: flex-start;">Check status</button>
+                    </form>
+                    {% if sim_results.get('budget') and sim_results['budget'].get('ok') %}
+                    <p style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--info-light); border-radius: var(--radius-md); margin-bottom: 0;">
+                        <strong>Status:</strong> {{ sim_results['budget']['status'] }}
+                        {% if sim_results['budget']['status'] == 'Good' %}— spending is within a healthy share of income.{% elif sim_results['budget']['status'] == 'Moderate' %}— little room left to save; look for trims.{% else %}— spending exceeds income or leaves you at risk.{% endif %}
+                    </p>
+                    {% elif sim_results.get('budget') %}
+                    <p style="margin-top: var(--spacing-md); color: var(--error-color); font-size: var(--font-size-sm);">Income must be greater than zero.</p>
+                    {% endif %}
+                </div>
+
+                <div class="card" style="margin: 0; border-left: 4px solid var(--warning-color);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-md);">Retirement savings (basic)</h3>
+                    <p style="font-size: var(--font-size-sm); color: var(--text-muted); margin-bottom: var(--spacing-md);">Add contribution each year, then apply return (simplified).</p>
+                    <form method="post" action="{{ url_for('simulations') }}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <input type="hidden" name="sim_tool" value="retire">
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Starting balance ($)</span>
+                            <input type="number" name="retire_start" step="100" min="0" value="{{ sim_results.get('retire', {}).get('starting', 0) }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);"></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Annual contribution ($)</span>
+                            <input type="number" name="retire_annual" step="100" min="0" value="{{ sim_results.get('retire', {}).get('annual', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Years</span>
+                            <input type="number" name="retire_years" step="1" min="1" max="60" value="{{ sim_results.get('retire', {}).get('years', '') }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" required></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem; font-size: var(--font-size-sm);"><span>Annual return (%)</span>
+                            <input type="number" name="retire_rate" step="0.1" value="{{ sim_results.get('retire', {}).get('rate', 7) }}" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300);"></label>
+                        <button type="submit" class="btn btn-primary" style="align-self: flex-start;">Project savings</button>
+                    </form>
+                    {% if sim_results.get('retire') and sim_results['retire'].get('ok') %}
+                    <p style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--info-light); border-radius: var(--radius-md); margin-bottom: 0;">
+                        <strong>Estimated balance:</strong> ${{ "{:,.2f}".format(sim_results['retire']['balance']) }}
+                    </p>
+                    {% elif sim_results.get('retire') %}
+                    <p style="margin-top: var(--spacing-md); color: var(--error-color); font-size: var(--font-size-sm);">Enter valid years and amounts.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg);">Available Simulations</h2>
+            
+            <div style="display: grid; gap: var(--spacing-xl);">
+                <!-- Budget Forecasting -->
+                <div class="card" style="border-left: 5px solid var(--primary-blue);">
+                    <div style="display: flex; align-items: start; gap: var(--spacing-md);">
+                        <div style="background: var(--primary-blue); color: var(--white); width: 60px; height: 60px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-2xl); flex-shrink: 0;">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm);">Budget Forecasting</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--spacing-md);">
+                                Project your financial future by forecasting income, expenses, and savings over multiple months or years. See how different spending patterns affect your long-term financial health.
+                            </p>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-lg);">
+                                <li>Plan monthly and annual budgets</li>
+                                <li>Forecast savings growth</li>
+                                <li>Analyze expense trends</li>
+                                <li>Test different financial scenarios</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expense Planning -->
+                <div class="card" style="border-left: 5px solid var(--secondary-teal);">
+                    <div style="display: flex; align-items: start; gap: var(--spacing-md);">
+                        <div style="background: var(--secondary-teal); color: var(--white); width: 60px; height: 60px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-2xl); flex-shrink: 0;">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm);">Expense Planning</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--spacing-md);">
+                                Create detailed expense plans for different life situations. Learn to prioritize spending, allocate resources effectively, and prepare for unexpected financial events.
+                            </p>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-lg);">
+                                <li>Plan for major purchases</li>
+                                <li>Allocate income across categories</li>
+                                <li>Prepare for emergencies</li>
+                                <li>Optimize spending patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Scenarios -->
+                <div class="card" style="border-left: 5px solid var(--accent-green);">
+                    <div style="display: flex; align-items: start; gap: var(--spacing-md);">
+                        <div style="background: var(--accent-green); color: var(--white); width: 60px; height: 60px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-2xl); flex-shrink: 0;">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm);">Financial Scenarios</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--spacing-md);">
+                                Explore various financial scenarios such as job changes, major life events, investment opportunities, and economic changes. Understand how to adapt your financial strategy to different situations.
+                            </p>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-lg);">
+                                <li>Simulate career changes</li>
+                                <li>Plan for life milestones</li>
+                                <li>Test investment strategies</li>
+                                <li>Handle economic fluctuations</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl);">
+            <h2 style="color: var(--primary-blue); margin-bottom: var(--spacing-lg);">How to Use Simulations</h2>
+            
+            <div style="display: grid; gap: var(--spacing-md);">
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Choose a Simulation Type</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin: 0;">Select from Budget Forecasting, Expense Planning, or Financial Scenarios based on what you want to learn.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Input Your Parameters</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin: 0;">Enter your income, expenses, savings goals, and other relevant financial information to customize the simulation.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Run the Simulation</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin: 0;">Execute the simulation to see projected outcomes based on your inputs and chosen financial strategy.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md); align-items: start;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-blue); color: var(--white); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">4</div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: var(--spacing-xs);">Analyze Results</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin: 0;">Review the results, adjust your parameters, and run different scenarios to understand the impact of various financial decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card" style="margin-top: var(--spacing-xl); background: var(--bg-secondary);">
+            <h3 style="color: var(--primary-blue); margin-bottom: var(--spacing-md);">Benefits of Using Simulations</h3>
+            <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: var(--spacing-xl);">
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Risk-Free Learning:</strong> Make financial decisions and see their consequences without any real money at stake.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Real-World Practice:</strong> Experience realistic financial scenarios that you might encounter in your life.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Strategic Planning:</strong> Develop long-term financial planning skills and learn to think ahead.</li>
+                <li style="margin-bottom: var(--spacing-sm);"><strong style="color: var(--text-primary);">Confidence Building:</strong> Build confidence in your financial decision-making abilities through practice.</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <a href="{{ url_for('games') }}" class="btn btn-primary" style="margin-right: var(--spacing-md);">
+                <i class="fas fa-gamepad"></i> Try Budget Balancer Game
+            </a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

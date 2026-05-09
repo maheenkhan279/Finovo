@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Test</title>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    
+    <button onclick="testSignup()">Test Signup</button>
+    <div id="results"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://fjjbsilexhoorjuiywyq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqamJzaWxleGhvb3JqdWl5d3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5OTY2MTgsImV4cCI6MjA5MzU3MjYxOH0._2DSwLGg14Wx5rQmdA7xhpoRif79i-wBSZh4iAymfJQ';
+        const results = document.getElementById('results');
+        
+        function log(message) {
+            console.log(message);
+            results.innerHTML += '<p>' + message + '</p>';
+        }
+        
+        // ENSURE NO MULTIPLE CLIENTS - USE ONLY ONE
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // ADD TEST FUNCTION WITH EXACT CODE
+        async function testSignup() {
+            const email = "test123@gmail.com";
+            const password = "12345678";
+            
+            try {
+                const { data, error } = await window.supabaseClient.auth.signUp({
+                    email,
+                    password
+                });
+                
+                console.log(data, error);
+                
+            } catch (e) {
+                console.error("Fetch failed:", e);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,643 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Market Simulator - Finovo{% endblock %}
+
+{% block extra_css %}
+<style>
+.game-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.game-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--light-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+}
+
+.stocks-section {
+    margin-bottom: 2rem;
+}
+
+.stocks-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+}
+
+.stocks-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.stocks-table th,
+.stocks-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--light-bg);
+}
+
+.stocks-table th {
+    background: var(--light-bg);
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.stocks-table tr:hover {
+    background: var(--light-bg);
+}
+
+.price-positive {
+    color: var(--success-color);
+}
+
+.price-negative {
+    color: var(--error-color);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.action-btn.buy {
+    background: var(--success-color);
+    color: var(--white);
+}
+
+.action-btn.buy:hover {
+    background: #27ae60;
+}
+
+.action-btn.sell {
+    background: var(--error-color);
+    color: var(--white);
+}
+
+.action-btn.sell:hover {
+    background: #c0392b;
+}
+
+.portfolio-section {
+    margin-top: 2rem;
+}
+
+.portfolio-item {
+    background: var(--light-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: var(--white);
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--light-bg);
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+.refresh-btn {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.refresh-btn:hover {
+    background: var(--dark-blue);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-card">
+        <div class="game-header">
+            <div>
+                <h1 style="color: var(--primary-blue); margin-bottom: 0.5rem;">Stock Market Mini Simulator</h1>
+                <p style="color: var(--text-color);">Learn investing through simulated stock trading</p>
+            </div>
+            <button class="refresh-btn" onclick="refreshPrices()">
+                <i class="fas fa-sync-alt"></i> Refresh Prices
+            </button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Cash Balance</h3>
+                <div class="value" id="balance-display">${{ "%.2f"|format(game_state.balance) }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Portfolio Value</h3>
+                <div class="value" id="portfolio-display">${{ "%.2f"|format(portfolio_value) }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Value</h3>
+                <div class="value" id="total-display">${{ "%.2f"|format(total_value) }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Profit/Loss</h3>
+                <div class="value" id="profit-display" style="color: {% if total_value >= game_state.initial_balance %}var(--success-color){% else %}var(--error-color){% endif %};">
+                    ${{ "%.2f"|format(total_value - game_state.initial_balance) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="stocks-section">
+            <div class="stocks-tabs">
+                <button type="button" class="tab-button active" onclick="showTab('CURRENCY', this)">Currency</button>
+                <button type="button" class="tab-button" onclick="showTab('COMPANY', this)">Company Stocks</button>
+                <button type="button" class="tab-button" onclick="showTab('ECONOMY', this)">Economy Indices</button>
+            </div>
+            <p style="font-size:0.9rem;color:var(--text-color);margin:0 0 0.75rem;">
+                <label style="cursor:pointer;"><input type="checkbox" id="stock-auto-tick" checked> Mock live prices (refresh every 8s)</label>
+            </p>
+
+            <div id="stocks-content">
+                {% for category, stock_list in stocks.items() %}
+                <div id="tab-{{ category }}" class="tab-content" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+                    <table class="stocks-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Current Price</th>
+                                <th>Change</th>
+                                <th>Change %</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stock in current_prices[category] %}
+                            <tr data-symbol="{{ stock.symbol }}">
+                                <td><strong>{{ stock.symbol }}</strong></td>
+                                <td>{{ stock.name }}</td>
+                                <td>${{ "%.2f"|format(stock.price) }}</td>
+                                <td class="{% if stock.change >= 0 %}price-positive{% else %}price-negative{% endif %}">
+                                    {% if stock.change >= 0 %}+{% endif %}${{ "%.2f"|format(stock.change) }}
+                                </td>
+                                <td class="{% if stock.change_percent >= 0 %}price-positive{% else %}price-negative{% endif %}">
+                                    {% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn buy" onclick="openBuyModal('{{ stock.symbol }}', {{ stock.price }})">Buy</button>
+                                        {% if stock.symbol in game_state.portfolio %}
+                                        <button class="action-btn sell" onclick="openSellModal('{{ stock.symbol }}', {{ stock.price }}, {{ game_state.portfolio[stock.symbol].quantity }})">Sell</button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if game_state.portfolio %}
+        <div class="portfolio-section">
+            <h3 style="color: var(--dark-blue); margin-bottom: 1rem;">Your Portfolio</h3>
+            {% for symbol, details in game_state.portfolio.items() %}
+            <div class="portfolio-item">
+                <div>
+                    <strong>{{ symbol }}</strong>
+                    <p style="margin: 0.5rem 0; color: var(--text-color);">
+                        Quantity: {{ details.quantity }} | Avg Price: ${{ "%.2f"|format(details.avg_price) }}
+                    </p>
+                </div>
+                <div>
+                    {% set current_price = 0 %}
+                    {% for category, stocks in current_prices.items() %}
+                        {% for stock in stocks %}
+                            {% if stock.symbol == symbol %}
+                                {% set current_price = stock.price %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    <p style="margin: 0; font-weight: 600;">
+                        Current Value: ${{ "%.2f"|format(current_price * details.quantity) }}
+                    </p>
+                    <p style="margin: 0.5rem 0 0 0; color: {% if (current_price - details.avg_price) >= 0 %}var(--success-color){% else %}var(--error-color){% endif %};">
+                        P/L: {% if (current_price - details.avg_price) >= 0 %}+{% endif %}${{ "%.2f"|format((current_price - details.avg_price) * details.quantity) }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <button class="action-btn" style="background: var(--primary-blue); color: var(--white);" onclick="resetGame()">Reset Game</button>
+            <a href="{{ url_for('games') }}" class="action-btn" style="background: var(--light-bg); color: var(--primary-blue); text-decoration: none; display: inline-block;">Back to Games</a>
+        </div>
+    </div>
+</div>
+
+<!-- Buy Modal -->
+<div id="buyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Buy Stock</h2>
+            <button class="close-modal" onclick="closeModal('buyModal')">&times;</button>
+        </div>
+        <form onsubmit="buyStock(event)">
+            <input type="hidden" id="buy-symbol">
+            <div class="form-group">
+                <label>Stock Symbol</label>
+                <input type="text" id="buy-symbol-display" readonly>
+            </div>
+            <div class="form-group">
+                <label>Current Price</label>
+                <input type="text" id="buy-price" readonly>
+            </div>
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="buy-quantity" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>Total Cost</label>
+                <input type="text" id="buy-total" readonly>
+            </div>
+            <button type="submit" class="action-btn buy" style="width: 100%;">Buy</button>
+        </form>
+    </div>
+</div>
+
+<!-- Sell Modal -->
+<div id="sellModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Sell Stock</h2>
+            <button class="close-modal" onclick="closeModal('sellModal')">&times;</button>
+        </div>
+        <form onsubmit="sellStock(event)">
+            <input type="hidden" id="sell-symbol">
+            <div class="form-group">
+                <label>Stock Symbol</label>
+                <input type="text" id="sell-symbol-display" readonly>
+            </div>
+            <div class="form-group">
+                <label>Current Price</label>
+                <input type="text" id="sell-price" readonly>
+            </div>
+            <div class="form-group">
+                <label>Available Quantity</label>
+                <input type="text" id="sell-available" readonly>
+            </div>
+            <div class="form-group">
+                <label>Quantity to Sell</label>
+                <input type="number" id="sell-quantity" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>Total Revenue</label>
+                <input type="text" id="sell-total" readonly>
+            </div>
+            <button type="submit" class="action-btn sell" style="width: 100%;">Sell</button>
+        </form>
+    </div>
+</div>
+
+<script>
+var __stockTickTimer = null;
+
+function showTab(category, btn) {
+    document.querySelectorAll('.tab-content').forEach(function (tab) {
+        tab.style.display = 'none';
+    });
+    document.getElementById('tab-' + category).style.display = 'block';
+    document.querySelectorAll('.tab-button').forEach(function (b) {
+        b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+}
+
+function updateStockPageFromApi(data) {
+    if (!data || !data.prices) return;
+    document.getElementById('balance-display').textContent = '$' + Number(data.balance).toFixed(2);
+    document.getElementById('portfolio-display').textContent = '$' + Number(data.portfolio_value).toFixed(2);
+    document.getElementById('total-display').textContent = '$' + Number(data.total_value).toFixed(2);
+    var init = {{ game_state.initial_balance|tojson }};
+    var pl = Number(data.total_value) - Number(init);
+    var pd = document.getElementById('profit-display');
+    pd.textContent = (pl >= 0 ? '+' : '') + '$' + pl.toFixed(2);
+    pd.style.color = pl >= 0 ? 'var(--success-color)' : 'var(--error-color)';
+    Object.keys(data.prices).forEach(function (cat) {
+        data.prices[cat].forEach(function (st) {
+            var row = document.querySelector('tr[data-symbol="' + st.symbol + '"]');
+            if (!row) return;
+            var cells = row.querySelectorAll('td');
+            if (cells.length < 5) return;
+            cells[2].textContent = '$' + Number(st.price).toFixed(2);
+            cells[3].textContent = (st.change >= 0 ? '+' : '') + '$' + Number(st.change).toFixed(2);
+            cells[3].className = st.change >= 0 ? 'price-positive' : 'price-negative';
+            cells[4].textContent = (st.change_percent >= 0 ? '+' : '') + Number(st.change_percent).toFixed(2) + '%';
+            cells[4].className = st.change_percent >= 0 ? 'price-positive' : 'price-negative';
+        });
+    });
+}
+
+function refreshPricesNoReload(silent) {
+    return fetch('{{ url_for("advanced_bp.get_prices") }}')
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            updateStockPageFromApi(data);
+            if (!silent && typeof showNotification === 'function') {
+                showNotification('Prices updated (mock tick).', 'info');
+            }
+        })
+        .catch(function () {
+            if (!silent && typeof showNotification === 'function') {
+                showNotification('Could not refresh prices.', 'error');
+            }
+        });
+}
+
+function startStockMockTick() {
+    if (__stockTickTimer) clearInterval(__stockTickTimer);
+    __stockTickTimer = setInterval(function () {
+        var cb = document.getElementById('stock-auto-tick');
+        if (cb && cb.checked) refreshPricesNoReload(true);
+    }, 8000);
+}
+
+function openBuyModal(symbol, price) {
+    document.getElementById('buy-symbol').value = symbol;
+    document.getElementById('buy-symbol-display').value = symbol;
+    document.getElementById('buy-price').value = '$' + price.toFixed(2);
+    document.getElementById('buy-quantity').value = 1;
+    document.getElementById('buy-quantity').min = 1;
+    updateBuyTotal();
+    document.getElementById('buyModal').style.display = 'block';
+}
+
+function openSellModal(symbol, price, available) {
+    document.getElementById('sell-symbol').value = symbol;
+    document.getElementById('sell-symbol-display').value = symbol;
+    document.getElementById('sell-price').value = '$' + price.toFixed(2);
+    document.getElementById('sell-available').value = available;
+    document.getElementById('sell-quantity').value = 1;
+    document.getElementById('sell-quantity').max = available;
+    document.getElementById('sell-quantity').min = 1;
+    updateSellTotal();
+    document.getElementById('sellModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function updateBuyTotal() {
+    const price = parseFloat(document.getElementById('buy-price').value.replace('$', ''));
+    const quantity = parseInt(document.getElementById('buy-quantity').value) || 0;
+    const total = price * quantity;
+    document.getElementById('buy-total').value = '$' + total.toFixed(2);
+}
+
+function updateSellTotal() {
+    const price = parseFloat(document.getElementById('sell-price').value.replace('$', ''));
+    const quantity = parseInt(document.getElementById('sell-quantity').value) || 0;
+    const total = price * quantity;
+    document.getElementById('sell-total').value = '$' + total.toFixed(2);
+}
+
+function buyStock(event) {
+    event.preventDefault();
+    const symbol = document.getElementById('buy-symbol').value;
+    const quantity = parseInt(document.getElementById('buy-quantity').value);
+    
+    fetch('{{ url_for("advanced_bp.buy_stock") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({symbol: symbol, quantity: quantity})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            if (window.showNotification) {
+                showNotification(data.error, 'error');
+            }
+        } else {
+            closeModal('buyModal');
+            if (window.showNotification) {
+                showNotification('Stock purchased successfully!', 'success');
+            }
+            setTimeout(() => location.reload(), 500);
+        }
+    });
+}
+
+function sellStock(event) {
+    event.preventDefault();
+    const symbol = document.getElementById('sell-symbol').value;
+    const quantity = parseInt(document.getElementById('sell-quantity').value);
+    
+    fetch('{{ url_for("advanced_bp.sell_stock") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({symbol: symbol, quantity: quantity})
+    })
+    .then(response => response.json())
+    .then(async data => {
+        if (data.error) {
+            if (window.showNotification) {
+                showNotification(data.error, 'error');
+            }
+        } else {
+            closeModal('sellModal');
+            const message = data.profit_loss >= 0 
+                ? `Stock sold successfully! Profit: $${data.profit_loss.toFixed(2)}`
+                : `Stock sold successfully! Loss: $${Math.abs(data.profit_loss).toFixed(2)}`;
+            if (window.showNotification) {
+                showNotification(message, data.profit_loss >= 0 ? 'success' : 'warning');
+            }
+            if (typeof window.saveScore === 'function') {
+                var finalScore = Math.round(Number(data.total_value) || 0);
+                console.log("GAME SAVE TRIGGERED");
+                console.log("FINAL SCORE:", finalScore);
+                await window.saveScore(finalScore, "Stock Simulator", "Advanced");
+            }
+            setTimeout(() => location.reload(), 500);
+        }
+    });
+}
+
+function refreshPrices() {
+    refreshPricesNoReload(false);
+}
+
+function resetGame() {
+    if (window.showConfirm) {
+        showConfirm(
+            'Are you sure you want to reset the game? All your progress will be lost.',
+            () => {
+                fetch('{{ url_for("advanced_bp.reset_game") }}', {method: 'POST'})
+                    .then(response => response.json())
+                    .then(data => {
+                        if (window.showNotification) {
+                            showNotification('Game reset successfully!', 'success');
+                        }
+                        setTimeout(() => location.reload(), 500);
+                    });
+            }
+        );
+    } else {
+        // Fallback if showConfirm is not available
+        if (confirm('Are you sure you want to reset the game? All your progress will be lost.')) {
+            fetch('{{ url_for("advanced_bp.reset_game") }}', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    location.reload();
+                });
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    startStockMockTick();
+    document.getElementById('stock-auto-tick').addEventListener('change', function () {
+        if (this.checked) startStockMockTick();
+        else if (__stockTickTimer) { clearInterval(__stockTickTimer); __stockTickTimer = null; }
+    });
+});
+
+document.getElementById('buy-quantity').addEventListener('input', updateBuyTotal);
+document.getElementById('sell-quantity').addEventListener('input', updateSellTotal);
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
+

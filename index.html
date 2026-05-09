@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finovo - Gamified Financial Education</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="loading-screen">
+        <div class="loader"></div>
+    </div>
+
+    <div class="notification-container"></div>
+
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>Finovo</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search modules, topics...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            <ul class="nav-links">
+                <li class="dropdown">
+                    <a href="#home">Home</a>
+                    <div class="dropdown-content">
+                        <a href="#overview">Overview</a>
+                        <a href="#testimonials">Testimonials</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="#features">Features</a>
+                    <div class="dropdown-content">
+                        <a href="#games">Games</a>
+                        <a href="#ai-insights">AI Insights</a>
+                        <a href="#simulations">Simulations</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="#modules">Modules</a>
+                    <div class="dropdown-content">
+                        <a href="#budgeting">Budgeting</a>
+                        <a href="#investing">Investing</a>
+                        <a href="#risk">Risk Management</a>
+                    </div>
+                </li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <button class="login-btn">Login</button>
+                <button class="signup-btn">Sign Up</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <div class="hero-content animate__animated animate__fadeIn">
+                <h1>Transform Your Financial Future</h1>
+                <p>Learn finance through engaging games and AI-powered insights</p>
+                <div class="cta-buttons">
+                    <button class="cta-button primary">Start Learning</button>
+                    <button class="cta-button secondary">Watch Demo</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <h2>Why Choose Finovo?</h2>
+            <div class="features-grid">
+                <div class="feature-card" data-tooltip="Interactive games make learning fun and memorable">
+                    <i class="fas fa-gamepad"></i>
+                    <h3>Gamified Learning</h3>
+                    <p>Make financial education fun and engaging through interactive games</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="feature-card" data-tooltip="Get personalized recommendations based on your progress">
+                    <i class="fas fa-robot"></i>
+                    <h3>AI-Powered Insights</h3>
+                    <p>Get personalized investment strategies based on your learning patterns</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 90%"></div>
+                    </div>
+                </div>
+                <div class="feature-card" data-tooltip="Practice with real market scenarios">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Real-World Scenarios</h3>
+                    <p>Practice with simulated financial situations and market conditions</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="testimonials-section">
+            <h2>What Our Users Say</h2>
+            <div class="testimonials-slider">
+                <div class="testimonial-card">
+                    <div class="rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"Finovo transformed how I understand personal finance. The games made learning fun!"</p>
+                    <div class="user-info">
+                        <img src="user1.jpg" alt="User 1">
+                        <span>Sarah Johnson</span>
+                    </div>
+                </div>
+                <!-- More testimonials can be added here -->
+            </div>
+        </section>
+
+        <section id="modules" class="modules-section">
+            <h2>Learning Modules</h2>
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-header">
+                        <h3>Budgeting Basics</h3>
+                        <span class="difficulty">Beginner</span>
+                    </div>
+                    <p>Master the art of managing your money effectively</p>
+                    <div class="module-progress">
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 60%"></div>
+                        </div>
+                        <span>60% Complete</span>
+                    </div>
+                    <button class="module-btn">Continue Learning</button>
+                </div>
+                <!-- Similar structure for other modules -->
+            </div>
+        </section>
+
+        <section id="faq" class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How does the gamification work?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our platform uses interactive games and challenges to teach financial concepts...</p>
+                    </div>
+                </div>
+                <!-- More FAQ items -->
+            </div>
+        </section>
+
+        <section id="newsletter" class="newsletter-section">
+            <h2>Stay Updated</h2>
+            <p>Subscribe to our newsletter for the latest financial tips and updates</p>
+            <form class="newsletter-form">
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit">Subscribe</button>
+            </form>
+        </section>
+    </main>
+
+    <div class="chat-widget">
+        <button class="chat-toggle">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3>Chat Support</h3>
+                <button class="close-chat"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message...">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Finovo</h3>
+                <p>Making financial education accessible and engaging for everyone.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#modules">Modules</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: info@finovo.com</p>
+                <p>Phone: (123) 456-7890</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Finovo. All rights reserved.</p>
+        </div>
+    </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth Loading</title>
+    <style>
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Auth Loading</h1>
+    <div id="debug-info"></div>
+    
+    <!-- Load scripts in the same order as base.html -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="{{ url_for('static', filename='js/supabase.js') }}?v=2"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=3"></script>
+    
+    <script>
+        function updateDebug(message) {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.innerHTML += `<div class="debug-info">${new Date().toLocaleTimeString()}: ${message}</div>`;
+            console.log(message);
+        }
+        
+        updateDebug('🚀 Test page loaded');
+        updateDebug(`📊 window.supabase type: ${typeof window.supabase}`);
+        updateDebug(`📊 window.auth type: ${typeof window.auth}`);
+        updateDebug(`📊 window.auth value: ${window.auth}`);
+        
+        // Wait for scripts to load
+        setTimeout(() => {
+            updateDebug('⏰ After 1 second delay...');
+            updateDebug(`📊 window.supabase type now: ${typeof window.supabase}`);
+            updateDebug(`📊 window.auth type now: ${typeof window.auth}`);
+            updateDebug(`📊 window.auth value now: ${window.auth}`);
+            
+            if (typeof window.auth !== 'undefined') {
+                updateDebug(`✅ window.auth.ready: ${window.auth.ready}`);
+                updateDebug(`✅ Auth system loaded successfully!`);
+            } else {
+                updateDebug('❌ window.auth is still undefined');
+                updateDebug('🔧 Available auth-related properties:');
+                const authProps = Object.keys(window).filter(k => k.toLowerCase().includes('auth'));
+                authProps.forEach(prop => {
+                    updateDebug(`  - ${prop}: ${typeof window[prop]}`);
+                });
+            }
+        }, 2000);
+        
+        // Test form submission
+        setTimeout(() => {
+            updateDebug('🧪 Testing form submission...');
+            
+            if (typeof window.auth !== 'undefined') {
+                updateDebug('✅ Would be able to submit form');
+            } else {
+                updateDebug('❌ Would show "Authentication system not loaded" error');
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
