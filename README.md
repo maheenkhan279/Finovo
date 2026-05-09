@@ -111,3 +111,4 @@ All titles appear on the central **Financial Games** dashboard (`/games`) under 
 - **Retirement Road:** user enters starting balance, annual contribution, years, and expected return; the app projects an ending balance with simple year-by-year compounding.
 
 No existing blueprint code paths were modified; integration is limited to **new modules**, **additional `register_blueprint` registrations** in `app.py`, and **new rows** on the games dashboard.
+"# Finovo" 
